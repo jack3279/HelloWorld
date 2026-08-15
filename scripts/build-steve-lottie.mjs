@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs";
 
 const FR = 60;
-const OP = 120;
+const OP = 180;
 const W = 512;
 const H = 512;
 const U = 14;
@@ -371,40 +371,27 @@ const legW = 4 * U;
 const legH = 12 * U;
 const legD = 4 * U;
 
-const bodyP = anim([
-  kf(0, [232, 238, 0], E.travel),
-  kf(60, [232, 232, 0], E.travel, E.travel),
-  kf(120, [232, 238, 0], null, E.travel),
-]);
+const bodyP = [232, 238, 0];
 
 const bodyS = anim([
-  kf(0, [100, 100, 100], E.travel),
-  kf(60, [101.5, 98.8, 100], E.travel, E.travel),
-  kf(120, [100, 100, 100], null, E.travel),
+  kf(0, [100, 100, 100]),
+  kf(15, [86.6, 100, 100]),
+  kf(30, [50, 100, 100]),
+  kf(45, [6, 100, 100]),
+  kf(60, [-50, 100, 100]),
+  kf(75, [-86.6, 100, 100]),
+  kf(90, [-100, 100, 100]),
+  kf(105, [-86.6, 100, 100]),
+  kf(120, [-50, 100, 100]),
+  kf(135, [-6, 100, 100]),
+  kf(150, [50, 100, 100]),
+  kf(165, [86.6, 100, 100]),
+  kf(180, [100, 100, 100]),
 ]);
 
-const headR = anim([
-  kf(0, [0], E.travel),
-  kf(40, [-1.6], E.travel, E.travel),
-  kf(80, [1.2], E.travel, E.travel),
-  kf(120, [0], null, E.travel),
-]);
-
-const rightArmR = anim([
-  kf(0, [8], E.pop),
-  kf(20, [8], E.pop, E.pop),
-  kf(38, [-28], E.pop, E.pop),
-  kf(52, [14], E.pop, E.pop),
-  kf(66, [-22], E.pop, E.pop),
-  kf(86, [8], E.settle, E.pop),
-  kf(120, [8], null, E.settle),
-]);
-
-const leftArmR = anim([
-  kf(0, [-6], E.travel),
-  kf(60, [4], E.travel, E.travel),
-  kf(120, [-6], null, E.travel),
-]);
+const headR = 0;
+const rightArmR = 8;
+const leftArmR = -6;
 
 const eyeOpenO = anim([
   kf(0, [100], E.sharp),
@@ -412,7 +399,7 @@ const eyeOpenO = anim([
   kf(70, [0], E.sharp, E.sharp),
   kf(78, [0], E.settle, E.sharp),
   kf(82, [100], E.settle, E.settle),
-  kf(120, [100], null, E.settle),
+  kf(180, [100], null, E.settle),
 ]);
 
 const lidO = anim([
@@ -421,7 +408,7 @@ const lidO = anim([
   kf(70, [100], E.sharp, E.sharp),
   kf(78, [100], E.settle, E.sharp),
   kf(82, [0], E.settle, E.settle),
-  kf(120, [0], null, E.settle),
+  kf(180, [0], null, E.settle),
 ]);
 
 const IND = {
@@ -687,18 +674,21 @@ const layers = [
   layer({
     ind: IND.shadow,
     nm: "Contact Shadow",
-    parent: IND.body,
     ks: ks({
-      p: [18, bodyH / 2 + legH + 8, 0],
+      p: [250, 498, 0],
       o: anim([
-        kf(0, [28], E.travel),
-        kf(60, [20], E.travel, E.travel),
-        kf(120, [28], null, E.travel),
+        kf(0, [25]),
+        kf(45, [18]),
+        kf(90, [25]),
+        kf(135, [18]),
+        kf(180, [25]),
       ]),
       s: anim([
-        kf(0, [100, 100, 100], E.travel),
-        kf(60, [88, 92, 100], E.travel, E.travel),
-        kf(120, [100, 100, 100], null, E.travel),
+        kf(0, [100, 100, 100]),
+        kf(45, [64, 92, 100]),
+        kf(90, [100, 100, 100]),
+        kf(135, [64, 92, 100]),
+        kf(180, [100, 100, 100]),
       ]),
     }),
     shapes: [
@@ -738,7 +728,7 @@ const lottie = {
   op: OP,
   w: W,
   h: H,
-  nm: "Steve — 3/4 idle",
+  nm: "Steve — in-place 360 spin",
   ddd: 0,
   assets: [],
   slots: {
