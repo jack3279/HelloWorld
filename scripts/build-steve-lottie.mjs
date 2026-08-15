@@ -218,8 +218,8 @@ const FACE = [
   "HSWWSWWH",
   "HSWPSPWH",
   "SSSNNSSS",
+  "SSBOOBSS",
   "SSBBBBSS",
-  "SSSSSSSS",
 ];
 
 const FACE_COLOR = {
@@ -239,8 +239,8 @@ const HEAD_SIDE = [
   "LLHHDDHH",
   "LHHHDDDH",
   "HHHHHHDH",
-  "HHHHHHDD",
-  "HHHHHHHD",
+  "HHHHHTTH",
+  "HHHHHTNH",
   "SSSSSSSH",
   "SSSSSSSS",
   "SSSSSSSS",
