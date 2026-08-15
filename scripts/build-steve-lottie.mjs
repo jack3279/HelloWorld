@@ -215,8 +215,8 @@ const FACE = [
   "HHHHHHHH",
   "HHHHHHHH",
   "HHSSSSHH",
-  "HSWWSWWH",
-  "HSWPSPWH",
+  "SSWWSWWS",
+  "SSWPSPWS",
   "SSSNNSSS",
   "SSSBOBSS",
   "SSSSSSSS",
@@ -238,10 +238,10 @@ const FACE_COLOR = {
 const HEAD_SIDE = [
   "LLHHDDHH",
   "LHHHDDDH",
-  "SSHHHHDH",
-  "STSSHHDD",
-  "SSSSSHHD",
-  "SSSSSSSH",
+  "SSSSSSDH",
+  "SSSSSSHD",
+  "SSSSSSSS",
+  "SSSSSSSS",
   "SSSSSSSS",
   "SSSSSSSS",
 ];
@@ -621,7 +621,10 @@ const layers = [
     nm: "Head Side",
     parent: IND.headFront,
     ks: ks({ p: [0, 0, 0] }),
-    shapes: gridSide(HEAD_SIDE, FACE_COLOR, headW, headH, headD, "hs"),
+    shapes: [
+      ...gridSide(HEAD_SIDE, FACE_COLOR, headW, headH, headD, "hs"),
+      sideFace("head-side-base", headW, headH, headD, C.skin, "skinColor"),
+    ],
   }),
   layer({
     ind: IND.rightArm,
