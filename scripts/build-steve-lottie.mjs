@@ -218,7 +218,7 @@ const FACE = [
   "HSWWSWWH",
   "HSWPSPWH",
   "SSSNNSSS",
-  "SSBOOBSS",
+  "SSBSSBSS",
   "SSBBBBSS",
 ];
 
@@ -239,8 +239,8 @@ const HEAD_SIDE = [
   "LLHHDDHH",
   "LHHHDDDH",
   "HHHHHHDH",
-  "HHHHHTTH",
-  "HHHHHTNH",
+  "HHHTTHHH",
+  "HHHTNHHH",
   "SSSSSSSH",
   "SSSSSSSS",
   "SSSSSSSS",
