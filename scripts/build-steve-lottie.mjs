@@ -230,7 +230,7 @@ const FACE_COLOR = {
   T: [C.skinLit, "skinColor"],
   W: [C.eyeWhite, null],
   P: [C.pupil, "pupilColor"],
-  B: [C.beard, "hairColor"],
+  B: [C.beard, "beardColor"],
   N: [C.skinShadow, "skinShadow"],
   O: [C.mouth, null],
 };
@@ -745,6 +745,7 @@ const lottie = {
     skinColor: { p: staticProp(C.skin) },
     skinShadow: { p: staticProp(C.skinShadow) },
     hairColor: { p: staticProp(C.hair) },
+    beardColor: { p: staticProp(C.beard) },
     shirtColor: { p: staticProp(C.shirt) },
     shirtDark: { p: staticProp(C.shirtDark) },
     vneckColor: { p: staticProp(C.skin) },
