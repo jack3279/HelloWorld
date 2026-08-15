@@ -373,20 +373,62 @@ const legD = 4 * U;
 
 const bodyP = [232, 238, 0];
 
-const bodyS = anim([
+const frontO = anim([
+  kf(0, [100]),
+  kf(22, [100]),
+  kf(38, [0]),
+  kf(142, [0]),
+  kf(158, [100]),
+  kf(180, [100]),
+]);
+
+const frontS = anim([
   kf(0, [100, 100, 100]),
-  kf(15, [86.6, 100, 100]),
-  kf(30, [50, 100, 100]),
-  kf(45, [6, 100, 100]),
-  kf(60, [-50, 100, 100]),
-  kf(75, [-86.6, 100, 100]),
-  kf(90, [-100, 100, 100]),
-  kf(105, [-86.6, 100, 100]),
-  kf(120, [-50, 100, 100]),
-  kf(135, [-6, 100, 100]),
-  kf(150, [50, 100, 100]),
-  kf(165, [86.6, 100, 100]),
+  kf(22, [100, 100, 100]),
+  kf(38, [72, 100, 100]),
+  kf(142, [72, 100, 100]),
+  kf(158, [88, 100, 100]),
   kf(180, [100, 100, 100]),
+]);
+
+const sideO = anim([
+  kf(0, [0]),
+  kf(22, [0]),
+  kf(38, [100]),
+  kf(52, [100]),
+  kf(68, [0]),
+  kf(112, [0]),
+  kf(128, [100]),
+  kf(142, [100]),
+  kf(158, [0]),
+  kf(180, [0]),
+]);
+
+const sideS = anim([
+  kf(0, [78, 100, 100]),
+  kf(45, [100, 100, 100]),
+  kf(68, [78, 100, 100]),
+  kf(112, [-78, 100, 100]),
+  kf(135, [-100, 100, 100]),
+  kf(158, [-78, 100, 100]),
+  kf(180, [-78, 100, 100]),
+]);
+
+const backO = anim([
+  kf(0, [0]),
+  kf(52, [0]),
+  kf(68, [100]),
+  kf(112, [100]),
+  kf(128, [0]),
+  kf(180, [0]),
+]);
+
+const backS = anim([
+  kf(0, [74, 100, 100]),
+  kf(52, [74, 100, 100]),
+  kf(90, [100, 100, 100]),
+  kf(128, [74, 100, 100]),
+  kf(180, [74, 100, 100]),
 ]);
 
 const headR = 0;
@@ -426,6 +468,8 @@ const IND = {
   leftLeg: 12,
   body: 13,
   shadow: 14,
+  sidePose: 15,
+  backPose: 16,
 };
 
 const sleeveH = armH * 0.34;
@@ -566,6 +610,52 @@ function legShapes(side) {
   ];
 }
 
+function sidePoseShapes() {
+  return [
+    group("side-pupil", [rect([10, 18]), fill(C.pupil, "pupilColor")], [-40, -150]),
+    group("side-eye", [rect([24, 20]), fill(C.eyeWhite)], [-34, -150]),
+    group("side-nose", [rect([16, 20]), fill(C.skinShadow, "skinShadow")], [-62, -126]),
+    group("side-beard", [rect([18, 34]), fill(C.beard, "beardColor")], [-46, -104]),
+    group("side-inner-ear", [rect([12, 16]), fill(C.skinShadow, "skinShadow")], [28, -136]),
+    group("side-ear", [rect([28, 32]), fill(C.skinLit, "skinColor")], [28, -136]),
+    group("side-hair-back", [rect([50, 76]), fill(C.hairDark, "hairColor")], [31, -131]),
+    group("side-hair-top", [rect([112, 42]), fill(C.hair, "hairColor")], [0, -173]),
+    group("side-head", [rect([112, 112]), fill(C.skin, "skinColor")], [0, -138]),
+
+    group("side-near-sleeve", [rect([42, 56]), fill(C.shirt, "shirtColor")], [-14, -56]),
+    group("side-near-arm", [rect([42, 112]), fill(C.skin, "skinColor")], [-14, 28]),
+    group("side-shirt-highlight", [rect([14, 150]), fill(C.shirt, "shirtColor")], [0, -4]),
+    group("side-torso", [rect([56, 168]), fill(C.shirtDark, "shirtDark")], [14, 0]),
+
+    group("side-near-shoe", [rect([42, 28]), fill(C.shoes, "shoeColor")], [-10, 238]),
+    group("side-near-leg", [rect([42, 168]), fill(C.pants, "pantsColor")], [-10, 168]),
+    group("side-far-shoe", [rect([42, 28]), fill(C.shoesDark, "shoeColor")], [12, 238]),
+    group("side-far-leg", [rect([42, 168]), fill(C.pantsDark, "pantsDark")], [12, 168]),
+  ];
+}
+
+function backPoseShapes() {
+  return [
+    group("back-left-ear", [rect([16, 28]), fill(C.skinShadow, "skinShadow")], [-56, -132]),
+    group("back-right-ear", [rect([16, 28]), fill(C.skinLit, "skinColor")], [56, -132]),
+    group("back-nape", [rect([46, 24]), fill(C.skinShadow, "skinShadow")], [0, -88]),
+    group("back-hair-highlight", [rect([28, 84]), fill(C.hairLit, "hairColor")], [-36, -138]),
+    group("back-head", [rect([112, 112]), fill(C.hair, "hairColor")], [0, -138]),
+
+    group("back-shirt-center", [rect([28, 150]), fill(C.shirtDark, "shirtDark")], [0, 0]),
+    group("back-torso", [rect([112, 168]), fill(C.shirt, "shirtColor")], [0, 0]),
+    group("back-left-sleeve", [rect([56, 56]), fill(C.shirtDark, "shirtDark")], [-84, -56]),
+    group("back-left-arm", [rect([56, 112]), fill(C.skinShadow, "skinShadow")], [-84, 28]),
+    group("back-right-sleeve", [rect([56, 56]), fill(C.shirt, "shirtColor")], [84, -56]),
+    group("back-right-arm", [rect([56, 112]), fill(C.skin, "skinColor")], [84, 28]),
+
+    group("back-left-shoe", [rect([56, 28]), fill(C.shoesDark, "shoeColor")], [-28, 238]),
+    group("back-left-leg", [rect([56, 168]), fill(C.pantsDark, "pantsDark")], [-28, 168]),
+    group("back-right-shoe", [rect([56, 28]), fill(C.shoes, "shoeColor")], [28, 238]),
+    group("back-right-leg", [rect([56, 168]), fill(C.pants, "pantsColor")], [28, 168]),
+  ];
+}
+
 const layers = [
   layer({
     ind: IND.lids,
@@ -666,9 +756,21 @@ const layers = [
     shapes: legShapes("left"),
   }),
   layer({
+    ind: IND.sidePose,
+    nm: "Side Turn Pose",
+    ks: ks({ p: bodyP, s: sideS, o: sideO }),
+    shapes: sidePoseShapes(),
+  }),
+  layer({
+    ind: IND.backPose,
+    nm: "Back Turn Pose",
+    ks: ks({ p: bodyP, s: backS, o: backO }),
+    shapes: backPoseShapes(),
+  }),
+  layer({
     ind: IND.body,
     nm: "Body Root",
-    ks: ks({ p: bodyP, s: bodyS }),
+    ks: ks({ p: bodyP, s: frontS, o: frontO }),
     shapes: [group("anchor", [rect([1, 1]), fill([0, 0, 0, 0])])],
   }),
   layer({
@@ -705,6 +807,8 @@ const layers = [
 ];
 
 const order = [
+  IND.sidePose,
+  IND.backPose,
   IND.lids,
   IND.face,
   IND.headTop,
@@ -728,7 +832,7 @@ const lottie = {
   op: OP,
   w: W,
   h: H,
-  nm: "Steve — in-place 360 spin",
+  nm: "Steve — four-view in-place 360 spin",
   ddd: 0,
   assets: [],
   slots: {
