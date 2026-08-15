@@ -214,11 +214,11 @@ function hash(i, j) {
 const FACE = [
   "HHHHHHHH",
   "HHHHHHHH",
-  "HHSSSSHH",
-  "SSWWSWWS",
-  "SSWPSPWS",
+  "HSSSSSSH",
+  "HSWWSWWH",
+  "HSWPSPWH",
   "SSSNNSSS",
-  "SSSBOBSS",
+  "SSBBBBSS",
   "SSSSSSSS",
 ];
 
@@ -230,7 +230,7 @@ const FACE_COLOR = {
   T: [C.skinLit, "skinColor"],
   W: [C.eyeWhite, null],
   P: [C.pupil, "pupilColor"],
-  B: [C.beard, "hairColor"],
+  B: [C.hair, "hairColor"],
   N: [C.skinShadow, "skinShadow"],
   O: [C.mouth, null],
 };
@@ -238,10 +238,10 @@ const FACE_COLOR = {
 const HEAD_SIDE = [
   "LLHHDDHH",
   "LHHHDDDH",
-  "SSSSSSDH",
-  "SSSSSSHD",
-  "SSSSSSSS",
-  "SSSSSSSS",
+  "HHHHHHDH",
+  "HHHHHHDD",
+  "HHHHHHHD",
+  "SSSSSSSH",
   "SSSSSSSS",
   "SSSSSSSS",
 ];
