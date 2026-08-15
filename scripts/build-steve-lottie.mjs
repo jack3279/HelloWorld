@@ -230,7 +230,7 @@ const FACE_COLOR = {
   T: [C.skinLit, "skinColor"],
   W: [C.eyeWhite, null],
   P: [C.pupil, "pupilColor"],
-  B: [C.hair, "hairColor"],
+  B: [C.beard, "hairColor"],
   N: [C.skinShadow, "skinShadow"],
   O: [C.mouth, null],
 };
