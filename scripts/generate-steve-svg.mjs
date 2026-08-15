@@ -408,7 +408,7 @@ function flattenRegion(skin, rect, tolerance) {
       lookup.set(key, rgb);
     }
   }
-  return { lookup, centers };
+  return lookup;
 }
 
 // --------------------------------------------------------------------- pipeline
@@ -451,7 +451,7 @@ function buildFaces(skin) {
       if (camNormal[2] <= 0.0015) continue; // back-facing
 
       const lum = luminanceFor(worldNormal, norm(camNormal));
-      const { lookup } = flattenRegion(skin, rect, tolerance);
+      const lookup = flattenRegion(skin, rect, tolerance);
       const texels = [];
       const counts = new Map();
       for (let ty = 0; ty < rect.h; ty++) {
