@@ -1,0 +1,12 @@
+{
+  "controls": [
+    { "sid": "skinColor", "label": "Skin" },
+    { "sid": "skinShadow", "label": "Skin shadow" },
+    { "sid": "hairColor", "label": "Hair" },
+    { "sid": "shirtColor", "label": "Shirt" },
+    { "sid": "shirtDark", "label": "Shirt shade" },
+    { "sid": "pantsColor", "label": "Pants" },
+    { "sid": "pantsDark", "label": "Pants shade" },
+    { "sid": "shoeColor", "label": "Shoes" }
+  ]
+}
