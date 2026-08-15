@@ -259,7 +259,7 @@ const HEAD_TOP = [
 
 const SHIRT = [
   "CCCSSCCC",
-  "CCCSCSCC",
+  "CCCCCCCC",
   "CCCCCCCC",
   "CcCCCCCc",
   "CCCCCCCC",
@@ -624,7 +624,6 @@ function sidePoseShapes() {
 
     group("side-near-sleeve", [rect([42, 56]), fill(C.shirt, "shirtColor")], [-14, -56]),
     group("side-near-arm", [rect([42, 112]), fill(C.skin, "skinColor")], [-14, 28]),
-    group("side-shirt-highlight", [rect([14, 150]), fill(C.shirt, "shirtColor")], [0, -4]),
     group("side-torso", [rect([56, 168]), fill(C.shirtDark, "shirtDark")], [14, 0]),
 
     group("side-near-shoe", [rect([42, 28]), fill(C.shoes, "shoeColor")], [-10, 238]),
@@ -642,7 +641,6 @@ function backPoseShapes() {
     group("back-hair-highlight", [rect([28, 84]), fill(C.hairLit, "hairColor")], [-36, -138]),
     group("back-head", [rect([112, 112]), fill(C.hair, "hairColor")], [0, -138]),
 
-    group("back-shirt-center", [rect([28, 150]), fill(C.shirtDark, "shirtDark")], [0, 0]),
     group("back-torso", [rect([112, 168]), fill(C.shirt, "shirtColor")], [0, 0]),
     group("back-left-sleeve", [rect([56, 56]), fill(C.shirtDark, "shirtDark")], [-84, -56]),
     group("back-left-arm", [rect([56, 112]), fill(C.skinShadow, "skinShadow")], [-84, 28]),
