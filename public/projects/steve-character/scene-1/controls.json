@@ -5,7 +5,7 @@
     { "sid": "hairColor", "label": "Hair" },
     { "sid": "shirtColor", "label": "Shirt" },
     { "sid": "shirtDark", "label": "Shirt shade" },
-    { "sid": "vneckColor", "label": "V-neck" },
+    { "sid": "vneckColor", "label": "Neck / V-opening" },
     { "sid": "pantsColor", "label": "Pants" },
     { "sid": "pantsDark", "label": "Pants shade" },
     { "sid": "shoeColor", "label": "Shoes" },
