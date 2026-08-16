@@ -902,8 +902,11 @@ export function svgFigureBody(parts, project, indent = "    ", idPrefix = "") {
     for (const face of part.faces) {
       const corners = face.points.map(project);
       out.push(`${indent}  <g class="face" data-face="${face.faceName}">`);
-      // Base quad first: it fills the face and hides hairlines between texels.
-      out.push(`${indent}    <path fill="${face.base}" d="${quadPath(corners)}"/>`);
+      // Base quad first: it fills the face and hides hairlines between texels
+      // and between lofted limb bands.
+      out.push(
+        `${indent}    <path fill="${face.base}" stroke="${face.base}" stroke-width=".6" stroke-linejoin="round" d="${quadPath(corners)}"/>`,
+      );
       for (const [hex, quads] of faceColorPaths(face, corners))
         out.push(
           `${indent}    <path fill="${hex}" stroke="${hex}" stroke-width=".6" stroke-linejoin="round" d="${quads.map(quadPath).join("")}"/>`,
@@ -985,6 +988,7 @@ export function figureToLottieShapes(parts, project) {
         lottieGroup(`${part.id}/${face.faceName}`, [
           { ty: "sh", nm: "base", ks: { a: 0, k: lottieQuad(corners) } },
           lottieFill(face.base),
+          lottieStroke(face.base),
         ]),
       );
       for (const [hex, quads] of faceColorPaths(face, corners)) {
