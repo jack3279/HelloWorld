@@ -437,6 +437,28 @@ function chainPoint(pose, part, point) {
   return part.parent ? chainPoint(pose, byId.get(part.parent), placed) : placed;
 }
 
+function skinKey(skin, x, y) {
+  if (x < 0 || y < 0 || x >= skin.width || y >= skin.height) return null;
+  const i = (y * skin.width + x) * 4;
+  if (skin.rgba[i + 3] === 0) return null;
+  return (skin.rgba[i] << 16) | (skin.rgba[i + 1] << 8) | skin.rgba[i + 2];
+}
+
+// In a true profile the front of the head is edge-on, so the eye and mustache
+// would vanish. Stamp the front-face columns onto the leading edge of the
+// visible side so the face still reads as a 2D sprite.
+function profileHeadKey(skin, partId, faceName, rect, tx, ty, viewYaw) {
+  const side = skinKey(skin, rect.x + tx, rect.y + ty);
+  const profile = Math.abs(Math.abs(viewYaw ?? 0) - 90) < 12;
+  if (!profile || partId !== "head" || (faceName !== "nx" && faceName !== "px")) return side;
+  const overlay = 3;
+  const onFront = faceName === "nx" ? tx >= rect.w - overlay : tx < overlay;
+  if (!onFront) return side;
+  const col = faceName === "nx" ? tx - (rect.w - overlay) : overlay - 1 - tx;
+  const frontX = faceName === "nx" ? 8 + col : 13 + col;
+  return skinKey(skin, frontX, 8 + ty) ?? side;
+}
+
 /**
  * Builds every visible face of the posed figure in camera space, with each face
  * already flattened into horizontal runs of graded, shaded color.
@@ -484,10 +506,9 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
         for (let tx = 0; tx <= rect.w; tx++) {
           let hex = null;
           if (tx < rect.w) {
-            const i = ((rect.y + ty) * skin.width + rect.x + tx) * 4;
-            if (skin.rgba[i + 3] !== 0) {
-              const key = (skin.rgba[i] << 16) | (skin.rgba[i + 1] << 8) | skin.rgba[i + 2];
-              const src = lookup.get(key);
+            const key = profileHeadKey(skin, part.id, faceName, rect, tx, ty, pose.view?.yaw);
+            if (key != null) {
+              const src = lookup.get(key) ?? [(key >> 16) & 255, (key >> 8) & 255, key & 255];
               hex = rgbToHex(shade(shading, grade(src), lum, src));
               palette.add(hex);
             }

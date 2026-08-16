@@ -8,11 +8,11 @@
 // Far limbs (the character's left, away from the camera) are slightly dimmed
 // so the near arm and leg read as the foreground.
 
-const SIDE_VIEW = { yaw: 86, pitch: 3 };
+const SIDE_VIEW = { yaw: 90, pitch: 0 };
 
-// A few degrees toward the camera so one eye and the mustache stay on the
-// leading edge. The body stays in profile.
-const FACE = { yaw: -6, pitch: 0, roll: 0 };
+// Head stays in plane with the body. Eyes and mustache are stamped onto the
+// leading edge of the side of the head in the model painter.
+const FACE = { yaw: 0, pitch: 0, roll: 0 };
 
 const FAR = { shadeScale: 0.84 };
 const NEAR = { shadeScale: 1 };
@@ -37,24 +37,24 @@ function limb(base, extra = {}) {
 
 export function idleA() {
   return pose({
-    torso: { pitch: -2, roll: 2 },
+    torso: { pitch: -2, roll: 0 },
     head: { ...FACE },
-    "arm-right": limb(NEAR, { pitch: 10, roll: 6 }),
-    "arm-left": limb(FAR, { pitch: -6, roll: -4 }),
-    "leg-right": limb(NEAR, { pitch: 4, roll: 2 }),
-    "leg-left": limb(FAR, { pitch: -3, roll: -2 }),
+    "arm-right": limb(NEAR, { pitch: 8, roll: 0 }),
+    "arm-left": limb(FAR, { pitch: -5, roll: 0 }),
+    "leg-right": limb(NEAR, { pitch: 3, roll: 0 }),
+    "leg-left": limb(FAR, { pitch: -2, roll: 0 }),
   });
 }
 
 export function idleB() {
   return pose(
     {
-      torso: { pitch: -1, roll: 1 },
-      head: { ...FACE, pitch: 0 },
-      "arm-right": limb(NEAR, { pitch: 6, roll: 5 }),
-      "arm-left": limb(FAR, { pitch: -2, roll: -3 }),
-      "leg-right": limb(NEAR, { pitch: 2, roll: 2 }),
-      "leg-left": limb(FAR, { pitch: -1, roll: -2 }),
+      torso: { pitch: -1, roll: 0 },
+      head: { ...FACE },
+      "arm-right": limb(NEAR, { pitch: 5, roll: 0 }),
+      "arm-left": limb(FAR, { pitch: -2, roll: 0 }),
+      "leg-right": limb(NEAR, { pitch: 2, roll: 0 }),
+      "leg-left": limb(FAR, { pitch: -1, roll: 0 }),
     },
     { y: 0.25 },
   );
@@ -69,12 +69,12 @@ export function runFrame(phase) {
   const bob = Math.sin(tau * 2);
   return pose(
     {
-      torso: { pitch: -6 + bob * 3, roll: 3 + arm * 2 },
-      head: { ...FACE, pitch: 4 - bob * 2, roll: -arm * 3 },
-      "arm-right": limb(NEAR, { pitch: 12 + arm * 78, roll: 8 + arm * 4 }),
-      "arm-left": limb(FAR, { pitch: -8 - arm * 72, roll: -8 - arm * 3 }),
-      "leg-right": limb(NEAR, { pitch: -leg * 42, roll: 3 }),
-      "leg-left": limb(FAR, { pitch: leg * 42, roll: -3 }),
+      torso: { pitch: -6 + bob * 3, roll: 0 },
+      head: { ...FACE, pitch: 2 - bob },
+      "arm-right": limb(NEAR, { pitch: 12 + arm * 78, roll: 0 }),
+      "arm-left": limb(FAR, { pitch: -8 - arm * 72, roll: 0 }),
+      "leg-right": limb(NEAR, { pitch: -leg * 42, roll: 0 }),
+      "leg-left": limb(FAR, { pitch: leg * 42, roll: 0 }),
     },
     { y: Math.max(0, bob) * 0.7, x: arm * 0.15 },
   );
@@ -82,24 +82,24 @@ export function runFrame(phase) {
 
 export function jumpCrouch() {
   return pose({
-    torso: { pitch: 14, roll: 3 },
+    torso: { pitch: 14, roll: 0 },
     head: { ...FACE, pitch: 8 },
-    "arm-right": limb(NEAR, { pitch: 48, roll: 10 }),
-    "arm-left": limb(FAR, { pitch: 36, roll: -8 }),
-    "leg-right": limb(NEAR, { pitch: 22, roll: 4 }),
-    "leg-left": limb(FAR, { pitch: 16, roll: -3 }),
+    "arm-right": limb(NEAR, { pitch: 48, roll: 0 }),
+    "arm-left": limb(FAR, { pitch: 36, roll: 0 }),
+    "leg-right": limb(NEAR, { pitch: 22, roll: 0 }),
+    "leg-left": limb(FAR, { pitch: 16, roll: 0 }),
   });
 }
 
 export function jumpRise() {
   return pose(
     {
-      torso: { pitch: -12, roll: 2 },
+      torso: { pitch: -12, roll: 0 },
       head: { ...FACE, pitch: -6 },
-      "arm-right": limb(NEAR, { pitch: -148, roll: 8 }),
-      "arm-left": limb(FAR, { pitch: -132, roll: -6 }),
-      "leg-right": limb(NEAR, { pitch: -8, roll: 2 }),
-      "leg-left": limb(FAR, { pitch: 6, roll: -2 }),
+      "arm-right": limb(NEAR, { pitch: -148, roll: 0 }),
+      "arm-left": limb(FAR, { pitch: -132, roll: 0 }),
+      "leg-right": limb(NEAR, { pitch: -8, roll: 0 }),
+      "leg-left": limb(FAR, { pitch: 6, roll: 0 }),
     },
     { y: 7 },
   );
@@ -108,12 +108,12 @@ export function jumpRise() {
 export function jumpApex() {
   return pose(
     {
-      torso: { pitch: -4, roll: 1 },
+      torso: { pitch: -4, roll: 0 },
       head: { ...FACE, pitch: -2 },
-      "arm-right": limb(NEAR, { pitch: -158, roll: 6 }),
-      "arm-left": limb(FAR, { pitch: -118, roll: -10 }),
-      "leg-right": limb(NEAR, { pitch: -18, roll: 3 }),
-      "leg-left": limb(FAR, { pitch: 22, roll: -3 }),
+      "arm-right": limb(NEAR, { pitch: -158, roll: 0 }),
+      "arm-left": limb(FAR, { pitch: -118, roll: 0 }),
+      "leg-right": limb(NEAR, { pitch: -18, roll: 0 }),
+      "leg-left": limb(FAR, { pitch: 22, roll: 0 }),
     },
     { y: 11 },
   );
@@ -122,12 +122,12 @@ export function jumpApex() {
 export function jumpFall() {
   return pose(
     {
-      torso: { pitch: 8, roll: 2 },
+      torso: { pitch: 8, roll: 0 },
       head: { ...FACE, pitch: 6 },
-      "arm-right": limb(NEAR, { pitch: -88, roll: 10 }),
-      "arm-left": limb(FAR, { pitch: -54, roll: -8 }),
-      "leg-right": limb(NEAR, { pitch: -28, roll: 2 }),
-      "leg-left": limb(FAR, { pitch: 12, roll: -2 }),
+      "arm-right": limb(NEAR, { pitch: -88, roll: 0 }),
+      "arm-left": limb(FAR, { pitch: -54, roll: 0 }),
+      "leg-right": limb(NEAR, { pitch: -28, roll: 0 }),
+      "leg-left": limb(FAR, { pitch: 12, roll: 0 }),
     },
     { y: 5.5 },
   );
@@ -135,12 +135,12 @@ export function jumpFall() {
 
 export function jumpLand() {
   return pose({
-    torso: { pitch: 16, roll: 3 },
+    torso: { pitch: 16, roll: 0 },
     head: { ...FACE, pitch: 10 },
-    "arm-right": limb(NEAR, { pitch: 28, roll: 8 }),
-    "arm-left": limb(FAR, { pitch: 18, roll: -6 }),
-    "leg-right": limb(NEAR, { pitch: 24, roll: 4 }),
-    "leg-left": limb(FAR, { pitch: 14, roll: -3 }),
+    "arm-right": limb(NEAR, { pitch: 28, roll: 0 }),
+    "arm-left": limb(FAR, { pitch: 18, roll: 0 }),
+    "leg-right": limb(NEAR, { pitch: 24, roll: 0 }),
+    "leg-left": limb(FAR, { pitch: 14, roll: 0 }),
   });
 }
 
