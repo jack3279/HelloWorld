@@ -495,6 +495,22 @@ function flattenRegion(skin, rect, tolerance) {
   return lookup;
 }
 
+// The base quad hides hairlines. It must be the real field color, not a
+// feature (eyes, frown) that only wins because the field split into many
+// near-greens. Skip a near-black winner unless it actually owns the face.
+function pickBaseColor(counts) {
+  const ranked = [...counts].sort((a, b) => b[1] - a[1]);
+  const total = ranked.reduce((n, [, c]) => n + c, 0) || 1;
+  for (const [hex, n] of ranked) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    if (r + g + b < 48 && n / total < 0.4) continue;
+    return hex;
+  }
+  return ranked[0]?.[0];
+}
+
 // --------------------------------------------------------------------- pipeline
 
 // Local rotation order: the part is first turned to pick which texture face
@@ -623,7 +639,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, 
           run = hex ? { hex, y: ty, x0: tx, x1: tx + 1 } : null;
         }
       }
-      const base = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
+      const base = pickBaseColor(counts);
       faces.push({ faceName, points, depth, rect, runs, base });
     }
 

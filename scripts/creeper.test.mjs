@@ -89,6 +89,11 @@ describe("generated creeper assets", () => {
     assert.match(svg, /id="leg-front-right"/);
     assert.doesNotMatch(svg, /id="arm-/);
     assert.doesNotMatch(svg, /NaN|undefined/);
+    const front = svg.split('data-face="front"')[1] ?? "";
+    const base = front.match(/<path fill="(#[0-9a-fA-F]+)" d="/);
+    assert.ok(base, "front face has a base fill");
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(base[1].slice(i, i + 2), 16));
+    assert.ok(g > r && g > 40, `front base should be green field, got ${base[1]}`);
   });
 
   it("ships idle, walk, and swell flipbooks", async () => {

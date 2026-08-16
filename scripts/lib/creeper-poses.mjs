@@ -21,7 +21,7 @@ export const SPRITE = {
   originY: 452,
 };
 
-export const TOLERANCE = { default: 28, head: 10 };
+export const TOLERANCE = { default: 28, head: 18 };
 
 export const WALK_FRAMES = 16;
 export const SWELL_FRAMES = 20;
