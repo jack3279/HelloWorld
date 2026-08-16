@@ -49,9 +49,9 @@ describe("coin spin", () => {
 
     assert.equal(faceOn.faceSx, 100);
     assert.ok(Math.abs(faceOn.bodySx - 100) < 0.2);
-    assert.ok(quarter.bodySx > T / (2 * R) * 100 - 1, "edge keeps the coin thickness");
+    assert.ok(quarter.bodyW > T - 4, "edge keeps the coin thickness");
     assert.ok(quarter.bodySx > quarter.faceSx, "rim is the silhouette at 90°");
-    assert.ok(angled.bodySx - angled.faceSx > 10, "45° shows a thick crescent");
+    assert.ok(angled.bodyW - 2 * R * (angled.faceSx / 100) > T * 0.5, "45° shows a thick crescent");
     assert.ok(angled.frontX > 200);
     assert.ok(angled.backX < 200);
     assert.ok(mid.backO > 90);

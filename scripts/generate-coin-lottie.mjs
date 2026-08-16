@@ -30,7 +30,7 @@ export const CY = 200;
 export const FR = 60;
 export const OP = 90; // 1.5s, one revolution; op is exclusive
 export const R = 100;
-export const T = 38;
+export const T = 56;
 
 const GOLD_HI = [0.96, 0.82, 0.32, 1];
 const GOLD = [0.86, 0.64, 0.15, 1];
@@ -74,6 +74,10 @@ function tr({ p = [0, 0], s = [100, 100], r = 0, o = 100 } = {}) {
 
 function ellipse(size, pos = [0, 0]) {
   return { ty: "el", d: 1, p: staticK(pos), s: staticK(size) };
+}
+
+function roundRect(size, radius, pos = [0, 0]) {
+  return { ty: "rc", d: 1, p: staticK(pos), s: size, r: radius };
 }
 
 function fill(color, opacity = 100, sid) {
@@ -165,13 +169,11 @@ export function poseAt(f) {
   const ac = Math.abs(c);
   const as = Math.abs(s);
   const faceSx = ac * 100;
-  const bodySx = ac * 100 + (T / (2 * R)) * as * 100;
+  const bodyW = 2 * R * ac + T * as;
+  const bodySx = (bodyW / (2 * R)) * 100;
   const frontX = CX + (T / 2) * s;
   const backX = CX - (T / 2) * s;
-  const faceFade = clamp((ac - 0.12) / 0.2, 0, 1) * 100;
-  const visX = c >= 0 ? frontX : backX;
-  const crescentDir = visX >= CX ? -1 : 1;
-  const bodyHalf = R * (bodySx / 100);
+  const faceFade = clamp((ac - 0.16) / 0.18, 0, 1) * 100;
   return {
     th,
     c,
@@ -180,44 +182,42 @@ export function poseAt(f) {
     as,
     faceSx,
     bodySx,
+    bodyW,
+    bodyR: Math.min(bodyW, 2 * R) / 2,
     frontX,
     backX,
     frontO: c >= 0 ? faceFade : 0,
     backO: c < 0 ? faceFade : 0,
-    sheenO: c >= 0 ? 26 * ac * (0.4 + 0.6 * Math.max(0, Math.sin(th * 2 + 0.5))) : 0,
-    sheenX: frontX - 18 * ac,
-    hiX: CX + crescentDir * Math.max(6, bodyHalf - 8),
-    hiO: 48 * as,
+    sheenO: c >= 0 ? 24 * ac * (0.4 + 0.6 * Math.max(0, Math.sin(th * 2 + 0.5))) : 0,
+    sheenX: frontX - 16 * ac,
   };
 }
 
 function sampleSpin() {
   const faceS = [];
-  const bodyS = [];
+  const bodySize = [];
+  const bodyRad = [];
   const frontP = [];
   const backP = [];
   const frontO = [];
   const backO = [];
   const sheenO = [];
   const sheenP = [];
-  const hiP = [];
-  const hiO = [];
 
   for (let f = 0; f <= OP; f++) {
     const p = poseAt(f);
     faceS.push({ t: f, s: [p.faceSx, 100, 100] });
-    bodyS.push({ t: f, s: [p.bodySx, 100, 100] });
+    bodySize.push({ t: f, s: [p.bodyW, 2 * R] });
+    bodyRad.push({ t: f, s: [p.bodyR] });
     frontP.push({ t: f, s: [p.frontX, CY, 0] });
     backP.push({ t: f, s: [p.backX, CY, 0] });
     frontO.push({ t: f, s: [p.frontO] });
     backO.push({ t: f, s: [p.backO] });
     sheenO.push({ t: f, s: [p.sheenO] });
     sheenP.push({ t: f, s: [p.sheenX, CY - 16, 0] });
-    hiP.push({ t: f, s: [p.hiX, CY - 6, 0] });
-    hiO.push({ t: f, s: [p.hiO] });
   }
 
-  return { faceS, bodyS, frontP, backP, frontO, backO, sheenO, sheenP, hiP, hiO };
+  return { faceS, bodySize, bodyRad, frontP, backP, frontO, backO, sheenO, sheenP };
 }
 
 const spin = sampleSpin();
@@ -253,22 +253,24 @@ const backShapes = [
 ];
 
 const rimShapes = [
-  group("rim-body", [
-    ellipse([200, 200]),
-    gradFill(
-      [
-        [0, GOLD_HI[0], GOLD_HI[1], GOLD_HI[2]],
-        [0.42, GOLD[0], GOLD[1], GOLD[2]],
-        [1, GOLD_DK[0], GOLD_DK[1], GOLD_DK[2]],
-      ],
-      -100,
-      100,
-    ),
-  ]),
-];
-
-const rimHiShapes = [
-  group("rim-highlight", [ellipse([14, 168]), fill(GOLD_HI, 100)]),
+  {
+    ty: "gr",
+    nm: "rim-body",
+    it: [
+      roundRect(anim(spin.bodySize), anim(spin.bodyRad)),
+      gradFill(
+        [
+          [0, GOLD_HI[0], GOLD_HI[1], GOLD_HI[2]],
+          [0.38, GOLD[0], GOLD[1], GOLD[2]],
+          [1, GOLD_DK[0], GOLD_DK[1], GOLD_DK[2]],
+        ],
+        -100,
+        100,
+      ),
+      tr(),
+    ],
+  },
+  group("rim-spec", [ellipse([10, 150]), fill(GOLD_HI, 100)], { p: [0, -12], o: 42 }),
 ];
 
 const sheenShapes = [
@@ -302,18 +304,10 @@ const layers = [
   }),
   layer({
     ind: 4,
-    name: "Rim highlight",
-    shapes: rimHiShapes,
-    p: anim(spin.hiP),
-    s: staticK([100, 100, 100]),
-    o: anim(spin.hiO),
-  }),
-  layer({
-    ind: 5,
     name: "Rim",
     shapes: rimShapes,
     p: staticK([CX, CY, 0]),
-    s: anim(spin.bodyS),
+    s: staticK([100, 100, 100]),
     o: staticK(100),
   }),
 ];
