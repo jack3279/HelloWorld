@@ -1,0 +1,309 @@
+{
+  "meta": {
+    "character": "steve",
+    "facing": "right",
+    "image": "sheet.svg",
+    "size": {
+      "w": 2048,
+      "h": 640
+    },
+    "tile": {
+      "w": 256,
+      "h": 320
+    },
+    "scale": 6.6,
+    "generatedBy": "scripts/generate-steve-sprites.mjs"
+  },
+  "frames": {
+    "idle-a": {
+      "file": "idle-a.svg",
+      "label": "Idle A",
+      "tags": [
+        "idle"
+      ],
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "idle-b": {
+      "file": "idle-b.svg",
+      "label": "Idle B",
+      "tags": [
+        "idle"
+      ],
+      "frame": {
+        "x": 256,
+        "y": 0,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "run-0": {
+      "file": "run-0.svg",
+      "label": "Run 1/8",
+      "tags": [
+        "run"
+      ],
+      "frame": {
+        "x": 512,
+        "y": 0,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "run-1": {
+      "file": "run-1.svg",
+      "label": "Run 2/8",
+      "tags": [
+        "run"
+      ],
+      "frame": {
+        "x": 768,
+        "y": 0,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "run-2": {
+      "file": "run-2.svg",
+      "label": "Run 3/8",
+      "tags": [
+        "run"
+      ],
+      "frame": {
+        "x": 1024,
+        "y": 0,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "run-3": {
+      "file": "run-3.svg",
+      "label": "Run 4/8",
+      "tags": [
+        "run"
+      ],
+      "frame": {
+        "x": 1280,
+        "y": 0,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "run-4": {
+      "file": "run-4.svg",
+      "label": "Run 5/8",
+      "tags": [
+        "run"
+      ],
+      "frame": {
+        "x": 1536,
+        "y": 0,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "run-5": {
+      "file": "run-5.svg",
+      "label": "Run 6/8",
+      "tags": [
+        "run"
+      ],
+      "frame": {
+        "x": 1792,
+        "y": 0,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "run-6": {
+      "file": "run-6.svg",
+      "label": "Run 7/8",
+      "tags": [
+        "run"
+      ],
+      "frame": {
+        "x": 0,
+        "y": 320,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "run-7": {
+      "file": "run-7.svg",
+      "label": "Run 8/8",
+      "tags": [
+        "run"
+      ],
+      "frame": {
+        "x": 256,
+        "y": 320,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "jump-crouch": {
+      "file": "jump-crouch.svg",
+      "label": "Jump crouch",
+      "tags": [
+        "jump"
+      ],
+      "frame": {
+        "x": 512,
+        "y": 320,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "jump-rise": {
+      "file": "jump-rise.svg",
+      "label": "Jump rise",
+      "tags": [
+        "jump"
+      ],
+      "frame": {
+        "x": 768,
+        "y": 320,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "jump-apex": {
+      "file": "jump-apex.svg",
+      "label": "Jump apex",
+      "tags": [
+        "jump"
+      ],
+      "frame": {
+        "x": 1024,
+        "y": 320,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "jump-fall": {
+      "file": "jump-fall.svg",
+      "label": "Jump fall",
+      "tags": [
+        "jump"
+      ],
+      "frame": {
+        "x": 1280,
+        "y": 320,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "jump-land": {
+      "file": "jump-land.svg",
+      "label": "Jump land",
+      "tags": [
+        "jump"
+      ],
+      "frame": {
+        "x": 1536,
+        "y": 320,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    }
+  },
+  "animations": {
+    "idle": {
+      "frames": [
+        "idle-a",
+        "idle-b"
+      ],
+      "fps": 6,
+      "loop": true
+    },
+    "run": {
+      "frames": [
+        "run-0",
+        "run-1",
+        "run-2",
+        "run-3",
+        "run-4",
+        "run-5",
+        "run-6",
+        "run-7"
+      ],
+      "fps": 12,
+      "loop": true
+    },
+    "jump": {
+      "frames": [
+        "jump-crouch",
+        "jump-rise",
+        "jump-apex",
+        "jump-fall",
+        "jump-land"
+      ],
+      "fps": 10,
+      "loop": false
+    }
+  }
+}
