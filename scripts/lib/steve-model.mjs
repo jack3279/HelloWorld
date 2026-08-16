@@ -1,8 +1,10 @@
 // Shared machinery for rendering the Minecraft player model as flat vector art.
 //
-// The model is ten cuboids (head, torso, upper/fore arms, thighs/shins) in a
-// small hierarchy: the torso carries the head and upper arms, each forearm
-// hangs off its upper arm, and each shin hangs off its thigh.
+// The model is a torso and head plus four bendy limbs. Each limb is one
+// skinned tube: rings along the 12-texel length rotate from the shoulder/hip
+// pose into the elbow/knee pose, so the joint is a soft curve instead of two
+// disconnected cubes. Pose channels still use forearm-* / shin-* for the lower
+// bone. The torso carries the head and arms; the legs hang off the root.
 // A pose rotates parts around the model's own pivots; the figure is then turned
 // (yaw), tilted toward the camera (pitch) and projected orthographically. Every
 // visible face is painted texel by texel from a 64x64 player skin, so facial
@@ -295,29 +297,17 @@ const boxUv = (ox, oy, w, h, d) => ({
   bottom: uv(ox + d + w, oy, w, d),
 });
 
-// Split a 12-texel limb net into the shoulder/hip half and the hand/foot half.
-// Elbow and knee caps reuse a 4-row band at the cut so the joint stays skinned.
-function limbUv(ox, oy, w, h, d, half) {
-  const hh = h / 2;
-  const side = (yOff) => ({
-    nx: uv(ox, oy + d + yOff, d, hh),
-    front: uv(ox + d, oy + d + yOff, w, hh),
-    px: uv(ox + d + w, oy + d + yOff, d, hh),
-    back: uv(ox + d + w + d, oy + d + yOff, w, hh),
-  });
-  if (half === "upper") {
-    return {
-      ...side(0),
-      top: uv(ox + d, oy, w, d),
-      bottom: uv(ox + d, oy + d + Math.max(0, hh - d), w, d),
-    };
-  }
-  return {
-    ...side(hh),
-    top: uv(ox + d, oy + d + hh, w, d),
-    bottom: uv(ox + d + w, oy, w, d),
-  };
-}
+// How many texels around the elbow/knee share the bend. Larger = softer tube.
+export const BEND_SOFTNESS = 4;
+export const BEND_BANDS = 24;
+export const LIMB_TEXELS = 12;
+
+const JOINT_LABELS = {
+  "forearm-right": "Right forearm",
+  "forearm-left": "Left forearm",
+  "shin-right": "Right shin",
+  "shin-left": "Left shin",
+};
 
 // Body space: +x is the character's left, +y up, +z the direction the character
 // faces, origin between the feet. Units are skin texels.
@@ -341,73 +331,49 @@ export const MODEL = [
   },
   {
     id: "arm-right",
-    label: "Right upper arm",
+    label: "Right arm",
     parent: "torso",
-    min: [-8, 18, -2],
+    kind: "bendy",
+    min: [-8, 12, -2],
     max: [-4, 24, 2],
     pivot: [-4, 22, 0],
-    uv: limbUv(40, 16, 4, 12, 4, "upper"),
-  },
-  {
-    id: "forearm-right",
-    label: "Right forearm",
-    parent: "arm-right",
-    min: [-8, 12, -2],
-    max: [-4, 18, 2],
-    pivot: [-6, 18, 0],
-    uv: limbUv(40, 16, 4, 12, 4, "lower"),
+    joint: [-6, 18, 0],
+    jointPart: "forearm-right",
+    uv: boxUv(40, 16, 4, 12, 4),
   },
   {
     id: "arm-left",
-    label: "Left upper arm",
+    label: "Left arm",
     parent: "torso",
-    min: [4, 18, -2],
+    kind: "bendy",
+    min: [4, 12, -2],
     max: [8, 24, 2],
     pivot: [4, 22, 0],
-    uv: limbUv(32, 48, 4, 12, 4, "upper"),
-  },
-  {
-    id: "forearm-left",
-    label: "Left forearm",
-    parent: "arm-left",
-    min: [4, 12, -2],
-    max: [8, 18, 2],
-    pivot: [6, 18, 0],
-    uv: limbUv(32, 48, 4, 12, 4, "lower"),
+    joint: [6, 18, 0],
+    jointPart: "forearm-left",
+    uv: boxUv(32, 48, 4, 12, 4),
   },
   {
     id: "leg-right",
-    label: "Right thigh",
-    min: [-4, 6, -2],
+    label: "Right leg",
+    kind: "bendy",
+    min: [-4, 0, -2],
     max: [0, 12, 2],
     pivot: [-2, 12, 0],
-    uv: limbUv(0, 16, 4, 12, 4, "upper"),
-  },
-  {
-    id: "shin-right",
-    label: "Right shin",
-    parent: "leg-right",
-    min: [-4, 0, -2],
-    max: [0, 6, 2],
-    pivot: [-2, 6, 0],
-    uv: limbUv(0, 16, 4, 12, 4, "lower"),
+    joint: [-2, 6, 0],
+    jointPart: "shin-right",
+    uv: boxUv(0, 16, 4, 12, 4),
   },
   {
     id: "leg-left",
-    label: "Left thigh",
-    min: [0, 6, -2],
+    label: "Left leg",
+    kind: "bendy",
+    min: [0, 0, -2],
     max: [4, 12, 2],
     pivot: [2, 12, 0],
-    uv: limbUv(16, 48, 4, 12, 4, "upper"),
-  },
-  {
-    id: "shin-left",
-    label: "Left shin",
-    parent: "leg-left",
-    min: [0, 0, -2],
-    max: [4, 6, 2],
-    pivot: [2, 6, 0],
-    uv: limbUv(16, 48, 4, 12, 4, "lower"),
+    joint: [2, 6, 0],
+    jointPart: "shin-left",
+    uv: boxUv(16, 48, 4, 12, 4),
   },
 ];
 
@@ -498,6 +464,86 @@ function chainPoint(pose, part, point) {
   return part.parent ? chainPoint(pose, byId.get(part.parent), placed) : placed;
 }
 
+function add3(a, b) {
+  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+}
+
+function sub3(a, b) {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+
+function cross3(a, b) {
+  return [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ];
+}
+
+function safeNorm(v) {
+  const l = Math.hypot(v[0], v[1], v[2]);
+  if (l < 1e-8) return null;
+  return [v[0] / l, v[1] / l, v[2] / l];
+}
+
+function clamp01(v) {
+  return Math.max(0, Math.min(1, v));
+}
+
+function smoothstep(edge0, edge1, x) {
+  const t = clamp01((x - edge0) / (edge1 - edge0));
+  return t * t * (3 - 2 * t);
+}
+
+// 0 at the shoulder/hip, 1 at the hand/foot. The band around `jointY` eases
+// so the elbow/knee is a curve instead of a hinge crack.
+export function bendBlend(y, jointY, softness = BEND_SOFTNESS) {
+  return 1 - smoothstep(jointY - softness, jointY + softness, y);
+}
+
+function scalePose(rot, t) {
+  if (t <= 0) return {};
+  return {
+    pitch: (rot.pitch ?? 0) * t,
+    roll: (rot.roll ?? 0) * t,
+    yaw: (rot.yaw ?? 0) * t,
+    faceYaw: (rot.faceYaw ?? 0) * t,
+  };
+}
+
+function bendLocalPoint(pose, part, point) {
+  const joint = part.joint;
+  if (!joint || !part.jointPart) return point;
+  const blend = bendBlend(point[1], joint[1], part.softness ?? BEND_SOFTNESS);
+  if (blend <= 0) return point;
+  const rot = localMatrix(scalePose(poseFor(pose, part.jointPart), blend));
+  return add3(joint, apply(rot, sub3(point, joint)));
+}
+
+function limbRing(part, y) {
+  const [x0, , z0] = part.min;
+  const [x1, , z1] = part.max;
+  return [
+    [x0, y, z1],
+    [x1, y, z1],
+    [x1, y, z0],
+    [x0, y, z0],
+  ];
+}
+
+function limbBandFaces(upper, lower) {
+  return {
+    front: [upper[0], upper[1], lower[1], lower[0]],
+    back: [upper[2], upper[3], lower[3], lower[2]],
+    nx: [upper[3], upper[0], lower[0], lower[3]],
+    px: [upper[1], upper[2], lower[2], lower[1]],
+  };
+}
+
+function uvRow(rect, row) {
+  return { x: rect.x, y: rect.y + row, w: rect.w, h: 1 };
+}
+
 function skinKey(skin, x, y) {
   if (x < 0 || y < 0 || x >= skin.width || y >= skin.height) return null;
   const i = (y * skin.width + x) * 4;
@@ -522,6 +568,72 @@ function profileHeadKey(skin, partId, faceName, rect, tx, ty, viewYaw, headYaw) 
   return skinKey(skin, frontX, 8 + ty) ?? side;
 }
 
+function rasterizeFace({
+  skin,
+  partId,
+  faceName,
+  rect,
+  points,
+  worldNormal,
+  cameraNormal,
+  shading,
+  shadeScale,
+  viewYaw,
+  headYaw,
+  tolerance,
+  palette,
+}) {
+  if (!worldNormal || !cameraNormal || cameraNormal[2] <= 0.0015) return null;
+  const depth = points.reduce((sum, p) => sum + p[2], 0) / 4;
+  const lum = luminanceFor(shading, worldNormal, cameraNormal) * (shadeScale ?? 1);
+  const lookup = flattenRegion(skin, rect, tolerance);
+  const runs = [];
+  const counts = new Map();
+  for (let ty = 0; ty < rect.h; ty++) {
+    let run = null;
+    for (let tx = 0; tx <= rect.w; tx++) {
+      let hex = null;
+      if (tx < rect.w) {
+        const key = profileHeadKey(skin, partId, faceName, rect, tx, ty, viewYaw, headYaw);
+        if (key != null) {
+          const src = lookup.get(key) ?? [(key >> 16) & 255, (key >> 8) & 255, key & 255];
+          hex = rgbToHex(shade(shading, grade(src), lum, src));
+          palette.add(hex);
+        }
+      }
+      if (run && run.hex === hex) {
+        run.x1 = tx + 1;
+        continue;
+      }
+      if (run) {
+        runs.push(run);
+        counts.set(run.hex, (counts.get(run.hex) ?? 0) + (run.x1 - run.x0));
+      }
+      run = hex ? { hex, y: ty, x0: tx, x1: tx + 1 } : null;
+    }
+  }
+  const base = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
+  if (!base) return null;
+  return { faceName, points, depth, rect, runs, base };
+}
+
+function quadNormals(worldQuad, viewMatrix) {
+  const worldNormal = safeNorm(cross3(sub3(worldQuad[1], worldQuad[0]), sub3(worldQuad[3], worldQuad[0])));
+  if (!worldNormal) return { worldNormal: null, cameraNormal: null };
+  return { worldNormal, cameraNormal: safeNorm(apply(viewMatrix, worldNormal)) };
+}
+
+function collectPart(id, label, parent, pivot, faces, depths) {
+  return {
+    id,
+    label,
+    parent,
+    pivot,
+    faces,
+    depth: depths.reduce((sum, d) => sum + d, 0) / Math.max(1, depths.length),
+  };
+}
+
 /**
  * Builds every visible face of the posed figure in camera space, with each face
  * already flattened into horizontal runs of graded, shaded color.
@@ -537,77 +649,164 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
   const palette = new Set();
   const parts = [];
 
+  const toWorld = (part, p, bend = false) => {
+    const local = bend ? bendLocalPoint(pose, part, p) : p;
+    const q = chainPoint(pose, part, local);
+    return [q[0] + offset[0], q[1] + offset[1], q[2] + offset[2]];
+  };
+
+  const paint = (partId, faceName, rect, worldQuad, shadeScale, headYaw, tol) => {
+    const { worldNormal, cameraNormal } = quadNormals(worldQuad, viewMatrix);
+    const points = worldQuad.map((p) => apply(viewMatrix, p));
+    const depth = points.reduce((sum, p) => sum + p[2], 0) / 4;
+    const face = rasterizeFace({
+      skin,
+      partId,
+      faceName,
+      rect,
+      points,
+      worldNormal,
+      cameraNormal,
+      shading,
+      shadeScale,
+      viewYaw: pose.view?.yaw,
+      headYaw,
+      tolerance: tol,
+      palette,
+    });
+    return { face, depth };
+  };
+
   for (const part of MODEL) {
     const partPose = poseFor(pose, part.id);
     const tol = tolerance?.[part.id] ?? tolerance?.default ?? 12;
+
+    if (part.kind === "bendy") {
+      const jointPose = poseFor(pose, part.jointPart);
+      const split = Math.ceil(BEND_BANDS / 2);
+      const rings = [];
+      for (let i = 0; i <= BEND_BANDS; i += 1) {
+        const t = i / BEND_BANDS;
+        const y = part.max[1] + (part.min[1] - part.max[1]) * t;
+        rings.push(limbRing(part, y).map((p) => toWorld(part, p, true)));
+      }
+
+      const groups = {
+        upper: { id: part.id, label: part.label, parent: part.parent, faces: [], depths: [] },
+        lower: {
+          id: part.jointPart,
+          label: JOINT_LABELS[part.jointPart] ?? part.jointPart,
+          parent: part.id,
+          faces: [],
+          depths: [],
+        },
+      };
+
+      for (let i = 0; i < BEND_BANDS; i += 1) {
+        const group = i < split ? groups.upper : groups.lower;
+        const shadeScale = (i < split ? partPose : jointPose).shadeScale ?? 1;
+        const row = Math.min(LIMB_TEXELS - 1, Math.floor((i * LIMB_TEXELS) / BEND_BANDS));
+        const faces = limbBandFaces(rings[i], rings[i + 1]);
+        for (const faceName of ["front", "back", "nx", "px"]) {
+          const painted = paint(
+            group.id,
+            faceName,
+            uvRow(part.uv[faceName], row),
+            faces[faceName],
+            shadeScale,
+            0,
+            tol,
+          );
+          group.depths.push(painted.depth);
+          if (painted.face) group.faces.push(painted.face);
+        }
+      }
+
+      const top = paint(
+        part.id,
+        "top",
+        part.uv.top,
+        [rings[0][3], rings[0][2], rings[0][1], rings[0][0]],
+        partPose.shadeScale ?? 1,
+        0,
+        tol,
+      );
+      groups.upper.depths.push(top.depth);
+      if (top.face) groups.upper.faces.push(top.face);
+
+      const last = rings[BEND_BANDS];
+      const bottom = paint(
+        part.jointPart,
+        "bottom",
+        part.uv.bottom,
+        [last[0], last[1], last[2], last[3]],
+        jointPose.shadeScale ?? 1,
+        0,
+        tol,
+      );
+      groups.lower.depths.push(bottom.depth);
+      if (bottom.face) groups.lower.faces.push(bottom.face);
+
+      parts.push(
+        collectPart(
+          groups.upper.id,
+          groups.upper.label,
+          groups.upper.parent,
+          apply(viewMatrix, toWorld(part, part.pivot, true)),
+          groups.upper.faces,
+          groups.upper.depths,
+        ),
+        collectPart(
+          groups.lower.id,
+          groups.lower.label,
+          groups.lower.parent,
+          apply(viewMatrix, toWorld(part, part.joint, true)),
+          groups.lower.faces,
+          groups.lower.depths,
+        ),
+      );
+      continue;
+    }
+
     const chain = chainMatrix(pose, part);
-    const worldOf = (p) => {
-      const q = chainPoint(pose, part, p);
-      return [q[0] + offset[0], q[1] + offset[1], q[2] + offset[2]];
-    };
-
     const faces = [];
-    let depthSum = 0;
-    let depthCount = 0;
-
+    const depths = [];
     for (const [faceName, rect] of Object.entries(part.uv)) {
       const { normal, quad } = faceCorners(part.min, part.max, faceName);
       const worldNormal = norm(apply(chain, normal));
       const cameraNormal = norm(apply(viewMatrix, worldNormal));
-      const points = quad.map((p) => apply(viewMatrix, worldOf(p)));
+      const worldQuad = quad.map((p) => toWorld(part, p, false));
+      const points = worldQuad.map((p) => apply(viewMatrix, p));
       const depth = points.reduce((sum, p) => sum + p[2], 0) / 4;
-      depthSum += depth;
-      depthCount += 1;
-      if (cameraNormal[2] <= 0.0015) continue; // back-facing
-
-      const lum = luminanceFor(shading, worldNormal, cameraNormal) * (partPose.shadeScale ?? 1);
-      const lookup = flattenRegion(skin, rect, tol);
-      const runs = [];
-      const counts = new Map();
-      for (let ty = 0; ty < rect.h; ty++) {
-        let run = null;
-        for (let tx = 0; tx <= rect.w; tx++) {
-          let hex = null;
-          if (tx < rect.w) {
-            const key = profileHeadKey(
-              skin,
-              part.id,
-              faceName,
-              rect,
-              tx,
-              ty,
-              pose.view?.yaw,
-              partPose.yaw,
-            );
-            if (key != null) {
-              const src = lookup.get(key) ?? [(key >> 16) & 255, (key >> 8) & 255, key & 255];
-              hex = rgbToHex(shade(shading, grade(src), lum, src));
-              palette.add(hex);
-            }
-          }
-          if (run && run.hex === hex) {
-            run.x1 = tx + 1;
-            continue;
-          }
-          if (run) {
-            runs.push(run);
-            counts.set(run.hex, (counts.get(run.hex) ?? 0) + (run.x1 - run.x0));
-          }
-          run = hex ? { hex, y: ty, x0: tx, x1: tx + 1 } : null;
-        }
-      }
-      const base = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
-      faces.push({ faceName, points, depth, rect, runs, base });
+      depths.push(depth);
+      const face = rasterizeFace({
+        skin,
+        partId: part.id,
+        faceName,
+        rect,
+        points,
+        worldNormal,
+        cameraNormal,
+        shading,
+        shadeScale: partPose.shadeScale ?? 1,
+        viewYaw: pose.view?.yaw,
+        headYaw: partPose.yaw,
+        tolerance: tol,
+        palette,
+      });
+      if (face) faces.push(face);
     }
 
-    parts.push({
-      id: part.id,
-      label: part.label,
-      parent: part.parent,
-      pivot: apply(viewMatrix, worldOf(part.pivot)),
-      faces,
-      depth: depthSum / Math.max(1, depthCount),
-    });
+    parts.push(
+      collectPart(
+        part.id,
+        part.label,
+        part.parent,
+        apply(viewMatrix, toWorld(part, part.pivot, false)),
+        faces,
+        depths,
+      ),
+    );
   }
 
   parts.sort((a, b) => a.depth - b.depth);

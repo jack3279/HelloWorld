@@ -2,26 +2,158 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 320" width="256" height="320" role="img" aria-labelledby="run-7-title">
   <title id="run-7-title">Run 8/8</title>
   <g id="steve">
-    <g id="arm-left" aria-label="Left upper arm">
-      <g class="face" data-face="nx">
-        <path fill="#0b9295" d="M114.09 137.29L135.99 152.02L113.9 184.89L91.99 170.16Z"/>
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M99.36 159.2L121.27 173.93L117.58 179.41L95.67 164.68ZM95.67 164.68L117.58 179.41L113.9 184.89L91.99 170.16Z"/>
+    <g id="arm-left" aria-label="Left arm">
+      <g class="face" data-face="px">
+        <path fill="#0b9295" d="M135.99 152.02L114.09 137.29L112.24 140.03L134.15 154.76Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#0b9295" d="M134.15 154.76L112.24 140.03L110.4 142.77L132.31 157.5Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#0a898c" d="M132.31 157.5L110.4 142.77L108.56 145.51L130.47 160.24Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#0a898c" d="M130.47 160.24L108.56 145.51L106.72 148.25L128.63 162.98Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#0b9295" d="M128.63 162.98L106.72 148.25L104.61 150.97L126.67 165.47Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#0b9295" d="M126.67 165.47L104.61 150.97L102.12 153.74L124.58 167.61Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#0b9295" d="M124.58 167.61L102.12 153.74L99.45 156.68L122.51 169.54Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#0b9295" d="M122.51 169.54L99.45 156.68L96.82 159.89L120.58 171.39Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M120.58 171.39L96.82 159.89L94.4 163.41L118.89 173.27Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M118.89 173.27L94.4 163.41L92.35 167.25L117.52 175.21Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M117.52 175.21L92.35 167.25L90.81 171.36L116.55 177.25Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M116.55 177.25L90.81 171.36L89.88 175.67L116.02 179.37Z"/>
       </g>
     </g>
     <g id="forearm-left" aria-label="Left forearm">
-      <g class="face" data-face="nx">
-        <path fill="#975a3b" d="M90.38 181.55L115.52 173.49L127.61 211.2L102.47 219.26Z"/>
+      <g class="face" data-face="px">
+        <path fill="#8d5437" d="M116.02 179.37L89.88 175.67L89.58 180.07L115.94 181.56Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#8d5437" d="M115.94 181.56L89.58 180.07L89.92 184.45L116.31 183.79Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M116.31 183.79L89.92 184.45L90.81 188.7L117.08 186.04Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M117.08 186.04L90.81 188.7L92.16 192.76L118.18 188.31Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M118.18 188.31L92.16 192.76L93.8 196.57L119.52 190.63Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M119.52 190.63L93.8 196.57L95.54 200.14L120.98 193.05Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M120.98 193.05L95.54 200.14L97.17 203.49L122.39 195.68Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M122.39 195.68L97.17 203.49L98.44 206.69L123.58 198.63Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M123.58 198.63L98.44 206.69L99.45 209.83L124.59 201.77Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M124.59 201.77L99.45 209.83L100.46 212.98L125.6 204.91Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M125.6 204.91L100.46 212.98L101.47 216.12L126.6 208.05Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" d="M126.6 208.05L101.47 216.12L102.47 219.26L127.61 211.2Z"/>
       </g>
     </g>
-    <g id="leg-left" aria-label="Left thigh">
-      <g class="face" data-face="nx">
-        <path fill="#2f2589" d="M116.53 227.34L139.47 214.26L159.09 248.66L136.15 261.74Z"/>
+    <g id="leg-left" aria-label="Left leg">
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M139.47 214.26L116.53 227.34L118.17 230.21L141.1 217.13Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M141.1 217.13L118.17 230.21L119.8 233.07L142.74 219.99Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M142.74 219.99L119.8 233.07L121.44 235.94L144.37 222.86Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M144.37 222.86L121.44 235.94L123.07 238.81L146.01 225.73Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M146.01 225.73L123.07 238.81L124.74 241.63L147.69 228.59Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M147.69 228.59L124.74 241.63L126.42 244.38L149.45 231.47Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M149.45 231.47L126.42 244.38L128.11 247.09L151.25 234.38Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M151.25 234.38L128.11 247.09L129.75 249.78L153.03 237.33Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M153.03 237.33L129.75 249.78L131.35 252.48L154.79 240.34Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M154.79 240.34L131.35 252.48L132.86 255.19L156.48 243.4Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M156.48 243.4L132.86 255.19L134.29 257.93L158.09 246.51Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M158.09 246.51L134.29 257.93L135.63 260.71L159.61 249.68Z"/>
       </g>
     </g>
     <g id="shin-left" aria-label="Left shin">
-      <g class="face" data-face="nx">
-        <path fill="#2f2589" d="M135.19 259.65L160.05 250.75L173.39 288.03L148.54 296.93Z"/>
-        <path fill="#1f2023" stroke="#1f2023" stroke-width=".6" stroke-linejoin="round" d="M141.87 278.29L154.29 273.84L156.52 280.05L144.09 284.5ZM144.09 284.5L168.95 275.6L171.17 281.82L146.32 290.72ZM146.32 290.72L171.17 281.82L173.39 288.03L148.54 296.93Z"/>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M159.61 249.68L135.63 260.71L136.87 263.54L161.03 252.9Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M161.03 252.9L136.87 263.54L138.02 266.41L162.35 256.15Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M162.35 256.15L138.02 266.41L139.09 269.32L163.57 259.43Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M163.57 259.43L139.09 269.32L140.1 272.29L164.71 262.71Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M164.71 262.71L140.1 272.29L141.08 275.29L165.78 265.99Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M165.78 265.99L141.08 275.29L142.04 278.33L166.83 269.25Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M166.83 269.25L142.04 278.33L143.03 281.4L167.87 272.46Z"/>
+        <path fill="#1f2023" stroke="#1f2023" stroke-width=".6" stroke-linejoin="round" d="M154.43 273.79L142.04 278.33L143.03 281.4L155.45 276.93Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" d="M167.87 272.46L143.03 281.4L144.09 284.5L168.95 275.6Z"/>
+        <path fill="#1f2023" stroke="#1f2023" stroke-width=".6" stroke-linejoin="round" d="M155.45 276.93L143.03 281.4L144.09 284.5L156.52 280.05Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#1f2023" d="M168.95 275.6L144.09 284.5L145.2 287.61L170.06 278.71Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#1f2023" d="M170.06 278.71L145.2 287.61L146.32 290.72L171.17 281.82Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#1f2023" d="M171.17 281.82L146.32 290.72L147.43 293.82L172.28 284.92Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#1f2023" d="M172.28 284.92L147.43 293.82L148.54 296.93L173.39 288.03Z"/>
       </g>
     </g>
     <g id="torso" aria-label="Torso">
@@ -60,26 +192,158 @@
         <path fill="#80492f" stroke="#80492f" stroke-width=".6" stroke-linejoin="round" d="M109.56 131.24L114.22 130.85L115.01 137.4L110.35 137.78ZM110.35 137.78L115.01 137.4L115.8 143.94L111.14 144.33Z"/>
       </g>
     </g>
+    <g id="leg-right" aria-label="Right leg">
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M119.72 262.72L101.91 243.23L100.19 244.84L116.57 265.55Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M124.86 256.07L104.6 239.14L103.37 241.32L122.49 259.52Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M122.49 259.52L103.37 241.32L101.91 243.23L119.72 262.72Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M126.85 252.46L105.64 236.73L104.6 239.14L124.86 256.07Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M130 245.25L107.51 231.42L106.57 234.15L128.52 248.81Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M128.52 248.81L106.57 234.15L105.64 236.73L126.85 252.46Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M132.93 238.81L109.99 225.73L108.59 228.59L131.41 241.87Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M131.41 241.87L108.59 228.59L107.51 231.42L130 245.25Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M136.2 233.07L113.26 219.99L111.63 222.86L134.56 235.94Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M134.56 235.94L111.63 222.86L109.99 225.73L132.93 238.81Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M139.47 227.34L116.53 214.26L114.9 217.13L137.83 230.21Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M137.83 230.21L114.9 217.13L113.26 219.99L136.2 233.07Z"/>
+      </g>
+    </g>
     <g id="shin-right" aria-label="Right shin">
-      <g class="face" data-face="nx">
-        <path fill="#3a2d9f" d="M104.66 242.53L112.1 267.86L74.1 279.02L66.67 253.69Z"/>
-        <path fill="#272727" stroke="#272727" stroke-width=".6" stroke-linejoin="round" d="M85.66 248.11L89.38 260.78L83.05 262.63L79.33 249.97ZM79.33 249.97L86.77 275.3L80.44 277.16L73 251.83ZM73 251.83L80.44 277.16L74.1 279.02L66.67 253.69Z"/>
+      <g class="face" data-face="px">
+        <path fill="#272727" d="M77.27 278.09L69.83 252.76L66.67 253.69L74.1 279.02Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#272727" d="M80.44 277.16L73 251.83L69.83 252.76L77.27 278.09Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#272727" d="M83.6 276.23L76.17 250.9L73 251.83L80.44 277.16Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#272727" d="M86.77 275.3L79.33 249.97L76.17 250.9L83.6 276.23Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M90.1 274.53L82.45 249.26L79.33 249.97L86.77 275.3Z"/>
+        <path fill="#272727" stroke="#272727" stroke-width=".6" stroke-linejoin="round" d="M86.27 261.9L82.45 249.26L79.33 249.97L83.05 262.63Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M93.71 273.93L85.44 248.86L82.45 249.26L90.1 274.53Z"/>
+        <path fill="#272727" stroke="#272727" stroke-width=".6" stroke-linejoin="round" d="M89.58 261.4L85.44 248.86L82.45 249.26L86.27 261.9Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M97.52 273.32L88.31 248.58L85.44 248.86L93.71 273.93Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M101.46 272.53L91.04 248.27L88.31 248.58L97.52 273.32Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M105.43 271.43L93.62 247.82L91.04 248.27L101.46 272.53Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M109.33 269.93L96.03 247.12L93.62 247.82L105.43 271.43Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M113.08 267.97L98.23 246.14L96.03 247.12L109.33 269.93Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" d="M116.57 265.55L100.19 244.84L98.23 246.14L113.08 267.97Z"/>
       </g>
     </g>
-    <g id="leg-right" aria-label="Right thigh">
-      <g class="face" data-face="nx">
-        <path fill="#3a2d9f" d="M116.53 214.26L139.47 227.34L119.85 261.74L96.91 248.66Z"/>
+    <g id="arm-right" aria-label="Right arm">
+      <g class="face" data-face="px">
+        <path fill="#0fadad" d="M115.35 137.09L99.15 157.94L101.76 159.96L117.96 139.11Z"/>
       </g>
-    </g>
-    <g id="arm-right" aria-label="Right upper arm">
-      <g class="face" data-face="nx">
-        <path fill="#0fadad" d="M99.15 157.94L115.35 137.09L146.62 161.39L130.42 182.23Z"/>
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M120 174.13L136.2 153.29L141.41 157.34L125.21 178.18ZM125.21 178.18L141.41 157.34L146.62 161.39L130.42 182.23Z"/>
+      <g class="face" data-face="px">
+        <path fill="#0fadad" d="M117.96 139.11L101.76 159.96L104.36 161.99L120.56 141.14Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#0fadad" d="M120.56 141.14L104.36 161.99L106.97 164.01L123.17 143.16Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#0fadad" d="M123.17 143.16L106.97 164.01L109.58 166.04L125.77 145.19Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#0fadad" d="M125.77 145.19L109.58 166.04L112.17 168.17L128.27 147.26Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#0fadad" d="M128.27 147.26L112.17 168.17L114.76 170.48L130.61 149.37Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#0fadad" d="M130.61 149.37L114.76 170.48L117.42 172.86L132.87 151.45Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#0fadad" d="M132.87 151.45L117.42 172.86L120.17 175.24L135.09 153.46Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M135.09 153.46L120.17 175.24L123.06 177.56L137.34 155.35Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M137.34 155.35L123.06 177.56L126.08 179.75L139.63 157.09Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M139.63 157.09L126.08 179.75L129.25 181.77L142.01 158.66Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M142.01 158.66L129.25 181.77L132.56 183.59L144.48 160.03Z"/>
       </g>
     </g>
     <g id="forearm-right" aria-label="Right forearm">
-      <g class="face" data-face="nx">
-        <path fill="#b56b42" d="M134.92 184.51L142.13 159.11L180.22 169.92L173.01 195.32Z"/>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M144.48 160.03L132.56 183.59L135.98 185.18L147.05 161.21Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M147.05 161.21L135.98 185.18L139.49 186.54L149.72 162.2Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M149.72 162.2L139.49 186.54L143.05 187.68L152.49 163.02Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M152.49 163.02L143.05 187.68L146.62 188.63L155.34 163.71Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M155.34 163.71L146.62 188.63L150.17 189.44L158.28 164.31Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M158.28 164.31L150.17 189.44L153.67 190.17L161.29 164.89Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M161.29 164.89L153.67 190.17L157.06 190.9L164.38 165.53Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M164.38 165.53L157.06 190.9L160.32 191.72L167.52 166.32Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#aa643e" d="M167.52 166.32L160.32 191.72L163.49 192.62L170.7 167.22Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#aa643e" d="M170.7 167.22L163.49 192.62L166.66 193.52L173.87 168.12Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M173.87 168.12L166.66 193.52L169.84 194.42L177.05 169.02Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" d="M177.05 169.02L169.84 194.42L173.01 195.32L180.22 169.92Z"/>
       </g>
     </g>
   </g>
