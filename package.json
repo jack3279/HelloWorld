@@ -9,7 +9,9 @@
     "build": "tsc -b && vite build",
     "check:text-slots": "node --experimental-strip-types --test scripts/text-slot-unicode.test.mjs",
     "check:steve-sprites": "node --test scripts/steve-platformer.test.mjs",
+    "check:coin": "node --test scripts/coin-lottie.test.mjs",
     "generate:steve": "node scripts/generate-steve-svg.mjs && node scripts/generate-steve-sprites.mjs && node scripts/generate-steve-lottie.mjs",
+    "generate:coin": "node scripts/generate-coin-lottie.mjs",
     "preview": "vite preview",
     "postinstall": "node scripts/copy-canvaskit.mjs"
   },

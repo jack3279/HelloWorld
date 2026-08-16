@@ -1,0 +1,12 @@
+{
+  "controls": [
+    {
+      "sid": "goldColor",
+      "label": "Gold"
+    },
+    {
+      "sid": "goldMid",
+      "label": "Gold shade"
+    }
+  ]
+}
