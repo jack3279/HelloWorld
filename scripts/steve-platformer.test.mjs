@@ -44,11 +44,11 @@ describe("steve pose catalog", () => {
     assert.equal(byId["leg-right"].sleeveId, "knee-right");
     assert.ok(byId["arm-right"].min[1] > byId["forearm-right"].max[1]);
     assert.ok(byId["leg-right"].min[1] > byId["shin-right"].max[1]);
-    assert.equal(byId["arm-right"].max[1] - byId["arm-right"].min[1], 4);
-    assert.equal(byId["forearm-right"].max[1] - byId["forearm-right"].min[1], 4);
-    assert.equal(bendBlend(20, 18, 2), 0);
-    assert.equal(bendBlend(16, 18, 2), 1);
-    assert.ok(Math.abs(bendBlend(18, 18, 2) - 0.5) < 1e-9);
+    assert.equal(byId["arm-right"].max[1] - byId["arm-right"].min[1], 5);
+    assert.equal(byId["forearm-right"].max[1] - byId["forearm-right"].min[1], 5);
+    assert.equal(bendBlend(19, 18, 1), 0);
+    assert.equal(bendBlend(17, 18, 1), 1);
+    assert.ok(Math.abs(bendBlend(18, 18, 1) - 0.5) < 1e-9);
   });
 
   it("bends only the elbow sleeve between two cuboids", async () => {
@@ -67,6 +67,7 @@ describe("steve pose catalog", () => {
     assert.ok(facesOf(bent, "arm-right").length <= 6, "upper arm stays one cuboid");
     assert.ok(facesOf(bent, "forearm-right").length <= 6, "forearm stays one cuboid");
     assert.ok(facesOf(bent, "elbow-right").length >= 4, "elbow sleeve is lofted");
+    assert.ok(facesOf(bent, "knee-right").length >= 4, "knee sleeve is lofted");
     const pts = (figure, id) => facesOf(figure, id).flatMap((f) => f.points);
     const handY = (figure) => Math.min(...pts(figure, "forearm-right").map((p) => p[1]));
     assert.ok(handY(bent) > handY(straight) + 1, "elbow fold lifts the hand in profile");

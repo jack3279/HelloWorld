@@ -298,8 +298,8 @@ const boxUv = (ox, oy, w, h, d) => ({
 });
 
 // Cuboid shafts stop this many texels short of the joint. The gap is the
-// only place that lofts — a short sleeve, not a hose down the whole limb.
-export const JOINT_INSET = 2;
+// only place that lofts — a short elbow/knee sleeve, not a hose.
+export const JOINT_INSET = 1;
 export const BEND_SOFTNESS = JOINT_INSET;
 export const BEND_BANDS = 8;
 export const LIMB_TEXELS = 12;
@@ -668,8 +668,16 @@ function rasterizeFace({
   headYaw,
   tolerance,
   palette,
+  doubleSided = false,
 }) {
-  if (!worldNormal || !cameraNormal || cameraNormal[2] <= 0.0015) return null;
+  if (!worldNormal || !cameraNormal) return null;
+  if (!doubleSided && cameraNormal[2] <= 0.0015) return null;
+  if (doubleSided && Math.abs(cameraNormal[2]) <= 0.0015) return null;
+  if (doubleSided && cameraNormal[2] < 0) {
+    worldNormal = [-worldNormal[0], -worldNormal[1], -worldNormal[2]];
+    cameraNormal = [-cameraNormal[0], -cameraNormal[1], -cameraNormal[2]];
+    points = [points[0], points[3], points[2], points[1]];
+  }
   const depth = points.reduce((sum, p) => sum + p[2], 0) / 4;
   const lum = luminanceFor(shading, worldNormal, cameraNormal) * (shadeScale ?? 1);
   const lookup = flattenRegion(skin, rect, tolerance);
@@ -741,7 +749,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
     return [q[0] + offset[0], q[1] + offset[1], q[2] + offset[2]];
   };
 
-  const paint = (partId, faceName, rect, worldQuad, shadeScale, headYaw, tol) => {
+  const paint = (partId, faceName, rect, worldQuad, shadeScale, headYaw, tol, doubleSided = false) => {
     const { worldNormal, cameraNormal } = quadNormals(worldQuad, viewMatrix);
     const points = worldQuad.map((p) => apply(viewMatrix, p));
     const depth = points.reduce((sum, p) => sum + p[2], 0) / 4;
@@ -759,6 +767,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
       headYaw,
       tolerance: tol,
       palette,
+      doubleSided,
     });
     return { face, depth };
   };
@@ -832,6 +841,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
           sleeveShade,
           0,
           tol,
+          true,
         );
         sleeveDepths.push(painted.depth);
         if (painted.face) sleeveFaces.push(painted.face);
