@@ -1,18 +1,18 @@
-// Side-view pose library for a 2D platformer. The character faces screen-right.
+// Side-view pose library for a 2D platformer. The body faces screen-right
+// (true profile). The head turns 45° toward the camera so the front of the
+// face — both eyes, mustache, beard — stays readable.
 //
-// `view.yaw` is a few degrees shy of a true profile so the front of the head
-// (eyes, mustache, beard) stays readable — a 2.5D platformer read, not a
-// silhouette. Limb `pitch` is the swing in the plane of motion: negative is
-// forward (the direction the character faces), positive is back.
+// Limb `pitch` is the swing in the plane of motion: negative is forward
+// (the direction the character faces), positive is back.
 //
 // Far limbs (the character's left, away from the camera) are slightly dimmed
 // so the near arm and leg read as the foreground.
 
 const SIDE_VIEW = { yaw: 90, pitch: 0 };
 
-// Head stays in plane with the body. Eyes and mustache are stamped onto the
-// leading edge of the side of the head in the model painter.
-const FACE = { yaw: 0, pitch: 0, roll: 0 };
+// Body stays in profile. The head turns 45° toward the camera so both eyes
+// and the mustache read on the front of the cube.
+const FACE = { yaw: -45, pitch: 0, roll: 0 };
 
 const FAR = { shadeScale: 0.84 };
 const NEAR = { shadeScale: 1 };

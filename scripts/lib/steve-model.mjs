@@ -447,9 +447,11 @@ function skinKey(skin, x, y) {
 // In a true profile the front of the head is edge-on, so the eye and mustache
 // would vanish. Stamp the front-face columns onto the leading edge of the
 // visible side so the face still reads as a 2D sprite.
-function profileHeadKey(skin, partId, faceName, rect, tx, ty, viewYaw) {
+function profileHeadKey(skin, partId, faceName, rect, tx, ty, viewYaw, headYaw) {
   const side = skinKey(skin, rect.x + tx, rect.y + ty);
   const profile = Math.abs(Math.abs(viewYaw ?? 0) - 90) < 12;
+  // A turned head already shows the real front face; don't stamp over the side.
+  if (Math.abs(headYaw ?? 0) > 12) return side;
   if (!profile || partId !== "head" || (faceName !== "nx" && faceName !== "px")) return side;
   const overlay = 3;
   const onFront = faceName === "nx" ? tx >= rect.w - overlay : tx < overlay;
@@ -506,7 +508,16 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
         for (let tx = 0; tx <= rect.w; tx++) {
           let hex = null;
           if (tx < rect.w) {
-            const key = profileHeadKey(skin, part.id, faceName, rect, tx, ty, pose.view?.yaw);
+            const key = profileHeadKey(
+              skin,
+              part.id,
+              faceName,
+              rect,
+              tx,
+              ty,
+              pose.view?.yaw,
+              partPose.yaw,
+            );
             if (key != null) {
               const src = lookup.get(key) ?? [(key >> 16) & 255, (key >> 8) & 255, key & 255];
               hex = rgbToHex(shade(shading, grade(src), lum, src));
