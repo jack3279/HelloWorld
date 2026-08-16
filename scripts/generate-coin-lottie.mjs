@@ -76,10 +76,6 @@ function ellipse(size, pos = [0, 0]) {
   return { ty: "el", d: 1, p: staticK(pos), s: staticK(size) };
 }
 
-function roundRect(size, radius, pos = [0, 0]) {
-  return { ty: "rc", d: 1, p: staticK(pos), s: size, r: radius };
-}
-
 function fill(color, opacity = 100, sid) {
   const c = { a: 0, k: color };
   if (sid) c.sid = sid;
@@ -173,7 +169,7 @@ export function poseAt(f) {
   const bodySx = (bodyW / (2 * R)) * 100;
   const frontX = CX + (T / 2) * s;
   const backX = CX - (T / 2) * s;
-  const faceFade = clamp((ac - 0.16) / 0.18, 0, 1) * 100;
+  const faceFade = clamp((ac - 0.08) / 0.07, 0, 1) * 100;
   return {
     th,
     c,
@@ -188,36 +184,41 @@ export function poseAt(f) {
     backX,
     frontO: c >= 0 ? faceFade : 0,
     backO: c < 0 ? faceFade : 0,
-    sheenO: c >= 0 ? 24 * ac * (0.4 + 0.6 * Math.max(0, Math.sin(th * 2 + 0.5))) : 0,
+    sheenO: c >= 0 && ac > 0.35 ? 22 * ac * (0.4 + 0.6 * Math.max(0, Math.sin(th * 2 + 0.5))) : 0,
     sheenX: frontX - 16 * ac,
+    edgeO: clamp((0.22 - ac) / 0.12, 0, 1) * 100,
   };
 }
 
 function sampleSpin() {
   const faceS = [];
   const bodySize = [];
-  const bodyRad = [];
   const frontP = [];
   const backP = [];
   const frontO = [];
   const backO = [];
   const sheenO = [];
   const sheenP = [];
+  const edgeO = [];
+  const edgeSize = [];
+  const edgeRad = [];
 
   for (let f = 0; f <= OP; f++) {
     const p = poseAt(f);
     faceS.push({ t: f, s: [p.faceSx, 100, 100] });
     bodySize.push({ t: f, s: [p.bodyW, 2 * R] });
-    bodyRad.push({ t: f, s: [p.bodyR] });
     frontP.push({ t: f, s: [p.frontX, CY, 0] });
     backP.push({ t: f, s: [p.backX, CY, 0] });
     frontO.push({ t: f, s: [p.frontO] });
     backO.push({ t: f, s: [p.backO] });
     sheenO.push({ t: f, s: [p.sheenO] });
     sheenP.push({ t: f, s: [p.sheenX, CY - 16, 0] });
+    edgeO.push({ t: f, s: [p.edgeO] });
+    edgeSize.push({ t: f, s: [Math.max(p.bodyW, T * 0.85), 2 * R] });
+    edgeRad.push({ t: f, s: [Math.min(Math.max(p.bodyW, T * 0.85), 2 * R) / 2] });
   }
 
-  return { faceS, bodySize, bodyRad, frontP, backP, frontO, backO, sheenO, sheenP };
+  return { faceS, bodySize, frontP, backP, frontO, backO, sheenO, sheenP, edgeO, edgeSize, edgeRad };
 }
 
 const spin = sampleSpin();
@@ -257,7 +258,7 @@ const rimShapes = [
     ty: "gr",
     nm: "rim-body",
     it: [
-      roundRect(anim(spin.bodySize), anim(spin.bodyRad)),
+      { ty: "el", d: 1, p: staticK([0, 0]), s: anim(spin.bodySize) },
       gradFill(
         [
           [0, GOLD_HI[0], GOLD_HI[1], GOLD_HI[2]],
@@ -270,7 +271,26 @@ const rimShapes = [
       tr(),
     ],
   },
-  group("rim-spec", [ellipse([10, 150]), fill(GOLD_HI, 100)], { p: [0, -12], o: 42 }),
+];
+
+const edgeShapes = [
+  {
+    ty: "gr",
+    nm: "edge-pill",
+    it: [
+      { ty: "rc", d: 1, p: staticK([0, 0]), s: anim(spin.edgeSize), r: anim(spin.edgeRad) },
+      gradFill(
+        [
+          [0, GOLD_HI[0], GOLD_HI[1], GOLD_HI[2]],
+          [0.38, GOLD[0], GOLD[1], GOLD[2]],
+          [1, GOLD_DK[0], GOLD_DK[1], GOLD_DK[2]],
+        ],
+        -100,
+        100,
+      ),
+      tr(),
+    ],
+  },
 ];
 
 const sheenShapes = [
@@ -304,6 +324,14 @@ const layers = [
   }),
   layer({
     ind: 4,
+    name: "Edge",
+    shapes: edgeShapes,
+    p: staticK([CX, CY, 0]),
+    s: staticK([100, 100, 100]),
+    o: anim(spin.edgeO),
+  }),
+  layer({
+    ind: 5,
     name: "Rim",
     shapes: rimShapes,
     p: staticK([CX, CY, 0]),

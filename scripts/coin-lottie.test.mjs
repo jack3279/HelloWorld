@@ -24,8 +24,10 @@ describe("coin spin", () => {
     const front = layer(j, "Front face");
     const back = layer(j, "Back face");
     const rim = layer(j, "Rim");
-    assert.ok(front && back && rim);
-    assert.equal(j.layers.some((l) => l.nm === "Edge slab"), false);
+    const edge = layer(j, "Edge");
+    assert.ok(front && back && rim && edge);
+    assert.ok(keyAt(edge.ks.o, 22).s[0] > 80, "edge pill is on at 90°");
+    assert.equal(keyAt(edge.ks.o, 0).s[0], 0);
 
     const sx = front.ks.s.k;
     assert.deepEqual(sx[0].s, sx[sx.length - 1].s);
