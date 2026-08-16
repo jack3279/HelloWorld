@@ -8,11 +8,11 @@
 // Far limbs (the character's left, away from the camera) are slightly dimmed
 // so the near arm and leg read as the foreground.
 
-const SIDE_VIEW = { yaw: 80, pitch: 6 };
+const SIDE_VIEW = { yaw: 86, pitch: 3 };
 
-// Head turns a few degrees toward the camera so the white/violet eyes sit on
-// the leading edge instead of disappearing into a true profile.
-const FACE = { yaw: -8, pitch: 1, roll: -1 };
+// A few degrees toward the camera so one eye and the mustache stay on the
+// leading edge. The body stays in profile.
+const FACE = { yaw: -6, pitch: 0, roll: 0 };
 
 const FAR = { shadeScale: 0.84 };
 const NEAR = { shadeScale: 1 };
@@ -232,36 +232,6 @@ export function sampleJump(t) {
   const b = keys[i + 1];
   const u = (x - a.t) / (b.t - a.t || 1);
   return lerpPose(a.pose, b.pose, easeInOut(u));
-}
-
-// Three-quarter hero run — the same camera as assets/steve.svg.
-export const HERO = {
-  w: 512,
-  h: 560,
-  scale: 12,
-  originX: 256,
-  originY: 518,
-  roll: 8,
-};
-
-export function heroRunFrame(phase) {
-  const tau = (phase % 1) * Math.PI * 2;
-  const arm = Math.sin(tau);
-  const leg = Math.sin(tau);
-  const bob = Math.sin(tau * 2);
-  return {
-    view: { yaw: -34, pitch: 19 },
-    roll: 8,
-    root: { y: Math.max(0, bob) * 0.55, x: arm * 0.12 },
-    parts: {
-      torso: { pitch: -4 + bob * 3, roll: arm * 2 },
-      head: { yaw: 16, pitch: -2 + bob * 2, roll: -6 - arm * 2 },
-      "arm-right": { yaw: -6, pitch: -70 - arm * 48, roll: 7 },
-      "arm-left": { yaw: 4, pitch: 18 + arm * 38, roll: -13 },
-      "leg-right": { pitch: -leg * 38, roll: 4 },
-      "leg-left": { pitch: leg * 28, roll: -4 },
-    },
-  };
 }
 
 // One looping reel: breathe, run twice, jump, settle. Counts are unique poses.

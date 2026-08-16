@@ -64,7 +64,7 @@ describe("generated sprite kit", () => {
       ["steve-platformer", "scene-2", 256, 320],
       ["steve-platformer", "scene-3", 256, 320],
       ["steve", "scene-1", 512, 640],
-      ["steve", "scene-2", 512, 560],
+      ["steve", "scene-2", 512, 640],
     ];
     for (const [project, scene, w, h] of scenes) {
       const dir = resolve(ROOT, "public/projects", project, scene);

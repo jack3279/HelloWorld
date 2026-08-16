@@ -2,10 +2,12 @@
 // (Skottie leaves SVG image assets blank):
 //
 //   public/projects/steve/scene-1              looping reel (idle → run → jump)
-//   public/projects/steve/scene-2              three-quarter run
+//   public/projects/steve/scene-2              side-view run
 //   public/projects/steve-platformer/scene-1   idle
 //   public/projects/steve-platformer/scene-2   run
 //   public/projects/steve-platformer/scene-3   jump
+//
+// Every scene uses the same right-facing side camera.
 //
 // Transparent background — these are character loops, not a full-frame card.
 //
@@ -16,13 +18,10 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildFigure, figureToLottieShapes, loadSkin, makeProjector, parseArgs } from "./lib/steve-model.mjs";
 import {
-  ANIMATIONS,
-  HERO,
   SPRITE,
   TOLERANCE,
   catalog,
   demoReel,
-  heroRunFrame,
   sampleIdle,
   sampleJump,
   runFrame,
@@ -192,17 +191,17 @@ await writeScene(
   }),
 );
 
-const heroFrames = Array.from({ length: 16 }, (_, i) => ({
-  id: `hero-run-${i}`,
-  shapes: bake(skin, heroRunFrame(i / 16), HERO),
+const sideRun = Array.from({ length: 16 }, (_, i) => ({
+  id: `side-run-${i}`,
+  shapes: bake(skin, runFrame(i / 16), demoCanvas),
 }));
 await writeScene(
   resolve(demo, "scene-2"),
   flipbook({
-    name: "Steve — Three-quarter run",
-    w: HERO.w,
-    h: HERO.h,
-    frames: heroFrames,
+    name: "Steve — Run",
+    w: demoCanvas.w,
+    h: demoCanvas.h,
+    frames: sideRun,
     fps: 24,
     hold: 1,
     loop: true,
