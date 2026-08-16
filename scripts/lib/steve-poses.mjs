@@ -1,0 +1,205 @@
+// Side-view pose library for a 2D platformer. The character faces screen-right.
+//
+// `view.yaw` is a few degrees shy of a true profile so the front of the head
+// (eyes, mustache, beard) stays readable — a 2.5D platformer read, not a
+// silhouette. Limb `pitch` is the swing in the plane of motion: negative is
+// forward (the direction the character faces), positive is back.
+//
+// Far limbs (the character's left, away from the camera) are slightly dimmed
+// so the near arm and leg read as the foreground.
+
+const SIDE_VIEW = { yaw: 80, pitch: 6 };
+
+// Head turns a few degrees toward the camera so the white/violet eyes sit on
+// the leading edge instead of disappearing into a true profile.
+const FACE = { yaw: -8, pitch: 1, roll: -1 };
+
+const FAR = { shadeScale: 0.84 };
+const NEAR = { shadeScale: 1 };
+
+export const SPRITE = {
+  w: 256,
+  h: 320,
+  scale: 6.6,
+  originX: 128,
+  originY: 300,
+};
+
+export const TOLERANCE = { default: 30, head: 12 };
+
+function pose(parts, root = {}) {
+  return { view: SIDE_VIEW, root, parts };
+}
+
+function limb(base, extra = {}) {
+  return { ...base, ...extra };
+}
+
+export function idleA() {
+  return pose({
+    torso: { pitch: -2, roll: 2 },
+    head: { ...FACE },
+    "arm-right": limb(NEAR, { pitch: 10, roll: 6 }),
+    "arm-left": limb(FAR, { pitch: -6, roll: -4 }),
+    "leg-right": limb(NEAR, { pitch: 4, roll: 2 }),
+    "leg-left": limb(FAR, { pitch: -3, roll: -2 }),
+  });
+}
+
+export function idleB() {
+  return pose(
+    {
+      torso: { pitch: -1, roll: 1 },
+      head: { ...FACE, pitch: 0 },
+      "arm-right": limb(NEAR, { pitch: 6, roll: 5 }),
+      "arm-left": limb(FAR, { pitch: -2, roll: -3 }),
+      "leg-right": limb(NEAR, { pitch: 2, roll: 2 }),
+      "leg-left": limb(FAR, { pitch: -1, roll: -2 }),
+    },
+    { y: 0.25 },
+  );
+}
+
+// One run cycle. Phase is 0..1; the first and last samples meet so a flipbook
+// loops without a hitch.
+export function runFrame(phase) {
+  const tau = (phase % 1) * Math.PI * 2;
+  const arm = Math.sin(tau);
+  const leg = Math.sin(tau);
+  const bob = Math.sin(tau * 2);
+  return pose(
+    {
+      torso: { pitch: -6 + bob * 3, roll: 3 + arm * 2 },
+      head: { ...FACE, pitch: 4 - bob * 2, roll: -arm * 3 },
+      "arm-right": limb(NEAR, { pitch: 12 + arm * 78, roll: 8 + arm * 4 }),
+      "arm-left": limb(FAR, { pitch: -8 - arm * 72, roll: -8 - arm * 3 }),
+      "leg-right": limb(NEAR, { pitch: -leg * 42, roll: 3 }),
+      "leg-left": limb(FAR, { pitch: leg * 42, roll: -3 }),
+    },
+    { y: Math.max(0, bob) * 0.7, x: arm * 0.15 },
+  );
+}
+
+export function jumpCrouch() {
+  return pose({
+    torso: { pitch: 14, roll: 3 },
+    head: { ...FACE, pitch: 8 },
+    "arm-right": limb(NEAR, { pitch: 48, roll: 10 }),
+    "arm-left": limb(FAR, { pitch: 36, roll: -8 }),
+    "leg-right": limb(NEAR, { pitch: 22, roll: 4 }),
+    "leg-left": limb(FAR, { pitch: 16, roll: -3 }),
+  });
+}
+
+export function jumpRise() {
+  return pose(
+    {
+      torso: { pitch: -12, roll: 2 },
+      head: { ...FACE, pitch: -6 },
+      "arm-right": limb(NEAR, { pitch: -148, roll: 8 }),
+      "arm-left": limb(FAR, { pitch: -132, roll: -6 }),
+      "leg-right": limb(NEAR, { pitch: -8, roll: 2 }),
+      "leg-left": limb(FAR, { pitch: 6, roll: -2 }),
+    },
+    { y: 7 },
+  );
+}
+
+export function jumpApex() {
+  return pose(
+    {
+      torso: { pitch: -4, roll: 1 },
+      head: { ...FACE, pitch: -2 },
+      "arm-right": limb(NEAR, { pitch: -158, roll: 6 }),
+      "arm-left": limb(FAR, { pitch: -118, roll: -10 }),
+      "leg-right": limb(NEAR, { pitch: -18, roll: 3 }),
+      "leg-left": limb(FAR, { pitch: 22, roll: -3 }),
+    },
+    { y: 11 },
+  );
+}
+
+export function jumpFall() {
+  return pose(
+    {
+      torso: { pitch: 8, roll: 2 },
+      head: { ...FACE, pitch: 6 },
+      "arm-right": limb(NEAR, { pitch: -88, roll: 10 }),
+      "arm-left": limb(FAR, { pitch: -54, roll: -8 }),
+      "leg-right": limb(NEAR, { pitch: -28, roll: 2 }),
+      "leg-left": limb(FAR, { pitch: 12, roll: -2 }),
+    },
+    { y: 5.5 },
+  );
+}
+
+export function jumpLand() {
+  return pose({
+    torso: { pitch: 16, roll: 3 },
+    head: { ...FACE, pitch: 10 },
+    "arm-right": limb(NEAR, { pitch: 28, roll: 8 }),
+    "arm-left": limb(FAR, { pitch: 18, roll: -6 }),
+    "leg-right": limb(NEAR, { pitch: 24, roll: 4 }),
+    "leg-left": limb(FAR, { pitch: 14, roll: -3 }),
+  });
+}
+
+export function lerpNum(a, b, t) {
+  return a + (b - a) * t;
+}
+
+export function lerpPose(a, b, t) {
+  const ids = new Set([...Object.keys(a.parts ?? {}), ...Object.keys(b.parts ?? {})]);
+  const parts = {};
+  for (const id of ids) {
+    const pa = a.parts?.[id] ?? {};
+    const pb = b.parts?.[id] ?? {};
+    const out = {};
+    for (const k of ["pitch", "roll", "yaw", "faceYaw", "shadeScale"]) {
+      if (pa[k] != null || pb[k] != null) out[k] = lerpNum(pa[k] ?? 0, pb[k] ?? 0, t);
+    }
+    parts[id] = out;
+  }
+  return {
+    view: a.view ?? b.view,
+    root: {
+      x: lerpNum(a.root?.x ?? 0, b.root?.x ?? 0, t),
+      y: lerpNum(a.root?.y ?? 0, b.root?.y ?? 0, t),
+    },
+    parts,
+  };
+}
+
+// Every named frame a game or the Lottie flipbook can ask for.
+export function catalog() {
+  const run = Array.from({ length: 8 }, (_, i) => ({
+    id: `run-${i}`,
+    label: `Run ${i + 1}/8`,
+    pose: runFrame(i / 8),
+    tags: ["run"],
+  }));
+  return [
+    { id: "idle-a", label: "Idle A", pose: idleA(), tags: ["idle"] },
+    { id: "idle-b", label: "Idle B", pose: idleB(), tags: ["idle"] },
+    ...run,
+    { id: "jump-crouch", label: "Jump crouch", pose: jumpCrouch(), tags: ["jump"] },
+    { id: "jump-rise", label: "Jump rise", pose: jumpRise(), tags: ["jump"] },
+    { id: "jump-apex", label: "Jump apex", pose: jumpApex(), tags: ["jump"] },
+    { id: "jump-fall", label: "Jump fall", pose: jumpFall(), tags: ["jump"] },
+    { id: "jump-land", label: "Jump land", pose: jumpLand(), tags: ["jump"] },
+  ];
+}
+
+export const ANIMATIONS = {
+  idle: { frames: ["idle-a", "idle-b"], fps: 6, loop: true },
+  run: {
+    frames: ["run-0", "run-1", "run-2", "run-3", "run-4", "run-5", "run-6", "run-7"],
+    fps: 12,
+    loop: true,
+  },
+  jump: {
+    frames: ["jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"],
+    fps: 10,
+    loop: false,
+  },
+};
