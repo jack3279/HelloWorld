@@ -10,8 +10,10 @@
 //   back x      = − (T/2) sin θ     (visible when cos θ < 0)
 //
 // The body is always the silhouette. The visible face sits on the near rim so
-// the extra body width reads as a thick crescent, and at 90°/270° only the
-// solid edge remains. Darker back face + a star stamp make the far side obvious.
+// the extra body width reads as a thick crescent. At 90°/270° the silhouette
+// tightens from a stadium into a rounded rectangle (small fixed corner, not a
+// capsule). Front and back stay equally bright — ambient light is flat and
+// does not travel with the spin. A star vs rings tells the sides apart.
 // Constant angular speed; last key matches frame 0 so the loop is seamless.
 //
 //   public/projects/coin/scene-1/lottie.json
@@ -31,18 +33,17 @@ export const FR = 60;
 export const OP = 90; // 1.5s, one revolution; op is exclusive
 export const R = 100;
 export const T = 56;
+export const EDGE_R = 12;
+export const EDGE_WINDOW = 0.22;
 
-const GOLD_HI = [0.96, 0.82, 0.32, 1];
-const GOLD = [0.86, 0.64, 0.15, 1];
-const GOLD_MID = [0.72, 0.5, 0.1, 1];
-const GOLD_DK = [0.43, 0.29, 0.04, 1];
-const WELL_DK = [0.18, 0.1, 0, 1];
-const WELL_MD = [0.48, 0.29, 0.03, 1];
-const WELL_HI = [0.95, 0.78, 0.31, 1];
-const BACK_FACE = [0.55, 0.38, 0.07, 1];
-const BACK_WELL = [0.28, 0.17, 0.02, 1];
-const SHEEN = [1, 0.96, 0.78, 1];
-const STAR = [0.98, 0.86, 0.42, 1];
+const GOLD = [0.93, 0.76, 0.28, 1];
+const GOLD_MID = [0.88, 0.70, 0.22, 1];
+const GOLD_LINE = [0.80, 0.60, 0.16, 1];
+const WELL = [0.84, 0.64, 0.18, 1];
+const STAR = [0.97, 0.86, 0.42, 1];
+const BACK = [0.90, 0.73, 0.24, 1];
+const BACK_WELL = [0.82, 0.62, 0.18, 1];
+const BACK_DOT = [0.86, 0.68, 0.20, 1];
 
 const staticK = (k) => ({ a: 0, k });
 
@@ -84,26 +85,6 @@ function fill(color, opacity = 100, sid) {
 
 function stroke(color, width, opacity = 100) {
   return { ty: "st", lc: 2, lj: 2, ml: 4, o: staticK(opacity), w: staticK(width), c: staticK(color) };
-}
-
-function gradFill(stops, y0, y1) {
-  const k = [];
-  const n = stops.length;
-  for (let i = 0; i < n; i++) {
-    const [t, r, g, b] = stops[i];
-    k.push(t, r, g, b);
-  }
-  for (let i = 0; i < n; i++) k.push(stops[i][0], 1);
-  return {
-    ty: "gf",
-    t: 1,
-    s: staticK([0, y0]),
-    e: staticK([0, y1]),
-    h: staticK(0),
-    a: staticK(0),
-    g: { p: n, k: { a: 0, k } },
-    o: staticK(100),
-  };
 }
 
 function group(name, items, xf) {
@@ -158,6 +139,12 @@ function clamp(n, lo, hi) {
   return Math.min(hi, Math.max(lo, n));
 }
 
+export function cornerRadius(bodyW, ac) {
+  const stadium = Math.min(bodyW, 2 * R) / 2;
+  const t = clamp(ac / EDGE_WINDOW, 0, 1);
+  return EDGE_R + (stadium - EDGE_R) * t;
+}
+
 export function poseAt(f) {
   const th = (f / OP) * Math.PI * 2;
   const c = Math.cos(th);
@@ -179,14 +166,12 @@ export function poseAt(f) {
     faceSx,
     bodySx,
     bodyW,
-    bodyR: Math.min(bodyW, 2 * R) / 2,
+    bodyR: cornerRadius(bodyW, ac),
     frontX,
     backX,
     frontO: c >= 0 ? faceFade : 0,
     backO: c < 0 ? faceFade : 0,
-    sheenO: c >= 0 && ac > 0.35 ? 22 * ac * (0.4 + 0.6 * Math.max(0, Math.sin(th * 2 + 0.5))) : 0,
-    sheenX: frontX - 16 * ac,
-    edgeO: clamp((0.22 - ac) / 0.12, 0, 1) * 100,
+    edgeO: clamp((EDGE_WINDOW - ac) / 0.12, 0, 1) * 100,
   };
 }
 
@@ -197,11 +182,9 @@ function sampleSpin() {
   const backP = [];
   const frontO = [];
   const backO = [];
-  const sheenO = [];
-  const sheenP = [];
   const edgeO = [];
   const edgeSize = [];
-  const edgeRad = [];
+  const rimRad = [];
 
   for (let f = 0; f <= OP; f++) {
     const p = poseAt(f);
@@ -211,46 +194,28 @@ function sampleSpin() {
     backP.push({ t: f, s: [p.backX, CY, 0] });
     frontO.push({ t: f, s: [p.frontO] });
     backO.push({ t: f, s: [p.backO] });
-    sheenO.push({ t: f, s: [p.sheenO] });
-    sheenP.push({ t: f, s: [p.sheenX, CY - 16, 0] });
     edgeO.push({ t: f, s: [p.edgeO] });
     edgeSize.push({ t: f, s: [Math.max(p.bodyW, T * 0.85), 2 * R] });
-    edgeRad.push({ t: f, s: [Math.min(Math.max(p.bodyW, T * 0.85), 2 * R) / 2] });
+    rimRad.push({ t: f, s: [p.bodyR] });
   }
 
-  return { faceS, bodySize, frontP, backP, frontO, backO, sheenO, sheenP, edgeO, edgeSize, edgeRad };
+  return { faceS, bodySize, frontP, backP, frontO, backO, edgeO, edgeSize, rimRad };
 }
 
 const spin = sampleSpin();
 
 const frontShapes = [
-  group("front-star", [starPath(30, 13), fill(STAR), stroke(GOLD_DK, 1.5)]),
-  group("front-well", [
-    ellipse([118, 118]),
-    gradFill(
-      [
-        [0, WELL_DK[0], WELL_DK[1], WELL_DK[2]],
-        [0.42, WELL_MD[0], WELL_MD[1], WELL_MD[2]],
-        [1, WELL_HI[0], WELL_HI[1], WELL_HI[2]],
-      ],
-      -56,
-      56,
-    ),
-    stroke(GOLD_DK, 3),
-  ]),
-  group("front-ring", [
-    ellipse([164, 164]),
-    fill(GOLD, 100, "goldColor"),
-    stroke(GOLD_DK, 5),
-  ]),
+  group("front-star", [starPath(30, 13), fill(STAR), stroke(GOLD_LINE, 1.5)]),
+  group("front-well", [ellipse([118, 118]), fill(WELL), stroke(GOLD_LINE, 3)]),
+  group("front-ring", [ellipse([164, 164]), fill(GOLD, 100, "goldColor"), stroke(GOLD_LINE, 5)]),
   group("front-disc", [ellipse([200, 200]), fill(GOLD_MID, 100, "goldMid")]),
 ];
 
 const backShapes = [
-  group("back-dot", [ellipse([22, 22]), fill(GOLD_DK)]),
-  group("back-well", [ellipse([110, 110]), fill(BACK_WELL), stroke(GOLD_DK, 2)]),
-  group("back-ring", [ellipse([160, 160]), fill(BACK_FACE), stroke(GOLD_DK, 4)]),
-  group("back-disc", [ellipse([200, 200]), fill(GOLD_DK)]),
+  group("back-dot", [ellipse([22, 22]), fill(BACK_DOT)]),
+  group("back-well", [ellipse([110, 110]), fill(BACK_WELL), stroke(GOLD_LINE, 2)]),
+  group("back-ring", [ellipse([160, 160]), fill(BACK), stroke(GOLD_LINE, 4)]),
+  group("back-disc", [ellipse([200, 200]), fill(GOLD_MID)]),
 ];
 
 const rimShapes = [
@@ -258,16 +223,9 @@ const rimShapes = [
     ty: "gr",
     nm: "rim-body",
     it: [
-      { ty: "el", d: 1, p: staticK([0, 0]), s: anim(spin.bodySize) },
-      gradFill(
-        [
-          [0, GOLD_HI[0], GOLD_HI[1], GOLD_HI[2]],
-          [0.38, GOLD[0], GOLD[1], GOLD[2]],
-          [1, GOLD_DK[0], GOLD_DK[1], GOLD_DK[2]],
-        ],
-        -100,
-        100,
-      ),
+      { ty: "rc", d: 1, p: staticK([0, 0]), s: anim(spin.bodySize), r: anim(spin.rimRad) },
+      fill(GOLD_MID, 100, "goldMid"),
+      stroke(GOLD_LINE, 1.6),
       tr(),
     ],
   },
@@ -276,38 +234,19 @@ const rimShapes = [
 const edgeShapes = [
   {
     ty: "gr",
-    nm: "edge-pill",
+    nm: "edge-plate",
     it: [
-      { ty: "rc", d: 1, p: staticK([0, 0]), s: anim(spin.edgeSize), r: anim(spin.edgeRad) },
-      gradFill(
-        [
-          [0, GOLD_HI[0], GOLD_HI[1], GOLD_HI[2]],
-          [0.38, GOLD[0], GOLD[1], GOLD[2]],
-          [1, GOLD_DK[0], GOLD_DK[1], GOLD_DK[2]],
-        ],
-        -100,
-        100,
-      ),
+      { ty: "rc", d: 1, p: staticK([0, 0]), s: anim(spin.edgeSize), r: staticK(EDGE_R) },
+      fill(GOLD_MID),
+      stroke(GOLD_LINE, 1.2),
       tr(),
     ],
   },
 ];
 
-const sheenShapes = [
-  group("sheen", [ellipse([36, 150]), fill(SHEEN, 100)]),
-];
-
 const layers = [
   layer({
     ind: 1,
-    name: "Sheen",
-    shapes: sheenShapes,
-    p: anim(spin.sheenP),
-    s: anim(spin.faceS),
-    o: anim(spin.sheenO),
-  }),
-  layer({
-    ind: 2,
     name: "Front face",
     shapes: frontShapes,
     p: anim(spin.frontP),
@@ -315,7 +254,7 @@ const layers = [
     o: anim(spin.frontO),
   }),
   layer({
-    ind: 3,
+    ind: 2,
     name: "Back face",
     shapes: backShapes,
     p: anim(spin.backP),
@@ -323,7 +262,7 @@ const layers = [
     o: anim(spin.backO),
   }),
   layer({
-    ind: 4,
+    ind: 3,
     name: "Edge",
     shapes: edgeShapes,
     p: staticK([CX, CY, 0]),
@@ -331,7 +270,7 @@ const layers = [
     o: anim(spin.edgeO),
   }),
   layer({
-    ind: 5,
+    ind: 4,
     name: "Rim",
     shapes: rimShapes,
     p: staticK([CX, CY, 0]),
