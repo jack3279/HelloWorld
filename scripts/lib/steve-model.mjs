@@ -201,13 +201,25 @@ function hslToRgb(h, s, l) {
   ];
 }
 
-// Lifts the near-black skin tones (hair, beard) into readable browns and firms
-// up saturation, turning the game texture into flat vector-art colors.
+// Official Steve hair is a near-black brown (L ≲ 0.17). The mustache and
+// beard are a lighter cocoa (L ≳ 0.22) and stay put so the face still reads.
+export function isHair([r, g, b]) {
+  const [h, s, l] = rgbToHsl(r, g, b);
+  const brown = h < 0.12 || h > 0.9;
+  return s > 0.12 && l < 0.17 && brown;
+}
+
+// Lifts skin into readable tans and firms up saturation. Hair is crushed the
+// other way — deep brown, almost black — so it does not wash out to cocoa.
 export function grade([r, g, b]) {
   const [h, s, l] = rgbToHsl(r, g, b);
   if (s < 0.06) {
     // Greys are the shoes; the reference art renders them near-black.
     return l < 0.7 ? hslToRgb(h, s, l * 0.55) : [r, g, b];
+  }
+  if (isHair([r, g, b])) {
+    const crushed = Math.min(0.09, l * 0.5 + 0.02);
+    return hslToRgb(0.06, 0.28, crushed);
   }
   const lifted = Math.min(0.96, l + 0.3 * Math.exp(-4 * l));
   const saturated = s > 0.9 ? 0.88 : Math.min(1, s * 1.22);
@@ -255,7 +267,13 @@ function luminanceFor(shading, worldNormal, cameraNormal) {
   );
 }
 
-function shade(shading, rgb, lum) {
+function shade(shading, rgb, lum, source) {
+  if (source && isHair(source)) {
+    // Keep hair near-black even on lit top faces; a warm highlight would
+    // turn it back into the old cocoa brown.
+    const dim = 0.62 + 0.28 * Math.min(1, Math.max(0, lum));
+    return rgb.map((v) => Math.round(v * dim));
+  }
   if (lum > 1) return mix(rgb, hexToRgb(shading.highlight), Math.min(0.45, (lum - 1) * 1.25));
   const dimmed = rgb.map((v) => v * lum ** 0.85);
   return mix(dimmed, hexToRgb(shading.shadowTint), (1 - lum) * 0.35);
@@ -469,7 +487,8 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
             const i = ((rect.y + ty) * skin.width + rect.x + tx) * 4;
             if (skin.rgba[i + 3] !== 0) {
               const key = (skin.rgba[i] << 16) | (skin.rgba[i + 1] << 8) | skin.rgba[i + 2];
-              hex = rgbToHex(shade(shading, grade(lookup.get(key)), lum));
+              const src = lookup.get(key);
+              hex = rgbToHex(shade(shading, grade(src), lum, src));
               palette.add(hex);
             }
           }

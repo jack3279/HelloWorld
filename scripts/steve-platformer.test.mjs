@@ -4,10 +4,21 @@ import { resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
+import { isHair } from "./lib/steve-model.mjs";
 import { ANIMATIONS, catalog, lerpPose, runFrame } from "./lib/steve-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
+
+describe("hair vs face colors", () => {
+  it("treats the skin's near-black brown as hair, not the mustache", () => {
+    assert.equal(isHair([0x2a, 0x1d, 0x0d]), true);
+    assert.equal(isHair([0x24, 0x18, 0x08]), true);
+    assert.equal(isHair([0x6a, 0x40, 0x30]), false);
+    assert.equal(isHair([0xb6, 0x89, 0x6c]), false);
+    assert.equal(isHair([0xff, 0xff, 0xff]), false);
+  });
+});
 
 describe("steve pose catalog", () => {
   it("names every animation frame", () => {
