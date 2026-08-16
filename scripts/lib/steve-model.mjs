@@ -297,10 +297,11 @@ const boxUv = (ox, oy, w, h, d) => ({
   bottom: uv(ox + d + w, oy, w, d),
 });
 
-// Cuboid shafts stop this many texels short of the joint. The gap is the
-// only place that lofts — a short elbow/knee sleeve, not a hose.
-export const JOINT_INSET = 1;
-export const BEND_SOFTNESS = JOINT_INSET;
+// Shafts stay almost-full cuboids. A hairline gap keeps the end caps from
+// z-fighting; the sleeve overlaps both boxes and only shows in the wedge.
+export const SHAFT_GAP = 0.25;
+export const SLEEVE_HALF = 1.25;
+export const BEND_SOFTNESS = SLEEVE_HALF;
 export const BEND_BANDS = 8;
 export const LIMB_TEXELS = 12;
 
@@ -329,9 +330,9 @@ function limbUv(ox, oy, w, h, d, half, skip = 0) {
   };
 }
 
-function sleeveUv(ox, oy, w, h, d, inset = JOINT_INSET) {
-  const yOff = h / 2 - inset;
-  const sh = inset * 2;
+function sleeveUv(ox, oy, w, h, d) {
+  const yOff = h / 2 - 1;
+  const sh = 2;
   return {
     nx: uv(ox, oy + d + yOff, d, sh),
     front: uv(ox + d, oy + d + yOff, w, sh),
@@ -371,95 +372,87 @@ export const MODEL = [
     id: "arm-right",
     label: "Right upper arm",
     parent: "torso",
-    min: [-8, 18 + JOINT_INSET, -2],
+    min: [-8, 18 + SHAFT_GAP, -2],
     max: [-4, 24, 2],
     pivot: [-4, 22, 0],
     joint: [-6, 18, 0],
     jointPart: "forearm-right",
     sleeveId: "elbow-right",
     sleeveUv: sleeveUv(40, 16, 4, 12, 4),
-    omitFaces: ["bottom"],
-    uv: limbUv(40, 16, 4, 12, 4, "upper", JOINT_INSET),
+    uv: limbUv(40, 16, 4, 12, 4, "upper"),
   },
   {
     id: "forearm-right",
     label: "Right forearm",
     parent: "arm-right",
     min: [-8, 12, -2],
-    max: [-4, 18 - JOINT_INSET, 2],
+    max: [-4, 18 - SHAFT_GAP, 2],
     pivot: [-6, 18, 0],
-    omitFaces: ["top"],
-    uv: limbUv(40, 16, 4, 12, 4, "lower", JOINT_INSET),
+    uv: limbUv(40, 16, 4, 12, 4, "lower"),
   },
   {
     id: "arm-left",
     label: "Left upper arm",
     parent: "torso",
-    min: [4, 18 + JOINT_INSET, -2],
+    min: [4, 18 + SHAFT_GAP, -2],
     max: [8, 24, 2],
     pivot: [4, 22, 0],
     joint: [6, 18, 0],
     jointPart: "forearm-left",
     sleeveId: "elbow-left",
     sleeveUv: sleeveUv(32, 48, 4, 12, 4),
-    omitFaces: ["bottom"],
-    uv: limbUv(32, 48, 4, 12, 4, "upper", JOINT_INSET),
+    uv: limbUv(32, 48, 4, 12, 4, "upper"),
   },
   {
     id: "forearm-left",
     label: "Left forearm",
     parent: "arm-left",
     min: [4, 12, -2],
-    max: [8, 18 - JOINT_INSET, 2],
+    max: [8, 18 - SHAFT_GAP, 2],
     pivot: [6, 18, 0],
-    omitFaces: ["top"],
-    uv: limbUv(32, 48, 4, 12, 4, "lower", JOINT_INSET),
+    uv: limbUv(32, 48, 4, 12, 4, "lower"),
   },
   {
     id: "leg-right",
     label: "Right thigh",
-    min: [-4, 6 + JOINT_INSET, -2],
+    min: [-4, 6 + SHAFT_GAP, -2],
     max: [0, 12, 2],
     pivot: [-2, 12, 0],
     joint: [-2, 6, 0],
     jointPart: "shin-right",
     sleeveId: "knee-right",
     sleeveUv: sleeveUv(0, 16, 4, 12, 4),
-    omitFaces: ["bottom"],
-    uv: limbUv(0, 16, 4, 12, 4, "upper", JOINT_INSET),
+    uv: limbUv(0, 16, 4, 12, 4, "upper"),
   },
   {
     id: "shin-right",
     label: "Right shin",
     parent: "leg-right",
     min: [-4, 0, -2],
-    max: [0, 6 - JOINT_INSET, 2],
+    max: [0, 6 - SHAFT_GAP, 2],
     pivot: [-2, 6, 0],
-    omitFaces: ["top"],
-    uv: limbUv(0, 16, 4, 12, 4, "lower", JOINT_INSET),
+    uv: limbUv(0, 16, 4, 12, 4, "lower"),
   },
   {
     id: "leg-left",
     label: "Left thigh",
-    min: [0, 6 + JOINT_INSET, -2],
+    min: [0, 6 + SHAFT_GAP, -2],
     max: [4, 12, 2],
     pivot: [2, 12, 0],
     joint: [2, 6, 0],
     jointPart: "shin-left",
     sleeveId: "knee-left",
     sleeveUv: sleeveUv(16, 48, 4, 12, 4),
-    omitFaces: ["bottom"],
-    uv: limbUv(16, 48, 4, 12, 4, "upper", JOINT_INSET),
+    uv: limbUv(16, 48, 4, 12, 4, "upper"),
   },
   {
     id: "shin-left",
     label: "Left shin",
     parent: "leg-left",
     min: [0, 0, -2],
-    max: [4, 6 - JOINT_INSET, 2],
+    max: [4, 6 - SHAFT_GAP, 2],
     pivot: [2, 6, 0],
-    omitFaces: ["top"],
-    uv: limbUv(16, 48, 4, 12, 4, "lower", JOINT_INSET),
+    uv: limbUv(16, 48, 4, 12, 4, "lower"),
   },
 ];
 
@@ -717,13 +710,14 @@ function quadNormals(worldQuad, viewMatrix) {
   return { worldNormal, cameraNormal: safeNorm(apply(viewMatrix, worldNormal)) };
 }
 
-function collectPart(id, label, parent, pivot, faces, depths) {
+function collectPart(id, label, parent, pivot, faces, depths, layer = 1) {
   return {
     id,
     label,
     parent,
     pivot,
     faces,
+    layer,
     depth: depths.reduce((sum, d) => sum + d, 0) / Math.max(1, depths.length),
   };
 }
@@ -817,11 +811,10 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
     );
 
     if (!part.sleeveUv || !part.jointPart) continue;
-    const lower = byId.get(part.jointPart);
     const sleeveFaces = [];
     const sleeveDepths = [];
-    const yTop = part.min[1];
-    const yBot = lower.max[1];
+    const yTop = part.joint[1] + SLEEVE_HALF;
+    const yBot = part.joint[1] - SLEEVE_HALF;
     const rings = [];
     for (let i = 0; i <= BEND_BANDS; i += 1) {
       const y = yTop + (yBot - yTop) * (i / BEND_BANDS);
@@ -855,11 +848,12 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
         apply(viewMatrix, toWorld(part, part.joint, true)),
         sleeveFaces,
         sleeveDepths,
+        0,
       ),
     );
   }
 
-  parts.sort((a, b) => a.depth - b.depth);
+  parts.sort((a, b) => (a.layer ?? 1) - (b.layer ?? 1) || a.depth - b.depth);
   for (const part of parts) part.faces.sort((a, b) => a.depth - b.depth);
   return { parts, palette };
 }

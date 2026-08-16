@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
-import { MODEL, bendBlend, buildFigure, isHair, loadSkin } from "./lib/steve-model.mjs";
+import { MODEL, SHAFT_GAP, SLEEVE_HALF, bendBlend, buildFigure, isHair, loadSkin } from "./lib/steve-model.mjs";
 import { ANIMATIONS, catalog, lerpPose, runFrame } from "./lib/steve-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -44,11 +44,13 @@ describe("steve pose catalog", () => {
     assert.equal(byId["leg-right"].sleeveId, "knee-right");
     assert.ok(byId["arm-right"].min[1] > byId["forearm-right"].max[1]);
     assert.ok(byId["leg-right"].min[1] > byId["shin-right"].max[1]);
-    assert.equal(byId["arm-right"].max[1] - byId["arm-right"].min[1], 5);
-    assert.equal(byId["forearm-right"].max[1] - byId["forearm-right"].min[1], 5);
-    assert.equal(bendBlend(19, 18, 1), 0);
-    assert.equal(bendBlend(17, 18, 1), 1);
-    assert.ok(Math.abs(bendBlend(18, 18, 1) - 0.5) < 1e-9);
+    assert.ok(byId["arm-right"].max[1] - byId["arm-right"].min[1] > 5.5);
+    assert.ok(byId["forearm-right"].max[1] - byId["forearm-right"].min[1] > 5.5);
+    assert.equal(byId["arm-right"].min[1] - byId["forearm-right"].max[1], SHAFT_GAP * 2);
+    assert.ok(!byId["arm-right"].omitFaces);
+    assert.equal(bendBlend(18 + SLEEVE_HALF, 18, SLEEVE_HALF), 0);
+    assert.equal(bendBlend(18 - SLEEVE_HALF, 18, SLEEVE_HALF), 1);
+    assert.ok(Math.abs(bendBlend(18, 18, SLEEVE_HALF) - 0.5) < 1e-9);
   });
 
   it("bends only the elbow sleeve between two cuboids", async () => {
