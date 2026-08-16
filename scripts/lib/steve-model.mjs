@@ -297,11 +297,12 @@ const boxUv = (ox, oy, w, h, d) => ({
   bottom: uv(ox + d + w, oy, w, d),
 });
 
-// Shafts stay almost-full cuboids. A hairline gap keeps the end caps from
-// z-fighting; the sleeve overlaps both boxes and only shows in the wedge.
-export const SHAFT_GAP = 0.25;
-export const SLEEVE_HALF = 1.25;
-export const SLEEVE_SCALE = 0.78;
+// Shafts stay almost-full cuboids. The sleeve is √2-wide so a rotated
+// mid-joint ring still covers the box corners, and draws on top.
+export const SHAFT_GAP = 0.5;
+export const SLEEVE_HALF = 2.1;
+export const SLEEVE_SCALE = 1.5;
+export const HEAD_SCALE = 0.88;
 export const BEND_SOFTNESS = SLEEVE_HALF;
 export const BEND_BANDS = 8;
 export const LIMB_TEXELS = 12;
@@ -364,8 +365,8 @@ export const MODEL = [
     id: "head",
     label: "Head",
     parent: "torso",
-    min: [-4, 24, -4],
-    max: [4, 32, 4],
+    min: [-4 * HEAD_SCALE, 24, -4 * HEAD_SCALE],
+    max: [4 * HEAD_SCALE, 24 + 8 * HEAD_SCALE, 4 * HEAD_SCALE],
     pivot: [0, 24, 0],
     uv: boxUv(0, 0, 8, 8, 8),
   },
@@ -380,6 +381,7 @@ export const MODEL = [
     jointPart: "forearm-right",
     sleeveId: "elbow-right",
     sleeveUv: sleeveUv(40, 16, 4, 12, 4),
+    omitFaces: ["bottom"],
     uv: limbUv(40, 16, 4, 12, 4, "upper"),
   },
   {
@@ -389,6 +391,7 @@ export const MODEL = [
     min: [-8, 12, -2],
     max: [-4, 18 - SHAFT_GAP, 2],
     pivot: [-6, 18, 0],
+    omitFaces: ["top"],
     uv: limbUv(40, 16, 4, 12, 4, "lower"),
   },
   {
@@ -402,6 +405,7 @@ export const MODEL = [
     jointPart: "forearm-left",
     sleeveId: "elbow-left",
     sleeveUv: sleeveUv(32, 48, 4, 12, 4),
+    omitFaces: ["bottom"],
     uv: limbUv(32, 48, 4, 12, 4, "upper"),
   },
   {
@@ -411,6 +415,7 @@ export const MODEL = [
     min: [4, 12, -2],
     max: [8, 18 - SHAFT_GAP, 2],
     pivot: [6, 18, 0],
+    omitFaces: ["top"],
     uv: limbUv(32, 48, 4, 12, 4, "lower"),
   },
   {
@@ -423,6 +428,7 @@ export const MODEL = [
     jointPart: "shin-right",
     sleeveId: "knee-right",
     sleeveUv: sleeveUv(0, 16, 4, 12, 4),
+    omitFaces: ["bottom"],
     uv: limbUv(0, 16, 4, 12, 4, "upper"),
   },
   {
@@ -432,6 +438,7 @@ export const MODEL = [
     min: [-4, 0, -2],
     max: [0, 6 - SHAFT_GAP, 2],
     pivot: [-2, 6, 0],
+    omitFaces: ["top"],
     uv: limbUv(0, 16, 4, 12, 4, "lower"),
   },
   {
@@ -444,6 +451,7 @@ export const MODEL = [
     jointPart: "shin-left",
     sleeveId: "knee-left",
     sleeveUv: sleeveUv(16, 48, 4, 12, 4),
+    omitFaces: ["bottom"],
     uv: limbUv(16, 48, 4, 12, 4, "upper"),
   },
   {
@@ -453,6 +461,7 @@ export const MODEL = [
     min: [0, 0, -2],
     max: [4, 6 - SHAFT_GAP, 2],
     pivot: [2, 6, 0],
+    omitFaces: ["top"],
     uv: limbUv(16, 48, 4, 12, 4, "lower"),
   },
 ];
@@ -853,7 +862,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
         apply(viewMatrix, toWorld(part, part.joint, true)),
         sleeveFaces,
         sleeveDepths,
-        0,
+        2,
       ),
     );
   }

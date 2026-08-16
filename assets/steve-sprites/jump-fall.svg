@@ -2,226 +2,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 320" width="256" height="320" role="img" aria-labelledby="jump-fall-title">
   <title id="jump-fall-title">Jump fall</title>
   <g id="steve">
-    <g id="elbow-left" aria-label="Left elbow">
-      <g class="face" data-face="px">
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M157.39 124.34L143.09 139.16L144.64 140.83L158.63 125.72Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M158.63 125.72L144.64 140.83L146.43 142.78L159.57 126.92Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M159.57 126.92L146.43 142.78L148.56 144.71L160.42 127.87Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M160.42 127.87L148.56 144.71L151.03 146.4L161.32 128.56Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#8d5437" stroke="#8d5437" stroke-width=".6" stroke-linejoin="round" d="M161.32 128.56L151.03 146.4L153.72 147.69L162.38 129.01Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#8d5437" stroke="#8d5437" stroke-width=".6" stroke-linejoin="round" d="M162.38 129.01L153.72 147.69L156.46 148.57L163.63 129.27Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#8d5437" stroke="#8d5437" stroke-width=".6" stroke-linejoin="round" d="M163.63 129.27L156.46 148.57L159.04 149.15L165.13 129.48Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#8d5437" stroke="#8d5437" stroke-width=".6" stroke-linejoin="round" d="M165.13 129.48L159.04 149.15L161.27 149.65L166.94 129.86Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M143.09 139.16L144.64 140.83L158.63 125.72L157.39 124.34Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M144.64 140.83L146.43 142.78L159.57 126.92L158.63 125.72Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M146.43 142.78L148.56 144.71L160.42 127.87L159.57 126.92Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M148.56 144.71L151.03 146.4L161.32 128.56L160.42 127.87Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M151.03 146.4L153.72 147.69L162.38 129.01L161.32 128.56Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M153.72 147.69L156.46 148.57L163.63 129.27L162.38 129.01Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M156.46 148.57L159.04 149.15L165.13 129.48L163.63 129.27Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M159.04 149.15L161.27 149.65L166.94 129.86L165.13 129.48Z"/>
-      </g>
-    </g>
-    <g id="knee-left" aria-label="Left knee">
-      <g class="face" data-face="px">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M131.55 217.31L111.41 213.02L111.12 214.9L131.19 219.51Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M131.19 219.51L111.12 214.9L110.94 216.52L130.79 222Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M130.79 222L110.94 216.52L110.7 217.94L130.17 224.63Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M130.17 224.63L110.7 217.94L110.29 219.21L129.24 227.26Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M129.24 227.26L110.29 219.21L109.66 220.39L128 229.75Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M128 229.75L109.66 220.39L108.8 221.55L126.53 232.02Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M126.53 232.02L108.8 221.55L107.76 222.8L125.02 234.04Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M125.02 234.04L107.76 222.8L106.62 224.32L123.69 235.83Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M111.12 214.9L110.94 216.52L130.79 222L131.19 219.51Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M110.94 216.52L110.7 217.94L130.17 224.63L130.79 222Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M110.7 217.94L110.29 219.21L129.24 227.26L130.17 224.63Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M110.29 219.21L109.66 220.39L128 229.75L129.24 227.26Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M109.66 220.39L108.8 221.55L126.53 232.02L128 229.75Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M108.8 221.55L107.76 222.8L125.02 234.04L126.53 232.02Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M107.76 222.8L106.62 224.32L123.69 235.83L125.02 234.04Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M111.41 213.02L111.12 214.9L131.19 219.51L131.55 217.31Z"/>
-      </g>
-    </g>
-    <g id="knee-right" aria-label="Right knee">
-      <g class="face" data-face="px">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M151.81 207.35L133.63 217.01L134.6 218.69L152.9 209.24Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M152.9 209.24L134.6 218.69L135.52 220.17L154.11 211.31Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M154.11 211.31L135.52 220.17L136.31 221.58L155.27 213.55Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M155.27 213.55L136.31 221.58L136.92 222.99L156.27 215.94Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M156.27 215.94L136.92 222.99L137.35 224.46L157.04 218.42Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M157.04 218.42L137.35 224.46L137.66 226.04L157.59 220.88Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M157.59 220.88L137.66 226.04L137.91 227.76L157.99 223.24Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M157.99 223.24L137.91 227.76L138.24 229.68L158.38 225.39Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M133.63 217.01L134.6 218.69L152.9 209.24L151.81 207.35Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M134.6 218.69L135.52 220.17L154.11 211.31L152.9 209.24Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M135.52 220.17L136.31 221.58L155.27 213.55L154.11 211.31Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M136.31 221.58L136.92 222.99L156.27 215.94L155.27 213.55Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M136.92 222.99L137.35 224.46L157.04 218.42L156.27 215.94Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M137.35 224.46L137.66 226.04L157.59 220.88L157.04 218.42Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M137.66 226.04L137.91 227.76L157.99 223.24L157.59 220.88Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M137.91 227.76L138.24 229.68L158.38 225.39L157.99 223.24Z"/>
-      </g>
-    </g>
-    <g id="elbow-right" aria-label="Right elbow">
-      <g class="face" data-face="px">
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M156.85 112.15L153.27 132.43L155.54 132.99L158.59 112.63Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M158.59 112.63L155.54 132.99L158.23 133.65L159.91 113.13Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M159.91 113.13L158.23 133.65L161.26 134.05L160.99 113.46Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M160.99 113.46L161.26 134.05L164.44 133.95L161.93 113.51Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M161.93 113.51L164.44 133.95L167.55 133.28L162.83 113.23Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M162.83 113.23L167.55 133.28L170.39 132.16L163.79 112.65Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M163.79 112.65L170.39 132.16L172.85 130.86L164.95 111.85Z"/>
-      </g>
-      <g class="face" data-face="px">
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M164.95 111.85L172.85 130.86L174.91 129.78L166.53 110.97Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M153.27 132.43L155.54 132.99L158.59 112.63L156.85 112.15Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M155.54 132.99L158.23 133.65L159.91 113.13L158.59 112.63Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M158.23 133.65L161.26 134.05L160.99 113.46L159.91 113.13Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M161.26 134.05L164.44 133.95L161.93 113.51L160.99 113.46Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#aa643e" stroke="#aa643e" stroke-width=".6" stroke-linejoin="round" d="M164.44 133.95L167.55 133.28L162.83 113.23L161.93 113.51Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#aa643e" stroke="#aa643e" stroke-width=".6" stroke-linejoin="round" d="M167.55 133.28L170.39 132.16L163.79 112.65L162.83 113.23Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#aa643e" stroke="#aa643e" stroke-width=".6" stroke-linejoin="round" d="M170.39 132.16L172.85 130.86L164.95 111.85L163.79 112.65Z"/>
-      </g>
-      <g class="face" data-face="nx">
-        <path fill="#aa643e" stroke="#aa643e" stroke-width=".6" stroke-linejoin="round" d="M172.85 130.86L174.91 129.78L166.53 110.97L164.95 111.85Z"/>
-      </g>
-    </g>
     <g id="arm-left" aria-label="Left upper arm">
       <g class="face" data-face="nx">
-        <path fill="#0b9295" stroke="#0b9295" stroke-width=".6" stroke-linejoin="round" d="M118.52 119.47L136.86 100.48L164.16 126.84L145.82 145.83Z"/>
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M136.72 137.04L155.06 118.05L159.61 122.45L141.27 141.44ZM141.27 141.44L159.61 122.45L164.16 126.84L145.82 145.83Z"/>
+        <path fill="#0b9295" stroke="#0b9295" stroke-width=".6" stroke-linejoin="round" d="M118.52 119.47L136.86 100.48L162.97 125.69L144.63 144.68Z"/>
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M135.93 136.28L154.27 117.29L158.62 121.49L140.28 140.48ZM140.28 140.48L158.62 121.49L162.97 125.69L144.63 144.68Z"/>
       </g>
     </g>
     <g id="forearm-left" aria-label="Left forearm">
       <g class="face" data-face="nx">
-        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M154.12 150.62L161.4 125.25L197.88 135.71L190.6 161.09Z"/>
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M155.71 151.08L162.99 125.7L197.88 135.71L190.6 161.09Z"/>
       </g>
     </g>
     <g id="leg-left" aria-label="Left thigh">
       <g class="face" data-face="nx">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M115.09 181.76L140.91 187.24L133.02 224.37L107.2 218.88Z"/>
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M115.09 181.76L140.91 187.24L133.36 222.75L107.54 217.26Z"/>
       </g>
     </g>
     <g id="shin-left" aria-label="Left shin">
       <g class="face" data-face="nx">
-        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M107.9 217.22L129.79 231.98L108.57 263.45L86.68 248.68Z"/>
-        <path fill="#1f2023" stroke="#1f2023" stroke-width=".6" stroke-linejoin="round" d="M97.29 232.95L108.23 240.33L104.7 245.58L93.75 238.2ZM93.75 238.2L115.64 252.96L112.1 258.2L90.22 243.44ZM90.22 243.44L112.1 258.2L108.57 263.45L86.68 248.68Z"/>
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M106.98 218.59L128.86 233.35L108.57 263.45L86.68 248.68Z"/>
+        <path fill="#1f2023" stroke="#1f2023" stroke-width=".6" stroke-linejoin="round" d="M96.83 233.64L107.77 241.02L104.39 246.03L93.45 238.65ZM93.45 238.65L115.33 253.41L111.95 258.43L90.06 243.67ZM90.06 243.67L111.95 258.43L108.57 263.45L86.68 248.68Z"/>
       </g>
     </g>
     <g id="torso" aria-label="Torso">
@@ -232,54 +32,254 @@
     </g>
     <g id="head" aria-label="Head">
       <g class="face" data-face="top">
-        <path fill="#160f0d" stroke="#160f0d" stroke-width=".6" stroke-linejoin="round" d="M113.71 46.7L150.68 51.9L186.68 62.53L149.71 57.33Z"/>
-        <path fill="#120d0a" stroke="#120d0a" stroke-width=".6" stroke-linejoin="round" d="M146.06 51.25L150.68 51.9L155.18 53.22L150.56 52.58ZM163.82 57.92L168.44 58.57L172.94 59.9L168.32 59.25Z"/>
+        <path fill="#160f0d" stroke="#160f0d" stroke-width=".6" stroke-linejoin="round" d="M116.75 53.82L149.28 58.4L180.96 67.75L148.43 63.18Z"/>
+        <path fill="#120d0a" stroke="#120d0a" stroke-width=".6" stroke-linejoin="round" d="M145.21 57.83L149.28 58.4L153.24 59.57L149.17 58.99ZM160.84 63.7L164.91 64.27L168.87 65.44L164.8 64.87Z"/>
       </g>
       <g class="face" data-face="front">
-        <path fill="#15100c" stroke="#15100c" stroke-width=".6" stroke-linejoin="round" d="M149.71 57.33L186.68 62.53L175.51 113.99L138.54 108.79Z"/>
-        <path fill="#1a130f" stroke="#1a130f" stroke-width=".6" stroke-linejoin="round" d="M166.8 66.36L176.04 67.66L174.65 74.09L165.4 72.79Z"/>
-        <path fill="#bf8971" stroke="#bf8971" stroke-width=".6" stroke-linejoin="round" d="M151.54 70.85L160.78 72.15L159.38 78.58L150.14 77.28ZM165.4 72.79L174.65 74.09L173.25 80.53L164.01 79.23ZM168.63 79.88L173.25 80.53L171.85 86.96L167.23 86.31ZM162.61 85.66L167.23 86.31L165.83 92.74L161.21 92.09ZM151.97 90.79L156.59 91.44L155.19 97.87L150.57 97.22ZM165.83 92.74L170.46 93.39L169.06 99.82L164.44 99.17Z"/>
-        <path fill="#c9947d" stroke="#c9947d" stroke-width=".6" stroke-linejoin="round" d="M160.78 72.15L165.4 72.79L164.01 79.23L159.38 78.58Z"/>
-        <path fill="#b08068" stroke="#b08068" stroke-width=".6" stroke-linejoin="round" d="M174.65 74.09L179.27 74.74L177.87 81.18L173.25 80.53ZM145.52 76.63L164.01 79.23L162.61 85.66L144.12 83.06ZM144.12 83.06L148.75 83.71L147.35 90.14L142.73 89.49ZM157.99 85.01L162.61 85.66L161.21 92.09L156.59 91.44ZM176.47 87.61L181.1 88.26L179.7 94.69L175.08 94.04ZM147.35 90.14L151.97 90.79L150.57 97.22L145.95 96.57Z"/>
-        <path fill="#a6775e" stroke="#a6775e" stroke-width=".6" stroke-linejoin="round" d="M164.01 79.23L168.63 79.88L167.23 86.31L162.61 85.66Z"/>
-        <path fill="#af6e49" stroke="#af6e49" stroke-width=".6" stroke-linejoin="round" d="M173.25 80.53L182.49 81.82L181.1 88.26L171.85 86.96ZM142.73 89.49L147.35 90.14L145.95 96.57L141.33 95.93ZM170.46 93.39L175.08 94.04L173.68 100.47L169.06 99.82ZM141.33 95.93L150.57 97.22L149.18 103.66L139.93 102.36Z"/>
-        <path fill="#f5f5f6" stroke="#f5f5f6" stroke-width=".6" stroke-linejoin="round" d="M148.75 83.71L153.37 84.36L151.97 90.79L147.35 90.14ZM171.85 86.96L176.47 87.61L175.08 94.04L170.46 93.39Z"/>
-        <path fill="#583ba3" stroke="#583ba3" stroke-width=".6" stroke-linejoin="round" d="M153.37 84.36L157.99 85.01L156.59 91.44L151.97 90.79ZM167.23 86.31L171.85 86.96L170.46 93.39L165.83 92.74Z"/>
-        <path fill="#8c4c35" stroke="#8c4c35" stroke-width=".6" stroke-linejoin="round" d="M156.59 91.44L165.83 92.74L164.44 99.17L155.19 97.87ZM139.93 102.36L149.18 103.66L147.78 110.09L138.54 108.79Z"/>
-        <path fill="#9c5d39" stroke="#9c5d39" stroke-width=".6" stroke-linejoin="round" d="M175.08 94.04L179.7 94.69L178.3 101.12L173.68 100.47ZM173.68 100.47L178.3 101.12L176.91 107.55L172.28 106.9ZM149.18 103.66L176.91 107.55L175.51 113.99L147.78 110.09Z"/>
-        <path fill="#954a37" stroke="#954a37" stroke-width=".6" stroke-linejoin="round" d="M150.57 97.22L169.06 99.82L167.66 106.25L149.18 103.66Z"/>
-        <path fill="#a8663c" stroke="#a8663c" stroke-width=".6" stroke-linejoin="round" d="M169.06 99.82L173.68 100.47L172.28 106.9L167.66 106.25Z"/>
+        <path fill="#15100c" stroke="#15100c" stroke-width=".6" stroke-linejoin="round" d="M148.43 63.18L180.96 67.75L171.13 113.04L138.6 108.46Z"/>
+        <path fill="#1a130f" stroke="#1a130f" stroke-width=".6" stroke-linejoin="round" d="M163.47 71.13L171.6 72.27L170.37 77.93L162.24 76.79Z"/>
+        <path fill="#bf8971" stroke="#bf8971" stroke-width=".6" stroke-linejoin="round" d="M150.04 75.07L158.17 76.22L156.94 81.88L148.81 80.73ZM162.24 76.79L170.37 77.93L169.14 83.59L161.01 82.45ZM165.07 83.02L169.14 83.59L167.91 89.25L163.85 88.68ZM159.78 88.11L163.85 88.68L162.62 94.34L158.55 93.77ZM150.42 92.63L154.48 93.2L153.25 98.86L149.19 98.29ZM162.62 94.34L166.68 94.91L165.45 100.57L161.39 100Z"/>
+        <path fill="#c9947d" stroke="#c9947d" stroke-width=".6" stroke-linejoin="round" d="M158.17 76.22L162.24 76.79L161.01 82.45L156.94 81.88Z"/>
+        <path fill="#b08068" stroke="#b08068" stroke-width=".6" stroke-linejoin="round" d="M170.37 77.93L174.44 78.5L173.21 84.16L169.14 83.59ZM144.74 80.16L161.01 82.45L159.78 88.11L143.51 85.82ZM143.51 85.82L147.58 86.39L146.35 92.05L142.28 91.48ZM155.71 87.54L159.78 88.11L158.55 93.77L154.48 93.2ZM171.98 89.82L176.05 90.39L174.82 96.05L170.75 95.48ZM146.35 92.05L150.42 92.63L149.19 98.29L145.12 97.71Z"/>
+        <path fill="#a6775e" stroke="#a6775e" stroke-width=".6" stroke-linejoin="round" d="M161.01 82.45L165.07 83.02L163.85 88.68L159.78 88.11Z"/>
+        <path fill="#af6e49" stroke="#af6e49" stroke-width=".6" stroke-linejoin="round" d="M169.14 83.59L177.28 84.73L176.05 90.39L167.91 89.25ZM142.28 91.48L146.35 92.05L145.12 97.71L141.05 97.14ZM166.68 94.91L170.75 95.48L169.52 101.14L165.45 100.57ZM141.05 97.14L149.19 98.29L147.96 103.95L139.82 102.8Z"/>
+        <path fill="#f5f5f6" stroke="#f5f5f6" stroke-width=".6" stroke-linejoin="round" d="M147.58 86.39L151.65 86.97L150.42 92.63L146.35 92.05ZM167.91 89.25L171.98 89.82L170.75 95.48L166.68 94.91Z"/>
+        <path fill="#583ba3" stroke="#583ba3" stroke-width=".6" stroke-linejoin="round" d="M151.65 86.97L155.71 87.54L154.48 93.2L150.42 92.63ZM163.85 88.68L167.91 89.25L166.68 94.91L162.62 94.34Z"/>
+        <path fill="#8c4c35" stroke="#8c4c35" stroke-width=".6" stroke-linejoin="round" d="M154.48 93.2L162.62 94.34L161.39 100L153.25 98.86ZM139.82 102.8L147.96 103.95L146.73 109.61L138.6 108.46Z"/>
+        <path fill="#9c5d39" stroke="#9c5d39" stroke-width=".6" stroke-linejoin="round" d="M170.75 95.48L174.82 96.05L173.59 101.72L169.52 101.14ZM169.52 101.14L173.59 101.72L172.36 107.38L168.29 106.8ZM147.96 103.95L172.36 107.38L171.13 113.04L146.73 109.61Z"/>
+        <path fill="#954a37" stroke="#954a37" stroke-width=".6" stroke-linejoin="round" d="M149.19 98.29L165.45 100.57L164.23 106.23L147.96 103.95Z"/>
+        <path fill="#a8663c" stroke="#a8663c" stroke-width=".6" stroke-linejoin="round" d="M165.45 100.57L169.52 101.14L168.29 106.8L164.23 106.23Z"/>
       </g>
       <g class="face" data-face="nx">
-        <path fill="#140e0b" stroke="#140e0b" stroke-width=".6" stroke-linejoin="round" d="M113.71 46.7L149.71 57.33L138.54 108.79L102.54 98.16Z"/>
-        <path fill="#8f5331" stroke="#8f5331" stroke-width=".6" stroke-linejoin="round" d="M130.62 79.07L135.12 80.4L133.73 86.83L129.23 85.51ZM129.23 85.51L133.73 86.83L132.33 93.27L127.83 91.94ZM138.23 88.16L142.73 89.49L141.33 95.93L136.83 94.6ZM132.33 93.27L136.83 94.6L135.43 101.03L130.93 99.7ZM103.93 91.72L112.93 94.38L111.54 100.81L102.54 98.16ZM117.43 95.71L121.93 97.04L120.54 103.47L116.04 102.14ZM130.93 99.7L135.43 101.03L134.04 107.46L129.54 106.13Z"/>
-        <path fill="#985a3b" stroke="#985a3b" stroke-width=".6" stroke-linejoin="round" d="M135.12 80.4L139.62 81.73L138.23 88.16L133.73 86.83ZM133.73 86.83L138.23 88.16L136.83 94.6L132.33 93.27ZM127.83 91.94L132.33 93.27L130.93 99.7L126.43 98.37ZM112.93 94.38L117.43 95.71L116.04 102.14L111.54 100.81ZM126.43 98.37L130.93 99.7L129.54 106.13L125.04 104.8Z"/>
-        <path fill="#19120f" stroke="#19120f" stroke-width=".6" stroke-linejoin="round" d="M139.62 81.73L144.12 83.06L142.73 89.49L138.23 88.16Z"/>
-        <path fill="#754d34" stroke="#754d34" stroke-width=".6" stroke-linejoin="round" d="M118.83 89.28L123.33 90.61L121.93 97.04L117.43 95.71Z"/>
-        <path fill="#986349" stroke="#986349" stroke-width=".6" stroke-linejoin="round" d="M123.33 90.61L127.83 91.94L126.43 98.37L121.93 97.04ZM121.93 97.04L126.43 98.37L125.04 104.8L120.54 103.47Z"/>
-        <path fill="#844b2f" stroke="#844b2f" stroke-width=".6" stroke-linejoin="round" d="M136.83 94.6L141.33 95.93L139.93 102.36L135.43 101.03ZM135.43 101.03L139.93 102.36L138.54 108.79L134.04 107.46Z"/>
+        <path fill="#140e0b" stroke="#140e0b" stroke-width=".6" stroke-linejoin="round" d="M116.75 53.82L148.43 63.18L138.6 108.46L106.91 99.11Z"/>
+        <path fill="#8f5331" stroke="#8f5331" stroke-width=".6" stroke-linejoin="round" d="M131.63 82.31L135.59 83.48L134.36 89.14L130.4 87.97ZM130.4 87.97L134.36 89.14L133.13 94.8L129.17 93.63ZM138.32 90.31L142.28 91.48L141.05 97.14L137.09 95.97ZM133.13 94.8L137.09 95.97L135.86 101.63L131.9 100.46ZM108.14 93.45L116.06 95.79L114.83 101.45L106.91 99.11ZM120.02 96.95L123.98 98.12L122.75 103.78L118.79 102.61ZM131.9 100.46L135.86 101.63L134.64 107.29L130.68 106.12Z"/>
+        <path fill="#985a3b" stroke="#985a3b" stroke-width=".6" stroke-linejoin="round" d="M135.59 83.48L139.55 84.65L138.32 90.31L134.36 89.14ZM134.36 89.14L138.32 90.31L137.09 95.97L133.13 94.8ZM129.17 93.63L133.13 94.8L131.9 100.46L127.94 99.29ZM116.06 95.79L120.02 96.95L118.79 102.61L114.83 101.45ZM127.94 99.29L131.9 100.46L130.68 106.12L126.72 104.95Z"/>
+        <path fill="#19120f" stroke="#19120f" stroke-width=".6" stroke-linejoin="round" d="M139.55 84.65L143.51 85.82L142.28 91.48L138.32 90.31Z"/>
+        <path fill="#754d34" stroke="#754d34" stroke-width=".6" stroke-linejoin="round" d="M121.25 91.29L125.21 92.46L123.98 98.12L120.02 96.95Z"/>
+        <path fill="#986349" stroke="#986349" stroke-width=".6" stroke-linejoin="round" d="M125.21 92.46L129.17 93.63L127.94 99.29L123.98 98.12ZM123.98 98.12L127.94 99.29L126.72 104.95L122.75 103.78Z"/>
+        <path fill="#844b2f" stroke="#844b2f" stroke-width=".6" stroke-linejoin="round" d="M137.09 95.97L141.05 97.14L139.82 102.8L135.86 101.63ZM135.86 101.63L139.82 102.8L138.6 108.46L134.64 107.29Z"/>
       </g>
     </g>
     <g id="leg-right" aria-label="Right thigh">
       <g class="face" data-face="nx">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M116.35 190.7L139.65 178.3L157.47 211.81L134.16 224.2Z"/>
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M116.35 190.7L139.65 178.3L156.7 210.35L133.39 222.75Z"/>
       </g>
     </g>
     <g id="shin-right" aria-label="Right shin">
       <g class="face" data-face="nx">
-        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M134.02 223.82L159.85 218.33L167.74 255.45L141.91 260.94Z"/>
-        <path fill="#272727" stroke="#272727" stroke-width=".6" stroke-linejoin="round" d="M137.97 242.38L150.88 239.64L152.19 245.83L139.28 248.57ZM139.28 248.57L165.11 243.08L166.42 249.27L140.6 254.76ZM140.6 254.76L166.42 249.27L167.74 255.45L141.91 260.94Z"/>
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M134.37 225.44L160.19 219.95L167.74 255.45L141.91 260.94Z"/>
+        <path fill="#272727" stroke="#272727" stroke-width=".6" stroke-linejoin="round" d="M138.14 243.19L151.05 240.45L152.31 246.36L139.4 249.11ZM139.4 249.11L165.22 243.62L166.48 249.54L140.65 255.03ZM140.65 255.03L166.48 249.54L167.74 255.45L141.91 260.94Z"/>
       </g>
     </g>
     <g id="arm-right" aria-label="Right upper arm">
       <g class="face" data-face="nx">
-        <path fill="#0fadad" stroke="#0fadad" stroke-width=".6" stroke-linejoin="round" d="M121.89 129.85L126.48 103.85L163.85 110.44L159.27 136.44Z"/>
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M146.81 134.24L151.39 108.24L157.62 109.34L153.04 135.34ZM153.04 135.34L157.62 109.34L163.85 110.44L159.27 136.44Z"/>
+        <path fill="#0fadad" stroke="#0fadad" stroke-width=".6" stroke-linejoin="round" d="M121.89 129.85L126.48 103.85L162.23 110.15L157.64 136.15Z"/>
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M145.73 134.05L150.31 108.05L156.27 109.1L151.68 135.1ZM151.68 135.1L156.27 109.1L162.23 110.15L157.64 136.15Z"/>
       </g>
     </g>
     <g id="forearm-right" aria-label="Right forearm">
       <g class="face" data-face="nx">
-        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M170.06 135.11L159.32 111L193.99 95.56L204.73 119.68Z"/>
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M171.57 134.44L160.83 110.33L193.99 95.56L204.73 119.68Z"/>
+      </g>
+    </g>
+    <g id="elbow-left" aria-label="Left elbow">
+      <g class="face" data-face="px">
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M159.96 113.61L132.45 142.1L135.1 144.95L162 115.89Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M162 115.89L135.1 144.95L138.21 148.31L163.47 117.81Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M163.47 117.81L138.21 148.31L141.95 151.68L164.74 119.3Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M164.74 119.3L141.95 151.68L146.28 154.63L166.08 120.33Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#8d5437" stroke="#8d5437" stroke-width=".6" stroke-linejoin="round" d="M166.08 120.33L146.28 154.63L151 156.9L167.64 120.97Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#8d5437" stroke="#8d5437" stroke-width=".6" stroke-linejoin="round" d="M167.64 120.97L151 156.9L155.78 158.46L169.57 121.33Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#8d5437" stroke="#8d5437" stroke-width=".6" stroke-linejoin="round" d="M169.57 121.33L155.78 158.46L160.25 159.47L171.96 121.64Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#8d5437" stroke="#8d5437" stroke-width=".6" stroke-linejoin="round" d="M171.96 121.64L160.25 159.47L164.04 160.33L174.96 122.27Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M132.45 142.1L135.1 144.95L162 115.89L159.96 113.61Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M135.1 144.95L138.21 148.31L163.47 117.81L162 115.89Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M138.21 148.31L141.95 151.68L164.74 119.3L163.47 117.81Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M141.95 151.68L146.28 154.63L166.08 120.33L164.74 119.3Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M146.28 154.63L151 156.9L167.64 120.97L166.08 120.33Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M151 156.9L155.78 158.46L169.57 121.33L167.64 120.97Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M155.78 158.46L160.25 159.47L171.96 121.64L169.57 121.33Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M160.25 159.47L164.04 160.33L174.96 122.27L171.96 121.64Z"/>
+      </g>
+    </g>
+    <g id="knee-left" aria-label="Left knee">
+      <g class="face" data-face="px">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M142.02 213.79L103.28 205.56L102.8 208.67L141.39 217.54Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M141.39 217.54L102.8 208.67L102.53 211.28L140.7 221.83Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M140.7 221.83L102.53 211.28L102.17 213.52L139.62 226.39Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M139.62 226.39L102.17 213.52L101.54 215.5L137.99 230.97Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M137.99 230.97L101.54 215.5L100.56 217.32L135.83 235.32Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M135.83 235.32L100.56 217.32L99.19 219.13L133.29 239.27Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M133.29 239.27L99.19 219.13L97.5 221.15L130.69 242.75Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M130.69 242.75L97.5 221.15L95.6 223.65L128.43 245.8Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M97.5 221.15L95.6 223.65L128.43 245.8L130.69 242.75Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M102.17 213.52L101.54 215.5L137.99 230.97L139.62 226.39Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M101.54 215.5L100.56 217.32L135.83 235.32L137.99 230.97Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M100.56 217.32L99.19 219.13L133.29 239.27L135.83 235.32Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M99.19 219.13L97.5 221.15L130.69 242.75L133.29 239.27Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M103.28 205.56L102.8 208.67L141.39 217.54L142.02 213.79Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M102.8 208.67L102.53 211.28L140.7 221.83L141.39 217.54Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#2f2589" stroke="#2f2589" stroke-width=".6" stroke-linejoin="round" d="M102.53 211.28L102.17 213.52L139.62 226.39L140.7 221.83Z"/>
+      </g>
+    </g>
+    <g id="knee-right" aria-label="Right knee">
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M157.57 197.93L122.6 216.52L124.23 219.31L159.41 201.14Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M159.41 201.14L124.23 219.31L125.74 221.73L161.48 204.69Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M161.48 204.69L125.74 221.73L127.01 223.99L163.48 208.56Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M163.48 208.56L127.01 223.99L127.99 226.24L165.2 212.69Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M165.2 212.69L127.99 226.24L128.68 228.59L166.54 216.97Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M166.54 216.97L128.68 228.59L129.16 231.13L167.5 221.22Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M167.5 221.22L129.16 231.13L129.56 233.95L168.19 225.26Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M168.19 225.26L129.56 233.95L130.11 237.14L168.84 228.91Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M122.6 216.52L124.23 219.31L159.41 201.14L157.57 197.93Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M124.23 219.31L125.74 221.73L161.48 204.69L159.41 201.14Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M125.74 221.73L127.01 223.99L163.48 208.56L161.48 204.69Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M127.01 223.99L127.99 226.24L165.2 212.69L163.48 208.56Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M127.99 226.24L128.68 228.59L166.54 216.97L165.2 212.69Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M128.68 228.59L129.16 231.13L167.5 221.22L166.54 216.97Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M129.16 231.13L129.56 233.95L168.19 225.26L167.5 221.22Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M129.56 233.95L130.11 237.14L168.84 228.91L168.19 225.26Z"/>
+      </g>
+    </g>
+    <g id="elbow-right" aria-label="Right elbow">
+      <g class="face" data-face="px">
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M152.97 101.82L146.1 140.82L149.96 141.76L155.84 102.6Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M155.84 102.6L149.96 141.76L154.66 142.89L157.9 103.43Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M157.9 103.43L154.66 142.89L159.98 143.57L159.46 103.97Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M159.46 103.97L159.98 143.57L165.6 143.38L160.77 104.07Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M160.77 104.07L165.6 143.38L171.09 142.21L162.02 103.66Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M162.02 103.66L171.09 142.21L176.09 140.26L163.4 102.75Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M163.4 102.75L176.09 140.26L180.37 138.03L165.2 101.45Z"/>
+      </g>
+      <g class="face" data-face="px">
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M165.2 101.45L180.37 138.03L183.9 136.18L167.79 100Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M146.1 140.82L149.96 141.76L155.84 102.6L152.97 101.82Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M149.96 141.76L154.66 142.89L157.9 103.43L155.84 102.6Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M154.66 142.89L159.98 143.57L159.46 103.97L157.9 103.43Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M159.98 143.57L165.6 143.38L160.77 104.07L159.46 103.97Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#aa643e" stroke="#aa643e" stroke-width=".6" stroke-linejoin="round" d="M165.6 143.38L171.09 142.21L162.02 103.66L160.77 104.07Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#aa643e" stroke="#aa643e" stroke-width=".6" stroke-linejoin="round" d="M171.09 142.21L176.09 140.26L163.4 102.75L162.02 103.66Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#aa643e" stroke="#aa643e" stroke-width=".6" stroke-linejoin="round" d="M176.09 140.26L180.37 138.03L165.2 101.45L163.4 102.75Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#aa643e" stroke="#aa643e" stroke-width=".6" stroke-linejoin="round" d="M180.37 138.03L183.9 136.18L167.79 100L165.2 101.45Z"/>
       </g>
     </g>
   </g>

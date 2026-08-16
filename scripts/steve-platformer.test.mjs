@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
-import { MODEL, SHAFT_GAP, SLEEVE_HALF, bendBlend, buildFigure, isHair, loadSkin } from "./lib/steve-model.mjs";
+import { HEAD_SCALE, MODEL, SHAFT_GAP, SLEEVE_HALF, SLEEVE_SCALE, bendBlend, buildFigure, isHair, loadSkin } from "./lib/steve-model.mjs";
 import { ANIMATIONS, catalog, lerpPose, runFrame } from "./lib/steve-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -44,10 +44,12 @@ describe("steve pose catalog", () => {
     assert.equal(byId["leg-right"].sleeveId, "knee-right");
     assert.ok(byId["arm-right"].min[1] > byId["forearm-right"].max[1]);
     assert.ok(byId["leg-right"].min[1] > byId["shin-right"].max[1]);
-    assert.ok(byId["arm-right"].max[1] - byId["arm-right"].min[1] > 5.5);
-    assert.ok(byId["forearm-right"].max[1] - byId["forearm-right"].min[1] > 5.5);
-    assert.equal(byId["arm-right"].min[1] - byId["forearm-right"].max[1], SHAFT_GAP * 2);
-    assert.ok(!byId["arm-right"].omitFaces);
+    assert.ok(byId["arm-right"].max[1] - byId["arm-right"].min[1] > 5);
+    assert.ok(byId["forearm-right"].max[1] - byId["forearm-right"].min[1] > 5);
+    assert.ok(Math.abs(byId["arm-right"].min[1] - byId["forearm-right"].max[1] - SHAFT_GAP * 2) < 1e-9);
+    assert.ok(SLEEVE_SCALE >= 1);
+    assert.ok(HEAD_SCALE < 1);
+    assert.deepEqual(byId["arm-right"].omitFaces, ["bottom"]);
     assert.equal(bendBlend(18 + SLEEVE_HALF, 18, SLEEVE_HALF), 0);
     assert.equal(bendBlend(18 - SLEEVE_HALF, 18, SLEEVE_HALF), 1);
     assert.ok(Math.abs(bendBlend(18, 18, SLEEVE_HALF) - 0.5) < 1e-9);
