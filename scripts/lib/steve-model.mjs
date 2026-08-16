@@ -18,9 +18,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const STEVE_SKIN_URL = "https://assets.mojang.com/SkinTemplates/steve.png";
 export const ZOMBIE_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/zombie/zombie.png";
+export const CREEPER_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/creeper/creeper.png";
 const SKIN_URL = STEVE_SKIN_URL;
 const CACHE = resolve(__dirname, "../../node_modules/.cache/steve-skin.png");
 const ZOMBIE_CACHE = resolve(__dirname, "../../node_modules/.cache/zombie-skin.png");
+const CREEPER_CACHE = resolve(__dirname, "../../node_modules/.cache/creeper-skin.png");
 
 // ---------------------------------------------------------------- png decoding
 
@@ -160,7 +163,10 @@ export function normalizePlayerSkin(skin) {
 // another 64x64 (or classic 64x32) player-layout skin such as the zombie.
 export async function loadSkin(explicitPath, options = {}) {
   const url = options.url ?? SKIN_URL;
-  const cache = options.cache ?? (url === ZOMBIE_SKIN_URL ? ZOMBIE_CACHE : CACHE);
+  const cache =
+    options.cache ??
+    (url === ZOMBIE_SKIN_URL ? ZOMBIE_CACHE : url === CREEPER_SKIN_URL ? CREEPER_CACHE : CACHE);
+  const shouldNormalize = options.normalize ?? url !== CREEPER_SKIN_URL;
   let decoded;
   if (explicitPath) decoded = decodePng(await readFile(explicitPath));
   else {
@@ -175,11 +181,15 @@ export async function loadSkin(explicitPath, options = {}) {
       decoded = decodePng(buf);
     }
   }
-  return normalizePlayerSkin(decoded);
+  return shouldNormalize ? normalizePlayerSkin(decoded) : decoded;
 }
 
 export async function loadZombieSkin(explicitPath) {
   return loadSkin(explicitPath, { url: ZOMBIE_SKIN_URL, cache: ZOMBIE_CACHE });
+}
+
+export async function loadCreeperSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: CREEPER_SKIN_URL, cache: CREEPER_CACHE, normalize: false });
 }
 
 // ------------------------------------------------------------------- 3d helpers
@@ -336,15 +346,20 @@ function luminanceFor(shading, worldNormal, cameraNormal) {
 }
 
 function shade(shading, rgb, lum, source) {
+  let out;
   if (source && isHair(source)) {
     // Keep hair near-black even on lit top faces; a warm highlight would
     // turn it back into the old cocoa brown.
     const dim = 0.62 + 0.28 * Math.min(1, Math.max(0, lum));
-    return rgb.map((v) => Math.round(v * dim));
+    out = rgb.map((v) => Math.round(v * dim));
+  } else if (lum > 1) {
+    out = mix(rgb, hexToRgb(shading.highlight), Math.min(0.45, (lum - 1) * 1.25));
+  } else {
+    const dimmed = rgb.map((v) => v * lum ** 0.85);
+    out = mix(dimmed, hexToRgb(shading.shadowTint), (1 - lum) * 0.35);
   }
-  if (lum > 1) return mix(rgb, hexToRgb(shading.highlight), Math.min(0.45, (lum - 1) * 1.25));
-  const dimmed = rgb.map((v) => v * lum ** 0.85);
-  return mix(dimmed, hexToRgb(shading.shadowTint), (1 - lum) * 0.35);
+  if (shading.flash) out = mix(out, [255, 255, 255], Math.min(1, shading.flash));
+  return out;
 }
 
 // ----------------------------------------------------------------- model layout
@@ -353,7 +368,7 @@ const uv = (x, y, w, h) => ({ x, y, w, h });
 
 // Classic 64x64 skin layout: faces sit around the box net as
 // [-x, front, +x, back] with top and bottom above them.
-const boxUv = (ox, oy, w, h, d) => ({
+export const boxUv = (ox, oy, w, h, d) => ({
   nx: uv(ox, oy + d, d, h),
   front: uv(ox + d, oy + d, w, h),
   px: uv(ox + d + w, oy + d, d, h),
@@ -419,6 +434,10 @@ export const MODEL = [
 ];
 
 const byId = new Map(MODEL.map((p) => [p.id, p]));
+
+function lookupOf(model) {
+  return model === MODEL ? byId : new Map(model.map((p) => [p.id, p]));
+}
 
 // Corner order per face is [u0v0, u1v0, u1v1, u0v1] seen from outside the box.
 function faceCorners(min, max, face) {
@@ -491,18 +510,18 @@ function poseFor(pose, id) {
 }
 
 // Walks the parent chain so a torso lean carries the head and arms with it.
-function chainMatrix(pose, part) {
+function chainMatrix(pose, part, lookup = byId) {
   const own = localMatrix(poseFor(pose, part.id));
   if (!part.parent) return own;
-  return matMul(chainMatrix(pose, byId.get(part.parent)), own);
+  return matMul(chainMatrix(pose, lookup.get(part.parent), lookup), own);
 }
 
-function chainPoint(pose, part, point) {
+function chainPoint(pose, part, point, lookup = byId) {
   const rot = localMatrix(poseFor(pose, part.id));
   const local = [point[0] - part.pivot[0], point[1] - part.pivot[1], point[2] - part.pivot[2]];
   const spun = apply(rot, local);
   const placed = [spun[0] + part.pivot[0], spun[1] + part.pivot[1], spun[2] + part.pivot[2]];
-  return part.parent ? chainPoint(pose, byId.get(part.parent), placed) : placed;
+  return part.parent ? chainPoint(pose, lookup.get(part.parent), placed, lookup) : placed;
 }
 
 function skinKey(skin, x, y) {
@@ -536,20 +555,21 @@ function profileHeadKey(skin, partId, faceName, rect, tx, ty, viewYaw, headYaw) 
  * `pose` is `{ view: { yaw, pitch }, root: { x, y }, parts: { <id>: { pitch,
  * roll, yaw, faceYaw, shadeScale } } }`.
  */
-export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }) {
+export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, model = MODEL }) {
   const yaw = rotY(pose.view?.yaw ?? 0);
   const pitch = rotX(pose.view?.pitch ?? 0);
   const viewMatrix = matMul(pitch, yaw);
   const offset = [pose.root?.x ?? 0, pose.root?.y ?? 0, 0];
   const palette = new Set();
   const parts = [];
+  const lookup = lookupOf(model);
 
-  for (const part of MODEL) {
+  for (const part of model) {
     const partPose = poseFor(pose, part.id);
     const tol = tolerance?.[part.id] ?? tolerance?.default ?? 12;
-    const chain = chainMatrix(pose, part);
+    const chain = chainMatrix(pose, part, lookup);
     const worldOf = (p) => {
-      const q = chainPoint(pose, part, p);
+      const q = chainPoint(pose, part, p, lookup);
       return [q[0] + offset[0], q[1] + offset[1], q[2] + offset[2]];
     };
 
