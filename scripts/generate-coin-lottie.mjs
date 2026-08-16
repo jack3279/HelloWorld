@@ -36,14 +36,14 @@ export const T = 56;
 export const EDGE_R = 12;
 export const EDGE_WINDOW = 0.22;
 
-const GOLD = [0.93, 0.76, 0.28, 1];
-const GOLD_MID = [0.88, 0.70, 0.22, 1];
-const GOLD_LINE = [0.80, 0.60, 0.16, 1];
-const WELL = [0.84, 0.64, 0.18, 1];
-const STAR = [0.97, 0.86, 0.42, 1];
-const BACK = [0.90, 0.73, 0.24, 1];
-const BACK_WELL = [0.82, 0.62, 0.18, 1];
-const BACK_DOT = [0.86, 0.68, 0.20, 1];
+export const GOLD = [0.93, 0.76, 0.28, 1];
+export const GOLD_MID = [0.88, 0.70, 0.22, 1];
+export const GOLD_LINE = [0.80, 0.60, 0.16, 1];
+export const WELL = [0.84, 0.64, 0.18, 1];
+export const STAR = [0.97, 0.86, 0.42, 1];
+export const BACK = [0.90, 0.73, 0.24, 1];
+export const BACK_WELL = [0.82, 0.62, 0.18, 1];
+export const BACK_DOT = [0.86, 0.68, 0.20, 1];
 
 const staticK = (k) => ({ a: 0, k });
 
@@ -91,13 +91,18 @@ function group(name, items, xf) {
   return { ty: "gr", nm: name, it: [...items, tr(xf)] };
 }
 
-function starPath(or = 30, ir = 13, n = 5, rot = -Math.PI / 2) {
+export function starVertices(or = 30, ir = 13, n = 5, rot = -Math.PI / 2) {
   const v = [];
   for (let k = 0; k < n * 2; k++) {
     const rad = k % 2 === 0 ? or : ir;
     const a = rot + (k * Math.PI) / n;
     v.push([rad * Math.cos(a), rad * Math.sin(a)]);
   }
+  return v;
+}
+
+function starPath(or = 30, ir = 13, n = 5, rot = -Math.PI / 2) {
+  const v = starVertices(or, ir, n, rot);
   return {
     ty: "sh",
     ks: {
