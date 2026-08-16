@@ -59,17 +59,24 @@ describe("generated sprite kit", () => {
   });
 
   it("lottie scenes are self-contained shape flipbooks", async () => {
-    for (const scene of ["scene-1", "scene-2", "scene-3"]) {
-      const dir = resolve(ROOT, "public/projects/steve-platformer", scene);
+    const scenes = [
+      ["steve-platformer", "scene-1", 256, 320],
+      ["steve-platformer", "scene-2", 256, 320],
+      ["steve-platformer", "scene-3", 256, 320],
+      ["steve", "scene-1", 512, 640],
+      ["steve", "scene-2", 512, 560],
+    ];
+    for (const [project, scene, w, h] of scenes) {
+      const dir = resolve(ROOT, "public/projects", project, scene);
       const lottie = JSON.parse(await readFile(resolve(dir, "lottie.json"), "utf8"));
-      assert.ok(lottie.fr > 0);
+      assert.ok(lottie.fr > 0, `${project}/${scene} fps`);
       assert.equal(lottie.ip, 0);
-      assert.ok(lottie.op > lottie.ip);
-      assert.equal(lottie.w, 256);
-      assert.equal(lottie.h, 320);
+      assert.ok(lottie.op > lottie.ip, `${project}/${scene} duration`);
+      assert.equal(lottie.w, w);
+      assert.equal(lottie.h, h);
       assert.equal(lottie.assets.length, 0);
       const shapes = lottie.layers.filter((l) => l.ty === 4);
-      assert.ok(shapes.length >= 2);
+      assert.ok(shapes.length >= 2, `${project}/${scene} layers`);
       for (const layer of shapes) {
         assert.ok(layer.shapes.length > 0, layer.nm);
         assert.ok(layer.ip < layer.op, layer.nm);

@@ -1,10 +1,13 @@
-// Builds Skottie scenes that flip through the side-view poses as vector
-// shape layers (not image assets — Skottie leaves SVG files blank):
-//   public/projects/steve-platformer/scene-1  idle
-//   public/projects/steve-platformer/scene-2  run
-//   public/projects/steve-platformer/scene-3  jump
+// Builds Skottie scenes from posed cuboids as vector shape layers
+// (Skottie leaves SVG image assets blank):
 //
-// Transparent background — these are game sprites, not a full-frame card.
+//   public/projects/steve/scene-1              looping reel (idle → run → jump)
+//   public/projects/steve/scene-2              three-quarter run
+//   public/projects/steve-platformer/scene-1   idle
+//   public/projects/steve-platformer/scene-2   run
+//   public/projects/steve-platformer/scene-3   jump
+//
+// Transparent background — these are character loops, not a full-frame card.
 //
 // Usage:
 //   node scripts/generate-steve-lottie.mjs [--skin=<png>]
@@ -12,10 +15,21 @@ import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildFigure, figureToLottieShapes, loadSkin, makeProjector, parseArgs } from "./lib/steve-model.mjs";
-import { ANIMATIONS, SPRITE, TOLERANCE, catalog } from "./lib/steve-poses.mjs";
+import {
+  ANIMATIONS,
+  HERO,
+  SPRITE,
+  TOLERANCE,
+  catalog,
+  demoReel,
+  heroRunFrame,
+  sampleIdle,
+  sampleJump,
+  runFrame,
+} from "./lib/steve-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const PROJECT = resolve(__dirname, "../public/projects/steve-platformer");
+const ROOT = resolve(__dirname, "..");
 
 function shapeLayer({ ind, name, ip, op, shapes }) {
   return {
@@ -40,10 +54,8 @@ function shapeLayer({ ind, name, ip, op, shapes }) {
   };
 }
 
-function flipbook({ name, frames, fps, hold, loop }) {
-  const { w, h } = SPRITE;
+function flipbook({ name, w, h, frames, fps, hold, loop }) {
   const op = frames.length * hold;
-  // First layer in the file is on top. Only one frame is visible at a time.
   const layers = frames.map((frame, i) =>
     shapeLayer({
       ind: frames.length - i,
@@ -68,43 +80,131 @@ function flipbook({ name, frames, fps, hold, loop }) {
   };
 }
 
+function bake(skin, pose, canvas) {
+  const { parts } = buildFigure({ skin, pose, tolerance: TOLERANCE });
+  const project = makeProjector({
+    scale: canvas.scale,
+    originX: canvas.originX,
+    originY: canvas.originY,
+    roll: pose.roll ?? canvas.roll ?? 0,
+  });
+  return figureToLottieShapes(parts, project);
+}
+
+async function writeScene(dir, lottie) {
+  await mkdir(dir, { recursive: true });
+  for (const name of await readdir(dir).catch(() => [])) {
+    if (name.endsWith(".svg")) await rm(resolve(dir, name));
+  }
+  await writeFile(resolve(dir, "lottie.json"), JSON.stringify(lottie) + "\n");
+  const kb = (Buffer.byteLength(JSON.stringify(lottie)) / 1024).toFixed(1);
+  console.log(
+    `${dir.replace(ROOT + "/", "")}  ${lottie.nm}  ${lottie.layers.length} poses  ${lottie.op} ticks @ ${lottie.fr} fps  ${kb} kB`,
+  );
+}
+
 const args = parseArgs(process.argv.slice(2));
 const skin = await loadSkin(args.get("skin"));
 if (skin.width < 64 || skin.height < 64) throw new Error("expected a 64x64 skin");
 
-const project = makeProjector({
-  scale: SPRITE.scale,
-  originX: SPRITE.originX,
-  originY: SPRITE.originY,
-});
-
-const baked = new Map();
-for (const entry of catalog()) {
-  const { parts } = buildFigure({ skin, pose: entry.pose, tolerance: TOLERANCE });
-  baked.set(entry.id, { id: entry.id, shapes: figureToLottieShapes(parts, project) });
+const spriteCache = new Map();
+function spriteShapes(pose, id) {
+  const key = id ?? JSON.stringify(pose);
+  if (!spriteCache.has(key)) spriteCache.set(key, { id: key, shapes: bake(skin, pose, SPRITE) });
+  return spriteCache.get(key);
 }
 
-const scenes = [
-  { slug: "scene-1", title: "Steve — Idle", animation: "idle", hold: 4 },
-  { slug: "scene-2", title: "Steve — Run", animation: "run", hold: 1 },
-  { slug: "scene-3", title: "Steve — Jump", animation: "jump", hold: 3 },
-];
+for (const entry of catalog()) spriteShapes(entry.pose, entry.id);
 
-for (const scene of scenes) {
-  const dir = resolve(PROJECT, scene.slug);
-  await mkdir(dir, { recursive: true });
-  for (const name of await readdir(dir)) {
-    if (name.endsWith(".svg")) await rm(resolve(dir, name));
-  }
-  const spec = ANIMATIONS[scene.animation];
-  const lottie = flipbook({
-    name: scene.title,
-    frames: spec.frames.map((id) => baked.get(id)),
-    fps: spec.fps,
-    hold: scene.hold,
-    loop: spec.loop,
-  });
-  await writeFile(resolve(dir, "lottie.json"), JSON.stringify(lottie) + "\n");
-  const kb = (Buffer.byteLength(JSON.stringify(lottie)) / 1024).toFixed(1);
-  console.log(`${scene.slug}  ${scene.title}  ${spec.frames.length} frames  ${lottie.op} ticks @ ${lottie.fr} fps  ${kb} kB`);
-}
+const platformer = resolve(ROOT, "public/projects/steve-platformer");
+const idleFrames = Array.from({ length: 8 }, (_, i) => ({
+  id: `idle-${i}`,
+  shapes: spriteShapes(sampleIdle(i / 8), `idle-s-${i}`).shapes,
+}));
+const runFrames = Array.from({ length: 16 }, (_, i) => ({
+  id: `run-${i}`,
+  shapes: spriteShapes(runFrame(i / 16), `run-s-${i}`).shapes,
+}));
+const jumpFrames = Array.from({ length: 14 }, (_, i) => ({
+  id: `jump-${i}`,
+  shapes: spriteShapes(sampleJump(i / 13), `jump-s-${i}`).shapes,
+}));
+
+await writeScene(
+  resolve(platformer, "scene-1"),
+  flipbook({
+    name: "Steve — Idle",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: idleFrames,
+    fps: 12,
+    hold: 1,
+    loop: true,
+  }),
+);
+await writeScene(
+  resolve(platformer, "scene-2"),
+  flipbook({
+    name: "Steve — Run",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: runFrames,
+    fps: 24,
+    hold: 1,
+    loop: true,
+  }),
+);
+await writeScene(
+  resolve(platformer, "scene-3"),
+  flipbook({
+    name: "Steve — Jump",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: jumpFrames,
+    fps: 24,
+    hold: 1,
+    loop: true,
+  }),
+);
+
+const demo = resolve(ROOT, "public/projects/steve");
+const demoCanvas = {
+  w: 512,
+  h: 640,
+  scale: SPRITE.scale * 2,
+  originX: SPRITE.originX * 2,
+  originY: SPRITE.originY * 2,
+};
+const reel = demoReel().map((frame) => ({
+  id: frame.id,
+  shapes: bake(skin, frame.pose, demoCanvas),
+}));
+await writeScene(
+  resolve(demo, "scene-1"),
+  flipbook({
+    name: "Steve — Idle, run, jump",
+    w: demoCanvas.w,
+    h: demoCanvas.h,
+    frames: reel,
+    fps: 24,
+    hold: 1,
+    loop: true,
+  }),
+);
+
+const heroFrames = Array.from({ length: 16 }, (_, i) => ({
+  id: `hero-run-${i}`,
+  shapes: bake(skin, heroRunFrame(i / 16), HERO),
+}));
+await writeScene(
+  resolve(demo, "scene-2"),
+  flipbook({
+    name: "Steve — Three-quarter run",
+    w: HERO.w,
+    h: HERO.h,
+    frames: heroFrames,
+    fps: 24,
+    hold: 1,
+    loop: true,
+  }),
+);

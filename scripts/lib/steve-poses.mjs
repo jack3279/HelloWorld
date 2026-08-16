@@ -144,6 +144,10 @@ export function jumpLand() {
   });
 }
 
+export function easeInOut(t) {
+  return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+}
+
 export function lerpNum(a, b, t) {
   return a + (b - a) * t;
 }
@@ -203,3 +207,76 @@ export const ANIMATIONS = {
     loop: false,
   },
 };
+
+export function sampleIdle(t) {
+  const x = ((t % 1) + 1) % 1;
+  return x < 0.5
+    ? lerpPose(idleA(), idleB(), easeInOut(x * 2))
+    : lerpPose(idleB(), idleA(), easeInOut((x - 0.5) * 2));
+}
+
+export function sampleJump(t) {
+  const keys = [
+    { t: 0, pose: jumpCrouch() },
+    { t: 0.16, pose: jumpCrouch() },
+    { t: 0.38, pose: jumpRise() },
+    { t: 0.52, pose: jumpApex() },
+    { t: 0.72, pose: jumpFall() },
+    { t: 0.86, pose: jumpLand() },
+    { t: 1, pose: idleA() },
+  ];
+  const x = Math.min(1, Math.max(0, t));
+  let i = 0;
+  while (i < keys.length - 2 && x > keys[i + 1].t) i += 1;
+  const a = keys[i];
+  const b = keys[i + 1];
+  const u = (x - a.t) / (b.t - a.t || 1);
+  return lerpPose(a.pose, b.pose, easeInOut(u));
+}
+
+// Three-quarter hero run — the same camera as assets/steve.svg.
+export const HERO = {
+  w: 512,
+  h: 560,
+  scale: 12,
+  originX: 256,
+  originY: 518,
+  roll: 8,
+};
+
+export function heroRunFrame(phase) {
+  const tau = (phase % 1) * Math.PI * 2;
+  const arm = Math.sin(tau);
+  const leg = Math.sin(tau);
+  const bob = Math.sin(tau * 2);
+  return {
+    view: { yaw: -34, pitch: 19 },
+    roll: 8,
+    root: { y: Math.max(0, bob) * 0.55, x: arm * 0.12 },
+    parts: {
+      torso: { pitch: -4 + bob * 3, roll: arm * 2 },
+      head: { yaw: 16, pitch: -2 + bob * 2, roll: -6 - arm * 2 },
+      "arm-right": { yaw: -6, pitch: -70 - arm * 48, roll: 7 },
+      "arm-left": { yaw: 4, pitch: 18 + arm * 38, roll: -13 },
+      "leg-right": { pitch: -leg * 38, roll: 4 },
+      "leg-left": { pitch: leg * 28, roll: -4 },
+    },
+  };
+}
+
+// One looping reel: breathe, run twice, jump, settle. Counts are unique poses.
+export function demoReel() {
+  const frames = [];
+  for (let i = 0; i < 8; i++) frames.push({ id: `idle-${i}`, pose: sampleIdle(i / 8) });
+  for (let cycle = 0; cycle < 2; cycle++) {
+    for (let i = 0; i < 16; i++) {
+      frames.push({ id: `run-${cycle}-${i}`, pose: runFrame(i / 16) });
+    }
+  }
+  frames.push({
+    id: "run-to-crouch",
+    pose: lerpPose(runFrame(0), jumpCrouch(), 0.55),
+  });
+  for (let i = 0; i < 14; i++) frames.push({ id: `jump-${i}`, pose: sampleJump(i / 13) });
+  return frames;
+}
