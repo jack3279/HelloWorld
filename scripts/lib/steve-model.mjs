@@ -301,6 +301,7 @@ const boxUv = (ox, oy, w, h, d) => ({
 // z-fighting; the sleeve overlaps both boxes and only shows in the wedge.
 export const SHAFT_GAP = 0.25;
 export const SLEEVE_HALF = 1.25;
+export const SLEEVE_SCALE = 0.78;
 export const BEND_SOFTNESS = SLEEVE_HALF;
 export const BEND_BANDS = 8;
 export const LIMB_TEXELS = 12;
@@ -599,14 +600,18 @@ function bendLocalPoint(pose, part, point) {
   return add3(joint, apply(rot, sub3(point, joint)));
 }
 
-function limbRing(part, y) {
+function limbRing(part, y, scale = 1) {
   const [x0, , z0] = part.min;
   const [x1, , z1] = part.max;
+  const cx = (x0 + x1) / 2;
+  const cz = (z0 + z1) / 2;
+  const sx = (x) => cx + (x - cx) * scale;
+  const sz = (z) => cz + (z - cz) * scale;
   return [
-    [x0, y, z1],
-    [x1, y, z1],
-    [x1, y, z0],
-    [x0, y, z0],
+    [sx(x0), y, sz(z1)],
+    [sx(x1), y, sz(z1)],
+    [sx(x1), y, sz(z0)],
+    [sx(x0), y, sz(z0)],
   ];
 }
 
@@ -818,7 +823,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
     const rings = [];
     for (let i = 0; i <= BEND_BANDS; i += 1) {
       const y = yTop + (yBot - yTop) * (i / BEND_BANDS);
-      rings.push(limbRing(part, y).map((p) => toWorld(part, p, true)));
+      rings.push(limbRing(part, y, SLEEVE_SCALE).map((p) => toWorld(part, p, true)));
     }
     const sleeveH = part.sleeveUv.front.h;
     const sleeveShade = partPose.shadeScale ?? 1;
