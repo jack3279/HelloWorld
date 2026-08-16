@@ -1,14 +1,14 @@
 // Shared machinery for rendering the Minecraft player model as flat vector art.
 //
-// The model is a torso and head plus four bendy limbs. Each limb is one
-// skinned tube: rings along the 12-texel length rotate from the shoulder/hip
-// pose into the elbow/knee pose, so the joint is a soft curve instead of two
-// disconnected cubes. Pose channels still use forearm-* / shin-* for the lower
-// bone. The torso carries the head and arms; the legs hang off the root.
-// A pose rotates parts around the model's own pivots; the figure is then turned
-// (yaw), tilted toward the camera (pitch) and projected orthographically. Every
-// visible face is painted texel by texel from a 64x64 player skin, so facial
-// features land exactly where the skin puts them.
+// The model is a torso, a head, and four hinged limbs. Each limb is two
+// cuboids — upper arm / forearm, thigh / shin — with a short skinned sleeve
+// only at the elbow or knee, so the shafts stay boxes and the joint is a
+// soft curve instead of a hinge crack. The torso carries the head and arms;
+// the legs hang off the root. A pose rotates parts around the model's own
+// pivots; the figure is then turned (yaw), tilted toward the camera (pitch)
+// and projected orthographically. Every visible face is painted texel by
+// texel from a 64x64 player skin, so facial features land exactly where the
+// skin puts them.
 //
 // Consumers: generate-steve-svg.mjs (hero pose), generate-steve-sprites.mjs
 // (side-view sprite frames), generate-steve-lottie.mjs (animated rig).
@@ -297,16 +297,54 @@ const boxUv = (ox, oy, w, h, d) => ({
   bottom: uv(ox + d + w, oy, w, d),
 });
 
-// How many texels around the elbow/knee share the bend. Larger = softer tube.
-export const BEND_SOFTNESS = 4;
-export const BEND_BANDS = 24;
+// Cuboid shafts stop this many texels short of the joint. The gap is the
+// only place that lofts — a short sleeve, not a hose down the whole limb.
+export const JOINT_INSET = 2;
+export const BEND_SOFTNESS = JOINT_INSET;
+export const BEND_BANDS = 8;
 export const LIMB_TEXELS = 12;
 
-const JOINT_LABELS = {
-  "forearm-right": "Right forearm",
-  "forearm-left": "Left forearm",
-  "shin-right": "Right shin",
-  "shin-left": "Left shin",
+// Split a 12-texel limb net into the shoulder/hip half and the hand/foot half.
+// `skip` drops that many texels at the cut so the joint sleeve owns them.
+function limbUv(ox, oy, w, h, d, half, skip = 0) {
+  const hh = h / 2;
+  const boxH = hh - skip;
+  const side = (yOff) => ({
+    nx: uv(ox, oy + d + yOff, d, boxH),
+    front: uv(ox + d, oy + d + yOff, w, boxH),
+    px: uv(ox + d + w, oy + d + yOff, d, boxH),
+    back: uv(ox + d + w + d, oy + d + yOff, w, boxH),
+  });
+  if (half === "upper") {
+    return {
+      ...side(0),
+      top: uv(ox + d, oy, w, d),
+      bottom: uv(ox + d, oy + d + Math.max(0, boxH - d), w, d),
+    };
+  }
+  return {
+    ...side(hh + skip),
+    top: uv(ox + d, oy + d + hh + skip, w, d),
+    bottom: uv(ox + d + w, oy, w, d),
+  };
+}
+
+function sleeveUv(ox, oy, w, h, d, inset = JOINT_INSET) {
+  const yOff = h / 2 - inset;
+  const sh = inset * 2;
+  return {
+    nx: uv(ox, oy + d + yOff, d, sh),
+    front: uv(ox + d, oy + d + yOff, w, sh),
+    px: uv(ox + d + w, oy + d + yOff, d, sh),
+    back: uv(ox + d + w + d, oy + d + yOff, w, sh),
+  };
+}
+
+const SLEEVE_LABELS = {
+  "elbow-right": "Right elbow",
+  "elbow-left": "Left elbow",
+  "knee-right": "Right knee",
+  "knee-left": "Left knee",
 };
 
 // Body space: +x is the character's left, +y up, +z the direction the character
@@ -331,49 +369,97 @@ export const MODEL = [
   },
   {
     id: "arm-right",
-    label: "Right arm",
+    label: "Right upper arm",
     parent: "torso",
-    kind: "bendy",
-    min: [-8, 12, -2],
+    min: [-8, 18 + JOINT_INSET, -2],
     max: [-4, 24, 2],
     pivot: [-4, 22, 0],
     joint: [-6, 18, 0],
     jointPart: "forearm-right",
-    uv: boxUv(40, 16, 4, 12, 4),
+    sleeveId: "elbow-right",
+    sleeveUv: sleeveUv(40, 16, 4, 12, 4),
+    omitFaces: ["bottom"],
+    uv: limbUv(40, 16, 4, 12, 4, "upper", JOINT_INSET),
+  },
+  {
+    id: "forearm-right",
+    label: "Right forearm",
+    parent: "arm-right",
+    min: [-8, 12, -2],
+    max: [-4, 18 - JOINT_INSET, 2],
+    pivot: [-6, 18, 0],
+    omitFaces: ["top"],
+    uv: limbUv(40, 16, 4, 12, 4, "lower", JOINT_INSET),
   },
   {
     id: "arm-left",
-    label: "Left arm",
+    label: "Left upper arm",
     parent: "torso",
-    kind: "bendy",
-    min: [4, 12, -2],
+    min: [4, 18 + JOINT_INSET, -2],
     max: [8, 24, 2],
     pivot: [4, 22, 0],
     joint: [6, 18, 0],
     jointPart: "forearm-left",
-    uv: boxUv(32, 48, 4, 12, 4),
+    sleeveId: "elbow-left",
+    sleeveUv: sleeveUv(32, 48, 4, 12, 4),
+    omitFaces: ["bottom"],
+    uv: limbUv(32, 48, 4, 12, 4, "upper", JOINT_INSET),
+  },
+  {
+    id: "forearm-left",
+    label: "Left forearm",
+    parent: "arm-left",
+    min: [4, 12, -2],
+    max: [8, 18 - JOINT_INSET, 2],
+    pivot: [6, 18, 0],
+    omitFaces: ["top"],
+    uv: limbUv(32, 48, 4, 12, 4, "lower", JOINT_INSET),
   },
   {
     id: "leg-right",
-    label: "Right leg",
-    kind: "bendy",
-    min: [-4, 0, -2],
+    label: "Right thigh",
+    min: [-4, 6 + JOINT_INSET, -2],
     max: [0, 12, 2],
     pivot: [-2, 12, 0],
     joint: [-2, 6, 0],
     jointPart: "shin-right",
-    uv: boxUv(0, 16, 4, 12, 4),
+    sleeveId: "knee-right",
+    sleeveUv: sleeveUv(0, 16, 4, 12, 4),
+    omitFaces: ["bottom"],
+    uv: limbUv(0, 16, 4, 12, 4, "upper", JOINT_INSET),
+  },
+  {
+    id: "shin-right",
+    label: "Right shin",
+    parent: "leg-right",
+    min: [-4, 0, -2],
+    max: [0, 6 - JOINT_INSET, 2],
+    pivot: [-2, 6, 0],
+    omitFaces: ["top"],
+    uv: limbUv(0, 16, 4, 12, 4, "lower", JOINT_INSET),
   },
   {
     id: "leg-left",
-    label: "Left leg",
-    kind: "bendy",
-    min: [0, 0, -2],
+    label: "Left thigh",
+    min: [0, 6 + JOINT_INSET, -2],
     max: [4, 12, 2],
     pivot: [2, 12, 0],
     joint: [2, 6, 0],
     jointPart: "shin-left",
-    uv: boxUv(16, 48, 4, 12, 4),
+    sleeveId: "knee-left",
+    sleeveUv: sleeveUv(16, 48, 4, 12, 4),
+    omitFaces: ["bottom"],
+    uv: limbUv(16, 48, 4, 12, 4, "upper", JOINT_INSET),
+  },
+  {
+    id: "shin-left",
+    label: "Left shin",
+    parent: "leg-left",
+    min: [0, 0, -2],
+    max: [4, 6 - JOINT_INSET, 2],
+    pivot: [2, 6, 0],
+    omitFaces: ["top"],
+    uv: limbUv(16, 48, 4, 12, 4, "lower", JOINT_INSET),
   },
 ];
 
@@ -680,98 +766,11 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
   for (const part of MODEL) {
     const partPose = poseFor(pose, part.id);
     const tol = tolerance?.[part.id] ?? tolerance?.default ?? 12;
-
-    if (part.kind === "bendy") {
-      const jointPose = poseFor(pose, part.jointPart);
-      const split = Math.ceil(BEND_BANDS / 2);
-      const rings = [];
-      for (let i = 0; i <= BEND_BANDS; i += 1) {
-        const t = i / BEND_BANDS;
-        const y = part.max[1] + (part.min[1] - part.max[1]) * t;
-        rings.push(limbRing(part, y).map((p) => toWorld(part, p, true)));
-      }
-
-      const groups = {
-        upper: { id: part.id, label: part.label, parent: part.parent, faces: [], depths: [] },
-        lower: {
-          id: part.jointPart,
-          label: JOINT_LABELS[part.jointPart] ?? part.jointPart,
-          parent: part.id,
-          faces: [],
-          depths: [],
-        },
-      };
-
-      for (let i = 0; i < BEND_BANDS; i += 1) {
-        const group = i < split ? groups.upper : groups.lower;
-        const shadeScale = (i < split ? partPose : jointPose).shadeScale ?? 1;
-        const row = Math.min(LIMB_TEXELS - 1, Math.floor((i * LIMB_TEXELS) / BEND_BANDS));
-        const faces = limbBandFaces(rings[i], rings[i + 1]);
-        for (const faceName of ["front", "back", "nx", "px"]) {
-          const painted = paint(
-            group.id,
-            faceName,
-            uvRow(part.uv[faceName], row),
-            faces[faceName],
-            shadeScale,
-            0,
-            tol,
-          );
-          group.depths.push(painted.depth);
-          if (painted.face) group.faces.push(painted.face);
-        }
-      }
-
-      const top = paint(
-        part.id,
-        "top",
-        part.uv.top,
-        [rings[0][3], rings[0][2], rings[0][1], rings[0][0]],
-        partPose.shadeScale ?? 1,
-        0,
-        tol,
-      );
-      groups.upper.depths.push(top.depth);
-      if (top.face) groups.upper.faces.push(top.face);
-
-      const last = rings[BEND_BANDS];
-      const bottom = paint(
-        part.jointPart,
-        "bottom",
-        part.uv.bottom,
-        [last[0], last[1], last[2], last[3]],
-        jointPose.shadeScale ?? 1,
-        0,
-        tol,
-      );
-      groups.lower.depths.push(bottom.depth);
-      if (bottom.face) groups.lower.faces.push(bottom.face);
-
-      parts.push(
-        collectPart(
-          groups.upper.id,
-          groups.upper.label,
-          groups.upper.parent,
-          apply(viewMatrix, toWorld(part, part.pivot, true)),
-          groups.upper.faces,
-          groups.upper.depths,
-        ),
-        collectPart(
-          groups.lower.id,
-          groups.lower.label,
-          groups.lower.parent,
-          apply(viewMatrix, toWorld(part, part.joint, true)),
-          groups.lower.faces,
-          groups.lower.depths,
-        ),
-      );
-      continue;
-    }
-
     const chain = chainMatrix(pose, part);
     const faces = [];
     const depths = [];
     for (const [faceName, rect] of Object.entries(part.uv)) {
+      if (part.omitFaces?.includes(faceName)) continue;
       const { normal, quad } = faceCorners(part.min, part.max, faceName);
       const worldNormal = norm(apply(chain, normal));
       const cameraNormal = norm(apply(viewMatrix, worldNormal));
@@ -805,6 +804,47 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
         apply(viewMatrix, toWorld(part, part.pivot, false)),
         faces,
         depths,
+      ),
+    );
+
+    if (!part.sleeveUv || !part.jointPart) continue;
+    const lower = byId.get(part.jointPart);
+    const sleeveFaces = [];
+    const sleeveDepths = [];
+    const yTop = part.min[1];
+    const yBot = lower.max[1];
+    const rings = [];
+    for (let i = 0; i <= BEND_BANDS; i += 1) {
+      const y = yTop + (yBot - yTop) * (i / BEND_BANDS);
+      rings.push(limbRing(part, y).map((p) => toWorld(part, p, true)));
+    }
+    const sleeveH = part.sleeveUv.front.h;
+    const sleeveShade = partPose.shadeScale ?? 1;
+    for (let i = 0; i < BEND_BANDS; i += 1) {
+      const row = Math.min(sleeveH - 1, Math.floor((i * sleeveH) / BEND_BANDS));
+      const band = limbBandFaces(rings[i], rings[i + 1]);
+      for (const faceName of ["front", "back", "nx", "px"]) {
+        const painted = paint(
+          part.sleeveId,
+          faceName,
+          uvRow(part.sleeveUv[faceName], row),
+          band[faceName],
+          sleeveShade,
+          0,
+          tol,
+        );
+        sleeveDepths.push(painted.depth);
+        if (painted.face) sleeveFaces.push(painted.face);
+      }
+    }
+    parts.push(
+      collectPart(
+        part.sleeveId,
+        SLEEVE_LABELS[part.sleeveId] ?? part.sleeveId,
+        part.id,
+        apply(viewMatrix, toWorld(part, part.joint, true)),
+        sleeveFaces,
+        sleeveDepths,
       ),
     );
   }

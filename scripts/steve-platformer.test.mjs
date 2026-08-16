@@ -30,26 +30,28 @@ describe("steve pose catalog", () => {
     }
   });
 
-  it("skins each limb as one bendy tube", () => {
-    const limbs = MODEL.filter((p) => p.kind === "bendy");
-    assert.equal(limbs.length, 4);
+  it("keeps limb shafts as cuboids and only skins the joint", () => {
     const byId = Object.fromEntries(MODEL.map((p) => [p.id, p]));
+    assert.equal(byId["forearm-right"].parent, "arm-right");
+    assert.equal(byId["forearm-left"].parent, "arm-left");
+    assert.equal(byId["shin-right"].parent, "leg-right");
+    assert.equal(byId["shin-left"].parent, "leg-left");
     assert.equal(byId["arm-right"].jointPart, "forearm-right");
     assert.equal(byId["arm-left"].jointPart, "forearm-left");
     assert.equal(byId["leg-right"].jointPart, "shin-right");
     assert.equal(byId["leg-left"].jointPart, "shin-left");
-    for (const part of limbs) {
-      assert.equal(part.max[1] - part.min[1], 12);
-      assert.ok(part.joint);
-      assert.ok(part.joint[1] > part.min[1]);
-      assert.ok(part.joint[1] < part.max[1]);
-    }
-    assert.equal(bendBlend(24, 18, 4), 0);
-    assert.equal(bendBlend(12, 18, 4), 1);
-    assert.ok(Math.abs(bendBlend(18, 18, 4) - 0.5) < 1e-9);
+    assert.equal(byId["arm-right"].sleeveId, "elbow-right");
+    assert.equal(byId["leg-right"].sleeveId, "knee-right");
+    assert.ok(byId["arm-right"].min[1] > byId["forearm-right"].max[1]);
+    assert.ok(byId["leg-right"].min[1] > byId["shin-right"].max[1]);
+    assert.equal(byId["arm-right"].max[1] - byId["arm-right"].min[1], 4);
+    assert.equal(byId["forearm-right"].max[1] - byId["forearm-right"].min[1], 4);
+    assert.equal(bendBlend(20, 18, 2), 0);
+    assert.equal(bendBlend(16, 18, 2), 1);
+    assert.ok(Math.abs(bendBlend(18, 18, 2) - 0.5) < 1e-9);
   });
 
-  it("bends a limb as a continuous tube", async () => {
+  it("bends only the elbow sleeve between two cuboids", async () => {
     const skin = await loadSkin();
     const view = { yaw: 90, pitch: 0 };
     const straight = buildFigure({ skin, pose: { view, parts: {} } });
@@ -60,10 +62,12 @@ describe("steve pose catalog", () => {
     const ids = new Set(bent.parts.map((p) => p.id));
     assert.ok(ids.has("arm-right"));
     assert.ok(ids.has("forearm-right"));
-    const pts = (figure, id) =>
-      figure.parts
-        .find((p) => p.id === id)
-        .faces.flatMap((f) => f.points);
+    assert.ok(ids.has("elbow-right"));
+    const facesOf = (figure, id) => figure.parts.find((p) => p.id === id)?.faces ?? [];
+    assert.ok(facesOf(bent, "arm-right").length <= 6, "upper arm stays one cuboid");
+    assert.ok(facesOf(bent, "forearm-right").length <= 6, "forearm stays one cuboid");
+    assert.ok(facesOf(bent, "elbow-right").length >= 4, "elbow sleeve is lofted");
+    const pts = (figure, id) => facesOf(figure, id).flatMap((f) => f.points);
     const handY = (figure) => Math.min(...pts(figure, "forearm-right").map((p) => p[1]));
     assert.ok(handY(bent) > handY(straight) + 1, "elbow fold lifts the hand in profile");
     for (const part of bent.parts) {
