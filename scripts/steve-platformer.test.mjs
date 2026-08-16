@@ -47,7 +47,7 @@ describe("generated sprite kit", () => {
     }
   });
 
-  it("lottie scenes reference files that exist", async () => {
+  it("lottie scenes are self-contained shape flipbooks", async () => {
     for (const scene of ["scene-1", "scene-2", "scene-3"]) {
       const dir = resolve(ROOT, "public/projects/steve-platformer", scene);
       const lottie = JSON.parse(await readFile(resolve(dir, "lottie.json"), "utf8"));
@@ -56,12 +56,13 @@ describe("generated sprite kit", () => {
       assert.ok(lottie.op > lottie.ip);
       assert.equal(lottie.w, 256);
       assert.equal(lottie.h, 320);
-      for (const asset of lottie.assets) {
-        const svg = await readFile(resolve(dir, asset.p), "utf8");
-        assert.match(svg, /<svg /);
+      assert.equal(lottie.assets.length, 0);
+      const shapes = lottie.layers.filter((l) => l.ty === 4);
+      assert.ok(shapes.length >= 2);
+      for (const layer of shapes) {
+        assert.ok(layer.shapes.length > 0, layer.nm);
+        assert.ok(layer.ip < layer.op, layer.nm);
       }
-      const visible = lottie.layers.filter((l) => l.ty === 2);
-      assert.equal(visible.length, lottie.assets.length);
     }
   });
 });

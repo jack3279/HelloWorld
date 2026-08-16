@@ -612,3 +612,80 @@ export function parseArgs(argv) {
     }),
   );
 }
+
+// ----------------------------------------------------------------- lottie emit
+
+export function hexToRgba01(hex) {
+  return [
+    parseInt(hex.slice(1, 3), 16) / 255,
+    parseInt(hex.slice(3, 5), 16) / 255,
+    parseInt(hex.slice(5, 7), 16) / 255,
+    1,
+  ];
+}
+
+function lottieQuad(pts) {
+  return {
+    c: true,
+    v: pts.map(([x, y]) => [Math.round(x * 100) / 100, Math.round(y * 100) / 100]),
+    i: pts.map(() => [0, 0]),
+    o: pts.map(() => [0, 0]),
+  };
+}
+
+function lottieFill(hex) {
+  return { ty: "fl", o: { a: 0, k: 100 }, c: { a: 0, k: hexToRgba01(hex) }, r: 1 };
+}
+
+function lottieStroke(hex, width = 0.6) {
+  return {
+    ty: "st",
+    o: { a: 0, k: 100 },
+    w: { a: 0, k: width },
+    c: { a: 0, k: hexToRgba01(hex) },
+    lc: 2,
+    lj: 1,
+  };
+}
+
+const IDENTITY_TR = {
+  ty: "tr",
+  p: { a: 0, k: [0, 0] },
+  a: { a: 0, k: [0, 0] },
+  s: { a: 0, k: [100, 100] },
+  r: { a: 0, k: 0 },
+  o: { a: 0, k: 100 },
+};
+
+function lottieGroup(name, items) {
+  return { ty: "gr", nm: name, it: [...items, { ...IDENTITY_TR }] };
+}
+
+// One shape-layer `shapes` array for the posed figure. Parts are already
+// back-to-front; later groups draw on top inside a Lottie shape layer.
+export function figureToLottieShapes(parts, project) {
+  const shapes = [];
+  for (const part of parts) {
+    if (!part.faces.length) continue;
+    const items = [];
+    for (const face of part.faces) {
+      const corners = face.points.map(project);
+      items.push(
+        lottieGroup(`${part.id}/${face.faceName}`, [
+          { ty: "sh", nm: "base", ks: { a: 0, k: lottieQuad(corners) } },
+          lottieFill(face.base),
+        ]),
+      );
+      for (const [hex, quads] of faceColorPaths(face, corners)) {
+        const paths = quads.map((q, i) => ({
+          ty: "sh",
+          nm: `texel-${i}`,
+          ks: { a: 0, k: lottieQuad(q) },
+        }));
+        items.push(lottieGroup(`${part.id}/${face.faceName}/${hex}`, [...paths, lottieFill(hex), lottieStroke(hex)]));
+      }
+    }
+    shapes.push(lottieGroup(part.id, items));
+  }
+  return shapes;
+}

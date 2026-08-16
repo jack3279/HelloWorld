@@ -1,41 +1,38 @@
-// Builds Skottie scenes that flip through the side-view sprite frames:
+// Builds Skottie scenes that flip through the side-view poses as vector
+// shape layers (not image assets — Skottie leaves SVG files blank):
 //   public/projects/steve-platformer/scene-1  idle
 //   public/projects/steve-platformer/scene-2  run
 //   public/projects/steve-platformer/scene-3  jump
 //
-// Each scene copies the SVG frames it needs next to lottie.json and sequences
-// them with layer in/out points. Transparent background — these are game
-// sprites, not a full-frame card.
+// Transparent background — these are game sprites, not a full-frame card.
 //
 // Usage:
-//   node scripts/generate-steve-sprites.mjs && node scripts/generate-steve-lottie.mjs
-import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+//   node scripts/generate-steve-lottie.mjs [--skin=<png>]
+import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
-import { ANIMATIONS, SPRITE } from "./lib/steve-poses.mjs";
+import { buildFigure, figureToLottieShapes, loadSkin, makeProjector, parseArgs } from "./lib/steve-model.mjs";
+import { ANIMATIONS, SPRITE, TOLERANCE, catalog } from "./lib/steve-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(__dirname, "..");
-const SPRITES = resolve(ROOT, "assets/steve-sprites");
-const PROJECT = resolve(ROOT, "public/projects/steve-platformer");
+const PROJECT = resolve(__dirname, "../public/projects/steve-platformer");
 
-function imageLayer({ ind, name, refId, ip, op, w, h }) {
+function shapeLayer({ ind, name, ip, op, shapes }) {
   return {
     ddd: 0,
     ind,
-    ty: 2,
+    ty: 4,
     nm: name,
-    refId,
     sr: 1,
     ks: {
       o: { a: 0, k: 100 },
       r: { a: 0, k: 0 },
-      p: { a: 0, k: [w / 2, h / 2, 0] },
-      a: { a: 0, k: [w / 2, h / 2, 0] },
+      p: { a: 0, k: [0, 0, 0] },
+      a: { a: 0, k: [0, 0, 0] },
       s: { a: 0, k: [100, 100, 100] },
     },
     ao: 0,
+    shapes,
     ip,
     op,
     st: ip,
@@ -46,26 +43,14 @@ function imageLayer({ ind, name, refId, ip, op, w, h }) {
 function flipbook({ name, frames, fps, hold, loop }) {
   const { w, h } = SPRITE;
   const op = frames.length * hold;
-  const assets = frames.map((id) => ({
-    id,
-    w,
-    h,
-    u: "",
-    p: `${id}.svg`,
-    e: 0,
-  }));
-  // Later layers draw on top; only one layer is visible at a time, so order
-  // only has to stay stable. First frame is the last layer so it is underneath
-  // if two in-points ever overlap.
-  const layers = frames.map((id, i) =>
-    imageLayer({
+  // First layer in the file is on top. Only one frame is visible at a time.
+  const layers = frames.map((frame, i) =>
+    shapeLayer({
       ind: frames.length - i,
-      name: id,
-      refId: id,
+      name: frame.id,
       ip: i * hold,
       op: (i + 1) * hold,
-      w,
-      h,
+      shapes: frame.shapes,
     }),
   );
   return {
@@ -77,41 +62,49 @@ function flipbook({ name, frames, fps, hold, loop }) {
     h,
     nm: name,
     ddd: 0,
-    assets,
+    assets: [],
     layers,
     meta: { loop, g: "scripts/generate-steve-lottie.mjs" },
   };
 }
 
-async function writeScene(slug, title, animation, extraHold = {}) {
-  const dir = resolve(PROJECT, slug);
-  await mkdir(dir, { recursive: true });
-  const hold = extraHold[animation] ?? 1;
-  const spec = ANIMATIONS[animation];
-  const lottie = flipbook({
-    name: title,
-    frames: spec.frames,
-    fps: spec.fps,
-    hold,
-    loop: spec.loop,
-  });
-  for (const id of spec.frames) {
-    await copyFile(resolve(SPRITES, `${id}.svg`), resolve(dir, `${id}.svg`));
-  }
-  await writeFile(resolve(dir, "lottie.json"), JSON.stringify(lottie, null, 2) + "\n");
-  return { slug, title, frames: spec.frames.length, op: lottie.op, fps: lottie.fr };
-}
+const args = parseArgs(process.argv.slice(2));
+const skin = await loadSkin(args.get("skin"));
+if (skin.width < 64 || skin.height < 64) throw new Error("expected a 64x64 skin");
 
-const atlas = JSON.parse(await readFile(resolve(SPRITES, "atlas.json"), "utf8"));
-if (!atlas.frames["run-0"]) throw new Error("run sprites first: node scripts/generate-steve-sprites.mjs");
+const project = makeProjector({
+  scale: SPRITE.scale,
+  originX: SPRITE.originX,
+  originY: SPRITE.originY,
+});
+
+const baked = new Map();
+for (const entry of catalog()) {
+  const { parts } = buildFigure({ skin, pose: entry.pose, tolerance: TOLERANCE });
+  baked.set(entry.id, { id: entry.id, shapes: figureToLottieShapes(parts, project) });
+}
 
 const scenes = [
-  await writeScene("scene-1", "Steve — Idle", "idle", { idle: 4 }),
-  await writeScene("scene-2", "Steve — Run", "run", { run: 1 }),
-  await writeScene("scene-3", "Steve — Jump", "jump", { jump: 3 }),
+  { slug: "scene-1", title: "Steve — Idle", animation: "idle", hold: 4 },
+  { slug: "scene-2", title: "Steve — Run", animation: "run", hold: 1 },
+  { slug: "scene-3", title: "Steve — Jump", animation: "jump", hold: 3 },
 ];
 
-for (const s of scenes) {
-  console.log(`${s.slug}  ${s.title}  ${s.frames} frames  ${s.op} ticks @ ${s.fps} fps`);
+for (const scene of scenes) {
+  const dir = resolve(PROJECT, scene.slug);
+  await mkdir(dir, { recursive: true });
+  for (const name of await readdir(dir)) {
+    if (name.endsWith(".svg")) await rm(resolve(dir, name));
+  }
+  const spec = ANIMATIONS[scene.animation];
+  const lottie = flipbook({
+    name: scene.title,
+    frames: spec.frames.map((id) => baked.get(id)),
+    fps: spec.fps,
+    hold: scene.hold,
+    loop: spec.loop,
+  });
+  await writeFile(resolve(dir, "lottie.json"), JSON.stringify(lottie) + "\n");
+  const kb = (Buffer.byteLength(JSON.stringify(lottie)) / 1024).toFixed(1);
+  console.log(`${scene.slug}  ${scene.title}  ${spec.frames.length} frames  ${lottie.op} ticks @ ${lottie.fr} fps  ${kb} kB`);
 }
-console.log(`Wrote ${PROJECT}`);
