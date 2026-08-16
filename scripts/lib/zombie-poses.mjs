@@ -14,11 +14,11 @@ const FAR = { shadeScale: 0.84 };
 const NEAR = { shadeScale: 1 };
 
 export const SPRITE = {
-  w: 320,
-  h: 320,
-  scale: 6.6,
-  originX: 148,
-  originY: 300,
+  w: 512,
+  h: 520,
+  scale: 12,
+  originX: 236,
+  originY: 490,
 };
 
 export const TOLERANCE = { default: 30, head: 12 };
