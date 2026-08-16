@@ -23,9 +23,13 @@ const POSE = {
     torso: { pitch: -4 },
     head: { yaw: 16, pitch: -2, roll: -6 },
     "arm-right": { yaw: -6, pitch: -104, roll: 7 },
+    "forearm-right": { pitch: -32 },
     "arm-left": { yaw: 4, pitch: 38, roll: -13 },
+    "forearm-left": { pitch: -48 },
     "leg-right": { pitch: -38, roll: 4 },
+    "shin-right": { pitch: 18 },
     "leg-left": { pitch: 27, roll: -4 },
+    "shin-left": { pitch: 42 },
   },
 };
 

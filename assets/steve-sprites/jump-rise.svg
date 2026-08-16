@@ -2,16 +2,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 320" width="256" height="320" role="img" aria-labelledby="jump-rise-title">
   <title id="jump-rise-title">Jump rise</title>
   <g id="steve">
-    <g id="arm-left" aria-label="Left arm">
+    <g id="arm-left" aria-label="Left upper arm">
       <g class="face" data-face="nx">
-        <path fill="#975a3b" d="M117.2 128.48L95.84 112.96L142.39 48.89L163.75 64.41Z"/>
-        <path fill="#0b9295" stroke="#0b9295" stroke-width=".6" stroke-linejoin="round" d="M117.2 128.48L95.84 112.96L99.72 107.62L121.08 123.14ZM121.08 123.14L99.72 107.62L103.6 102.28L124.96 117.8ZM124.96 117.8L103.6 102.28L107.48 96.94L128.84 112.46ZM128.84 112.46L107.48 96.94L111.36 91.6L132.72 107.12Z"/>
+        <path fill="#0b9295" d="M117.2 128.48L95.84 112.96L119.12 80.93L140.47 96.44Z"/>
+        <path fill="#975a3b" stroke="#975a3b" stroke-width=".6" stroke-linejoin="round" d="M132.72 107.12L111.36 91.6L115.24 86.26L136.6 101.78ZM136.6 101.78L115.24 86.26L119.12 80.93L140.47 96.44Z"/>
       </g>
     </g>
-    <g id="leg-left" aria-label="Left leg">
+    <g id="forearm-left" aria-label="Left forearm">
       <g class="face" data-face="nx">
-        <path fill="#2f2589" d="M114.87 173.22L141.13 175.98L132.85 254.75L106.59 251.99Z"/>
-        <path fill="#1f2023" stroke="#1f2023" stroke-width=".6" stroke-linejoin="round" d="M108.66 232.29L121.79 233.67L121.1 240.24L107.97 238.86ZM107.97 238.86L134.23 241.62L133.54 248.18L107.28 245.42ZM107.28 245.42L133.54 248.18L132.85 254.75L106.59 251.99Z"/>
+        <path fill="#975a3b" d="M142.6 91.88L116.99 85.49L126.57 47.07L152.18 53.45Z"/>
+      </g>
+    </g>
+    <g id="leg-left" aria-label="Left thigh">
+      <g class="face" data-face="nx">
+        <path fill="#2f2589" d="M114.87 173.22L141.13 175.98L136.99 215.36L110.73 212.6Z"/>
+      </g>
+    </g>
+    <g id="shin-left" aria-label="Left shin">
+      <g class="face" data-face="nx">
+        <path fill="#2f2589" d="M111.8 208.61L135.92 219.35L119.81 255.53L95.7 244.79Z"/>
+        <path fill="#1f2023" stroke="#1f2023" stroke-width=".6" stroke-linejoin="round" d="M103.75 226.7L115.81 232.07L113.12 238.1L101.06 232.73ZM101.06 232.73L125.18 243.47L122.5 249.5L98.38 238.76ZM98.38 238.76L122.5 249.5L119.81 255.53L95.7 244.79Z"/>
       </g>
     </g>
     <g id="head" aria-label="Head">
@@ -52,16 +62,26 @@
         <path fill="#3a2d9f" stroke="#3a2d9f" stroke-width=".6" stroke-linejoin="round" d="M112.34 164.43L138.17 158.94L139.54 165.4L113.72 170.89ZM113.72 170.89L139.54 165.4L140.91 171.86L115.09 177.34Z"/>
       </g>
     </g>
-    <g id="leg-right" aria-label="Right leg">
+    <g id="leg-right" aria-label="Right thigh">
       <g class="face" data-face="nx">
-        <path fill="#3a2d9f" d="M114.93 176.44L141.07 172.76L152.09 251.19L125.95 254.87Z"/>
-        <path fill="#272727" stroke="#272727" stroke-width=".6" stroke-linejoin="round" d="M123.2 235.26L136.27 233.42L137.19 239.96L124.11 241.79ZM124.11 241.79L150.26 238.12L151.18 244.66L125.03 248.33ZM125.03 248.33L151.18 244.66L152.09 251.19L125.95 254.87Z"/>
+        <path fill="#3a2d9f" d="M114.93 176.44L141.07 172.76L146.58 211.98L120.44 215.65Z"/>
       </g>
     </g>
-    <g id="arm-right" aria-label="Right arm">
+    <g id="shin-right" aria-label="Right shin">
       <g class="face" data-face="nx">
-        <path fill="#b56b42" d="M122.17 126.96L97.36 117.93L124.45 43.51L149.26 52.54Z"/>
-        <path fill="#0fadad" stroke="#0fadad" stroke-width=".6" stroke-linejoin="round" d="M122.17 126.96L97.36 117.93L99.62 111.73L124.42 120.76ZM124.42 120.76L99.62 111.73L101.87 105.53L126.68 114.56ZM126.68 114.56L101.87 105.53L104.13 99.33L128.94 108.35ZM128.94 108.35L104.13 99.33L106.39 93.12L131.2 102.15Z"/>
+        <path fill="#3a2d9f" d="M120.34 212.89L146.68 214.74L143.92 254.24L117.58 252.4Z"/>
+        <path fill="#272727" stroke="#272727" stroke-width=".6" stroke-linejoin="round" d="M118.96 232.65L132.13 233.57L131.67 240.15L118.5 239.23ZM118.5 239.23L144.84 241.07L144.38 247.66L118.04 245.81ZM118.04 245.81L144.38 247.66L143.92 254.24L117.58 252.4Z"/>
+      </g>
+    </g>
+    <g id="arm-right" aria-label="Right upper arm">
+      <g class="face" data-face="nx">
+        <path fill="#0fadad" d="M122.17 126.96L97.36 117.93L110.9 80.72L135.71 89.75Z"/>
+        <path fill="#b56b42" stroke="#b56b42" stroke-width=".6" stroke-linejoin="round" d="M131.2 102.15L106.39 93.12L108.65 86.92L133.45 95.95ZM133.45 95.95L108.65 86.92L110.9 80.72L135.71 89.75Z"/>
+      </g>
+    </g>
+    <g id="forearm-right" aria-label="Right forearm">
+      <g class="face" data-face="nx">
+        <path fill="#b56b42" d="M136.38 83.4L110.24 87.07L104.72 47.86L130.87 44.18Z"/>
       </g>
     </g>
   </g>

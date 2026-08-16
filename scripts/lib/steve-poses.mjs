@@ -5,8 +5,10 @@
 // Limb `pitch` is the swing in the plane of motion: negative is forward
 // (the direction the character faces), positive is back.
 //
-// Far limbs (the character's left, away from the camera) are slightly dimmed
-// so the near arm and leg read as the foreground.
+// Upper-arm / thigh pitch is the shoulder or hip. Forearm pitch is the elbow
+// (negative folds the hand forward). Shin pitch is the knee (positive folds
+// the foot back). Far limbs (the character's left) are slightly dimmed so the
+// near arm and leg read as the foreground.
 
 const SIDE_VIEW = { yaw: 90, pitch: 0 };
 
@@ -35,14 +37,22 @@ function limb(base, extra = {}) {
   return { ...base, ...extra };
 }
 
+function armLeg(side, { shoulder, elbow, hip, knee, roll = 0 }) {
+  const base = side === "right" ? NEAR : FAR;
+  return {
+    [`arm-${side}`]: limb(base, { pitch: shoulder, roll }),
+    [`forearm-${side}`]: limb(base, { pitch: elbow, roll: 0 }),
+    [`leg-${side}`]: limb(base, { pitch: hip, roll }),
+    [`shin-${side}`]: limb(base, { pitch: knee, roll: 0 }),
+  };
+}
+
 export function idleA() {
   return pose({
     torso: { pitch: -2, roll: 0 },
     head: { ...FACE },
-    "arm-right": limb(NEAR, { pitch: 8, roll: 0 }),
-    "arm-left": limb(FAR, { pitch: -5, roll: 0 }),
-    "leg-right": limb(NEAR, { pitch: 3, roll: 0 }),
-    "leg-left": limb(FAR, { pitch: -2, roll: 0 }),
+    ...armLeg("right", { shoulder: 8, elbow: -18, hip: 3, knee: 8 }),
+    ...armLeg("left", { shoulder: -5, elbow: -14, hip: -2, knee: 6 }),
   });
 }
 
@@ -51,10 +61,8 @@ export function idleB() {
     {
       torso: { pitch: -1, roll: 0 },
       head: { ...FACE },
-      "arm-right": limb(NEAR, { pitch: 5, roll: 0 }),
-      "arm-left": limb(FAR, { pitch: -2, roll: 0 }),
-      "leg-right": limb(NEAR, { pitch: 2, roll: 0 }),
-      "leg-left": limb(FAR, { pitch: -1, roll: 0 }),
+      ...armLeg("right", { shoulder: 5, elbow: -16, hip: 2, knee: 6 }),
+      ...armLeg("left", { shoulder: -2, elbow: -12, hip: -1, knee: 5 }),
     },
     { y: 0.25 },
   );
@@ -67,14 +75,24 @@ export function runFrame(phase) {
   const arm = Math.sin(tau);
   const leg = Math.sin(tau);
   const bob = Math.sin(tau * 2);
+  // Elbow and knee close on the trailing limb, open on the leading one.
+  const trail = (v) => Math.max(0, v);
   return pose(
     {
       torso: { pitch: -6 + bob * 3, roll: 0 },
       head: { ...FACE, pitch: 2 - bob },
-      "arm-right": limb(NEAR, { pitch: 12 + arm * 78, roll: 0 }),
-      "arm-left": limb(FAR, { pitch: -8 - arm * 72, roll: 0 }),
-      "leg-right": limb(NEAR, { pitch: -leg * 42, roll: 0 }),
-      "leg-left": limb(FAR, { pitch: leg * 42, roll: 0 }),
+      ...armLeg("right", {
+        shoulder: 12 + arm * 78,
+        elbow: -22 - trail(arm) * 42,
+        hip: -leg * 42,
+        knee: 10 + trail(-leg) * 48,
+      }),
+      ...armLeg("left", {
+        shoulder: -8 - arm * 72,
+        elbow: -22 - trail(-arm) * 42,
+        hip: leg * 42,
+        knee: 10 + trail(leg) * 48,
+      }),
     },
     { y: Math.max(0, bob) * 0.7, x: arm * 0.15 },
   );
@@ -84,10 +102,8 @@ export function jumpCrouch() {
   return pose({
     torso: { pitch: 14, roll: 0 },
     head: { ...FACE, pitch: 8 },
-    "arm-right": limb(NEAR, { pitch: 48, roll: 0 }),
-    "arm-left": limb(FAR, { pitch: 36, roll: 0 }),
-    "leg-right": limb(NEAR, { pitch: 22, roll: 0 }),
-    "leg-left": limb(FAR, { pitch: 16, roll: 0 }),
+    ...armLeg("right", { shoulder: 48, elbow: -52, hip: 28, knee: 54 }),
+    ...armLeg("left", { shoulder: 36, elbow: -44, hip: 22, knee: 48 }),
   });
 }
 
@@ -96,10 +112,8 @@ export function jumpRise() {
     {
       torso: { pitch: -12, roll: 0 },
       head: { ...FACE, pitch: -6 },
-      "arm-right": limb(NEAR, { pitch: -148, roll: 0 }),
-      "arm-left": limb(FAR, { pitch: -132, roll: 0 }),
-      "leg-right": limb(NEAR, { pitch: -8, roll: 0 }),
-      "leg-left": limb(FAR, { pitch: 6, roll: 0 }),
+      ...armLeg("right", { shoulder: -148, elbow: -28, hip: -8, knee: 12 }),
+      ...armLeg("left", { shoulder: -132, elbow: -22, hip: 6, knee: 18 }),
     },
     { y: 7 },
   );
@@ -110,10 +124,8 @@ export function jumpApex() {
     {
       torso: { pitch: -4, roll: 0 },
       head: { ...FACE, pitch: -2 },
-      "arm-right": limb(NEAR, { pitch: -158, roll: 0 }),
-      "arm-left": limb(FAR, { pitch: -118, roll: 0 }),
-      "leg-right": limb(NEAR, { pitch: -18, roll: 0 }),
-      "leg-left": limb(FAR, { pitch: 22, roll: 0 }),
+      ...armLeg("right", { shoulder: -158, elbow: -18, hip: -18, knee: 8 }),
+      ...armLeg("left", { shoulder: -118, elbow: -36, hip: 22, knee: 38 }),
     },
     { y: 11 },
   );
@@ -124,10 +136,8 @@ export function jumpFall() {
     {
       torso: { pitch: 8, roll: 0 },
       head: { ...FACE, pitch: 6 },
-      "arm-right": limb(NEAR, { pitch: -88, roll: 0 }),
-      "arm-left": limb(FAR, { pitch: -54, roll: 0 }),
-      "leg-right": limb(NEAR, { pitch: -28, roll: 0 }),
-      "leg-left": limb(FAR, { pitch: 12, roll: 0 }),
+      ...armLeg("right", { shoulder: -88, elbow: -34, hip: -28, knee: 16 }),
+      ...armLeg("left", { shoulder: -54, elbow: -28, hip: 12, knee: 22 }),
     },
     { y: 5.5 },
   );
@@ -137,10 +147,8 @@ export function jumpLand() {
   return pose({
     torso: { pitch: 16, roll: 0 },
     head: { ...FACE, pitch: 10 },
-    "arm-right": limb(NEAR, { pitch: 28, roll: 0 }),
-    "arm-left": limb(FAR, { pitch: 18, roll: 0 }),
-    "leg-right": limb(NEAR, { pitch: 24, roll: 0 }),
-    "leg-left": limb(FAR, { pitch: 14, roll: 0 }),
+    ...armLeg("right", { shoulder: 28, elbow: -40, hip: 26, knee: 50 }),
+    ...armLeg("left", { shoulder: 18, elbow: -34, hip: 18, knee: 44 }),
   });
 }
 

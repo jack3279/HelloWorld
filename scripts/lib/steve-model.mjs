@@ -1,7 +1,8 @@
 // Shared machinery for rendering the Minecraft player model as flat vector art.
 //
-// The model is six cuboids (head, torso, two arms, two legs) in a small
-// hierarchy: the torso carries the head and arms, the legs hang off the root.
+// The model is ten cuboids (head, torso, upper/fore arms, thighs/shins) in a
+// small hierarchy: the torso carries the head and upper arms, each forearm
+// hangs off its upper arm, and each shin hangs off its thigh.
 // A pose rotates parts around the model's own pivots; the figure is then turned
 // (yaw), tilted toward the camera (pitch) and projected orthographically. Every
 // visible face is painted texel by texel from a 64x64 player skin, so facial
@@ -294,6 +295,30 @@ const boxUv = (ox, oy, w, h, d) => ({
   bottom: uv(ox + d + w, oy, w, d),
 });
 
+// Split a 12-texel limb net into the shoulder/hip half and the hand/foot half.
+// Elbow and knee caps reuse a 4-row band at the cut so the joint stays skinned.
+function limbUv(ox, oy, w, h, d, half) {
+  const hh = h / 2;
+  const side = (yOff) => ({
+    nx: uv(ox, oy + d + yOff, d, hh),
+    front: uv(ox + d, oy + d + yOff, w, hh),
+    px: uv(ox + d + w, oy + d + yOff, d, hh),
+    back: uv(ox + d + w + d, oy + d + yOff, w, hh),
+  });
+  if (half === "upper") {
+    return {
+      ...side(0),
+      top: uv(ox + d, oy, w, d),
+      bottom: uv(ox + d, oy + d + Math.max(0, hh - d), w, d),
+    };
+  }
+  return {
+    ...side(hh),
+    top: uv(ox + d, oy + d + hh, w, d),
+    bottom: uv(ox + d + w, oy, w, d),
+  };
+}
+
 // Body space: +x is the character's left, +y up, +z the direction the character
 // faces, origin between the feet. Units are skin texels.
 export const MODEL = [
@@ -316,37 +341,73 @@ export const MODEL = [
   },
   {
     id: "arm-right",
-    label: "Right arm",
+    label: "Right upper arm",
     parent: "torso",
-    min: [-8, 12, -2],
+    min: [-8, 18, -2],
     max: [-4, 24, 2],
     pivot: [-4, 22, 0],
-    uv: boxUv(40, 16, 4, 12, 4),
+    uv: limbUv(40, 16, 4, 12, 4, "upper"),
+  },
+  {
+    id: "forearm-right",
+    label: "Right forearm",
+    parent: "arm-right",
+    min: [-8, 12, -2],
+    max: [-4, 18, 2],
+    pivot: [-6, 18, 0],
+    uv: limbUv(40, 16, 4, 12, 4, "lower"),
   },
   {
     id: "arm-left",
-    label: "Left arm",
+    label: "Left upper arm",
     parent: "torso",
-    min: [4, 12, -2],
+    min: [4, 18, -2],
     max: [8, 24, 2],
     pivot: [4, 22, 0],
-    uv: boxUv(32, 48, 4, 12, 4),
+    uv: limbUv(32, 48, 4, 12, 4, "upper"),
+  },
+  {
+    id: "forearm-left",
+    label: "Left forearm",
+    parent: "arm-left",
+    min: [4, 12, -2],
+    max: [8, 18, 2],
+    pivot: [6, 18, 0],
+    uv: limbUv(32, 48, 4, 12, 4, "lower"),
   },
   {
     id: "leg-right",
-    label: "Right leg",
-    min: [-4, 0, -2],
+    label: "Right thigh",
+    min: [-4, 6, -2],
     max: [0, 12, 2],
     pivot: [-2, 12, 0],
-    uv: boxUv(0, 16, 4, 12, 4),
+    uv: limbUv(0, 16, 4, 12, 4, "upper"),
+  },
+  {
+    id: "shin-right",
+    label: "Right shin",
+    parent: "leg-right",
+    min: [-4, 0, -2],
+    max: [0, 6, 2],
+    pivot: [-2, 6, 0],
+    uv: limbUv(0, 16, 4, 12, 4, "lower"),
   },
   {
     id: "leg-left",
-    label: "Left leg",
-    min: [0, 0, -2],
+    label: "Left thigh",
+    min: [0, 6, -2],
     max: [4, 12, 2],
     pivot: [2, 12, 0],
-    uv: boxUv(16, 48, 4, 12, 4),
+    uv: limbUv(16, 48, 4, 12, 4, "upper"),
+  },
+  {
+    id: "shin-left",
+    label: "Left shin",
+    parent: "leg-left",
+    min: [0, 0, -2],
+    max: [4, 6, 2],
+    pivot: [2, 6, 0],
+    uv: limbUv(16, 48, 4, 12, 4, "lower"),
   },
 ];
 
