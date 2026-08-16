@@ -1,10 +1,18 @@
-// Builds a standing gold coin that spins a full turn around its vertical axis.
+// Gold coin spinning a full turn around its vertical axis.
 //
-// The source file only squashed scale-X 100→0→100 twice. At 0 the disc vanished,
-// both "faces" were identical, and the rim flashed for a few frames — so it read
-// as a 2D squash, not a 360° flip. This version keeps a thick rim, swaps a
-// darker back face at 90°/270°, and uses constant angular speed so the loop
-// closes on the same pose it started.
+// The uploaded source only squashed scale-X 100→0→100 twice. At 0 the disc
+// vanished, both faces were identical, and the rim flashed — a 2D squash, not
+// a 360° flip. This version projects a cylinder:
+//
+//   face width  = 2R |cos θ|
+//   body width  = 2R |cos θ| + T |sin θ|
+//   front x     = + (T/2) sin θ     (visible when cos θ ≥ 0)
+//   back x      = − (T/2) sin θ     (visible when cos θ < 0)
+//
+// The body is always the silhouette. The visible face sits on the near rim so
+// the extra body width reads as a thick crescent, and at 90°/270° only the
+// solid edge remains. Darker back face + a star stamp make the far side obvious.
+// Constant angular speed; last key matches frame 0 so the loop is seamless.
 //
 //   public/projects/coin/scene-1/lottie.json
 //
@@ -15,14 +23,14 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const W = 400;
-const H = 400;
-const CX = 200;
-const CY = 200;
-const FR = 60;
-const OP = 90; // 1.5s, one revolution; op is exclusive
-const R = 100;
-const THICK = 16;
+export const W = 400;
+export const H = 400;
+export const CX = 200;
+export const CY = 200;
+export const FR = 60;
+export const OP = 90; // 1.5s, one revolution; op is exclusive
+export const R = 100;
+export const T = 38;
 
 const GOLD_HI = [0.96, 0.82, 0.32, 1];
 const GOLD = [0.86, 0.64, 0.15, 1];
@@ -34,6 +42,7 @@ const WELL_HI = [0.95, 0.78, 0.31, 1];
 const BACK_FACE = [0.55, 0.38, 0.07, 1];
 const BACK_WELL = [0.28, 0.17, 0.02, 1];
 const SHEEN = [1, 0.96, 0.78, 1];
+const STAR = [0.98, 0.86, 0.42, 1];
 
 const staticK = (k) => ({ a: 0, k });
 
@@ -97,8 +106,29 @@ function gradFill(stops, y0, y1) {
   };
 }
 
-function group(name, items) {
-  return { ty: "gr", nm: name, it: [...items, tr()] };
+function group(name, items, xf) {
+  return { ty: "gr", nm: name, it: [...items, tr(xf)] };
+}
+
+function starPath(or = 30, ir = 13, n = 5, rot = -Math.PI / 2) {
+  const v = [];
+  for (let k = 0; k < n * 2; k++) {
+    const rad = k % 2 === 0 ? or : ir;
+    const a = rot + (k * Math.PI) / n;
+    v.push([rad * Math.cos(a), rad * Math.sin(a)]);
+  }
+  return {
+    ty: "sh",
+    ks: {
+      a: 0,
+      k: {
+        c: true,
+        v,
+        i: v.map(() => [0, 0]),
+        o: v.map(() => [0, 0]),
+      },
+    },
+  };
 }
 
 function layer({ ind, name, shapes, p, s, o }) {
@@ -124,62 +154,76 @@ function layer({ ind, name, shapes, p, s, o }) {
   };
 }
 
+function clamp(n, lo, hi) {
+  return Math.min(hi, Math.max(lo, n));
+}
+
+export function poseAt(f) {
+  const th = (f / OP) * Math.PI * 2;
+  const c = Math.cos(th);
+  const s = Math.sin(th);
+  const ac = Math.abs(c);
+  const as = Math.abs(s);
+  const faceSx = ac * 100;
+  const bodySx = ac * 100 + (T / (2 * R)) * as * 100;
+  const frontX = CX + (T / 2) * s;
+  const backX = CX - (T / 2) * s;
+  const faceFade = clamp((ac - 0.12) / 0.2, 0, 1) * 100;
+  const visX = c >= 0 ? frontX : backX;
+  const crescentDir = visX >= CX ? -1 : 1;
+  const bodyHalf = R * (bodySx / 100);
+  return {
+    th,
+    c,
+    s,
+    ac,
+    as,
+    faceSx,
+    bodySx,
+    frontX,
+    backX,
+    frontO: c >= 0 ? faceFade : 0,
+    backO: c < 0 ? faceFade : 0,
+    sheenO: c >= 0 ? 26 * ac * (0.4 + 0.6 * Math.max(0, Math.sin(th * 2 + 0.5))) : 0,
+    sheenX: frontX - 18 * ac,
+    hiX: CX + crescentDir * Math.max(6, bodyHalf - 8),
+    hiO: 48 * as,
+  };
+}
+
 function sampleSpin() {
-  const faceSx = [];
-  const faceSy = [];
-  const facePx = [];
-  const rimSx = [];
-  const rimPx = [];
+  const faceS = [];
+  const bodyS = [];
+  const frontP = [];
+  const backP = [];
   const frontO = [];
   const backO = [];
-  const slabO = [];
   const sheenO = [];
-  const sheenPx = [];
+  const sheenP = [];
+  const hiP = [];
+  const hiO = [];
 
   for (let f = 0; f <= OP; f++) {
-    const th = (f / OP) * Math.PI * 2;
-    const c = Math.cos(th);
-    const s = Math.sin(th);
-    const ac = Math.abs(c);
-    const front = c >= 0;
-    const minFace = 4;
-    const minRim = (THICK / (2 * R)) * 100;
-    const sx = Math.max(ac * 100, minFace);
-    const persp = 100 + 3 * (1 - ac);
-
-    faceSx.push({ t: f, s: [sx] });
-    faceSy.push({ t: f, s: [persp] });
-    facePx.push({ t: f, s: [CX + s * THICK * 0.18, CY, 0] });
-    rimSx.push({ t: f, s: [Math.max(ac * 100, minRim)] });
-    rimPx.push({ t: f, s: [CX + s * THICK * 0.62, CY, 0] });
-
-    const faceFade = Math.min(100, Math.max(0, (ac - 0.06) / 0.22) * 100);
-    frontO.push({ t: f, s: [front ? faceFade : 0] });
-    backO.push({ t: f, s: [front ? 0 : faceFade] });
-    slabO.push({ t: f, s: [Math.min(100, (1 - ac) * 130)] });
-    sheenO.push({ t: f, s: [28 * ac * (0.45 + 0.55 * Math.max(0, Math.sin(th * 2 + 0.6)))] });
-    sheenPx.push({ t: f, s: [CX + s * THICK * 0.18 - 18 * ac, CY - 12, 0] });
+    const p = poseAt(f);
+    faceS.push({ t: f, s: [p.faceSx, 100, 100] });
+    bodyS.push({ t: f, s: [p.bodySx, 100, 100] });
+    frontP.push({ t: f, s: [p.frontX, CY, 0] });
+    backP.push({ t: f, s: [p.backX, CY, 0] });
+    frontO.push({ t: f, s: [p.frontO] });
+    backO.push({ t: f, s: [p.backO] });
+    sheenO.push({ t: f, s: [p.sheenO] });
+    sheenP.push({ t: f, s: [p.sheenX, CY - 16, 0] });
+    hiP.push({ t: f, s: [p.hiX, CY - 6, 0] });
+    hiO.push({ t: f, s: [p.hiO] });
   }
 
-  const pack2 = (xs, ys) =>
-    xs.map((x, i) => ({ t: x.t, s: [x.s[0], ys[i].s[0], 100] }));
-
-  return {
-    faceS: pack2(faceSx, faceSy),
-    faceP: facePx,
-    rimS: pack2(rimSx, faceSy),
-    rimP: rimPx,
-    frontO,
-    backO,
-    slabO,
-    sheenO,
-    sheenP: sheenPx,
-  };
+  return { faceS, bodyS, frontP, backP, frontO, backO, sheenO, sheenP, hiP, hiO };
 }
 
 const spin = sampleSpin();
 
 const frontShapes = [
+  group("front-star", [starPath(30, 13), fill(STAR), stroke(GOLD_DK, 1.5)]),
   group("front-well", [
     ellipse([118, 118]),
     gradFill(
@@ -202,6 +246,7 @@ const frontShapes = [
 ];
 
 const backShapes = [
+  group("back-dot", [ellipse([22, 22]), fill(GOLD_DK)]),
   group("back-well", [ellipse([110, 110]), fill(BACK_WELL), stroke(GOLD_DK, 2)]),
   group("back-ring", [ellipse([160, 160]), fill(BACK_FACE), stroke(GOLD_DK, 4)]),
   group("back-disc", [ellipse([200, 200]), fill(GOLD_DK)]),
@@ -213,7 +258,7 @@ const rimShapes = [
     gradFill(
       [
         [0, GOLD_HI[0], GOLD_HI[1], GOLD_HI[2]],
-        [0.45, GOLD_MID[0], GOLD_MID[1], GOLD_MID[2]],
+        [0.42, GOLD[0], GOLD[1], GOLD[2]],
         [1, GOLD_DK[0], GOLD_DK[1], GOLD_DK[2]],
       ],
       -100,
@@ -222,19 +267,8 @@ const rimShapes = [
   ]),
 ];
 
-const slabShapes = [
-  group("edge-slab", [
-    ellipse([THICK + 4, 200]),
-    gradFill(
-      [
-        [0, GOLD_HI[0], GOLD_HI[1], GOLD_HI[2]],
-        [0.5, GOLD[0], GOLD[1], GOLD[2]],
-        [1, GOLD_DK[0], GOLD_DK[1], GOLD_DK[2]],
-      ],
-      -100,
-      100,
-    ),
-  ]),
+const rimHiShapes = [
+  group("rim-highlight", [ellipse([14, 168]), fill(GOLD_HI, 100)]),
 ];
 
 const sheenShapes = [
@@ -254,7 +288,7 @@ const layers = [
     ind: 2,
     name: "Front face",
     shapes: frontShapes,
-    p: anim(spin.faceP),
+    p: anim(spin.frontP),
     s: anim(spin.faceS),
     o: anim(spin.frontO),
   }),
@@ -262,29 +296,29 @@ const layers = [
     ind: 3,
     name: "Back face",
     shapes: backShapes,
-    p: anim(spin.faceP),
+    p: anim(spin.backP),
     s: anim(spin.faceS),
     o: anim(spin.backO),
   }),
   layer({
     ind: 4,
-    name: "Edge slab",
-    shapes: slabShapes,
-    p: staticK([CX, CY, 0]),
+    name: "Rim highlight",
+    shapes: rimHiShapes,
+    p: anim(spin.hiP),
     s: staticK([100, 100, 100]),
-    o: anim(spin.slabO),
+    o: anim(spin.hiO),
   }),
   layer({
     ind: 5,
     name: "Rim",
     shapes: rimShapes,
-    p: anim(spin.rimP),
-    s: anim(spin.rimS),
+    p: staticK([CX, CY, 0]),
+    s: anim(spin.bodyS),
     o: staticK(100),
   }),
 ];
 
-const lottie = {
+export const lottie = {
   v: "5.7.0",
   fr: FR,
   ip: 0,
@@ -301,20 +335,23 @@ const lottie = {
   },
 };
 
-const dir = resolve(__dirname, "../public/projects/coin/scene-1");
-await mkdir(dir, { recursive: true });
-await writeFile(resolve(dir, "lottie.json"), JSON.stringify(lottie) + "\n");
-await writeFile(
-  resolve(dir, "controls.json"),
-  JSON.stringify(
-    {
-      controls: [
-        { sid: "goldColor", label: "Gold" },
-        { sid: "goldMid", label: "Gold shade" },
-      ],
-    },
-    null,
-    2,
-  ) + "\n",
-);
-console.log(`Wrote ${dir}/lottie.json  ${OP} ticks @ ${FR} fps  ${(JSON.stringify(lottie).length / 1024).toFixed(1)} kB`);
+const isMain = String(process.argv[1] || "").endsWith("generate-coin-lottie.mjs");
+if (isMain) {
+  const dir = resolve(__dirname, "../public/projects/coin/scene-1");
+  await mkdir(dir, { recursive: true });
+  await writeFile(resolve(dir, "lottie.json"), JSON.stringify(lottie) + "\n");
+  await writeFile(
+    resolve(dir, "controls.json"),
+    JSON.stringify(
+      {
+        controls: [
+          { sid: "goldColor", label: "Gold" },
+          { sid: "goldMid", label: "Gold shade" },
+        ],
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+  console.log(`Wrote ${dir}/lottie.json  ${OP} ticks @ ${FR} fps  ${(JSON.stringify(lottie).length / 1024).toFixed(1)} kB`);
+}
