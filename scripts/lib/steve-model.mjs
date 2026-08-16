@@ -15,8 +15,12 @@ import { fileURLToPath } from "node:url";
 import zlib from "node:zlib";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const SKIN_URL = "https://assets.mojang.com/SkinTemplates/steve.png";
+export const STEVE_SKIN_URL = "https://assets.mojang.com/SkinTemplates/steve.png";
+export const ZOMBIE_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/zombie/zombie.png";
+const SKIN_URL = STEVE_SKIN_URL;
 const CACHE = resolve(__dirname, "../../node_modules/.cache/steve-skin.png");
+const ZOMBIE_CACHE = resolve(__dirname, "../../node_modules/.cache/zombie-skin.png");
 
 // ---------------------------------------------------------------- png decoding
 
@@ -98,20 +102,84 @@ export function decodePng(buf) {
   return { width, height, rgba };
 }
 
-// Without an explicit path the official 64x64 template is downloaded once and
-// cached, so repeat runs stay offline-friendly.
-export async function loadSkin(explicitPath) {
-  if (explicitPath) return decodePng(await readFile(explicitPath));
-  try {
-    return decodePng(await readFile(CACHE));
-  } catch {
-    const res = await fetch(SKIN_URL);
-    if (!res.ok) throw new Error(`could not download ${SKIN_URL} (${res.status})`);
-    const buf = Buffer.from(await res.arrayBuffer());
-    await mkdir(dirname(CACHE), { recursive: true });
-    await writeFile(CACHE, buf);
-    return decodePng(buf);
+function regionOpaqueCount(skin, x, y, w, h) {
+  let n = 0;
+  for (let yy = y; yy < y + h; yy++)
+    for (let xx = x; xx < x + w; xx++) {
+      if (skin.rgba[(yy * skin.width + xx) * 4 + 3] > 0) n += 1;
+    }
+  return n;
+}
+
+function copyRect(skin, sx, sy, dx, dy, w, h, flipX = false) {
+  const tmp = new Uint8Array(w * h * 4);
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const i = ((sy + y) * skin.width + (sx + x)) * 4;
+      tmp.set(skin.rgba.subarray(i, i + 4), (y * w + x) * 4);
+    }
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const srcX = flipX ? w - 1 - x : x;
+      const i = ((dy + y) * skin.width + (dx + x)) * 4;
+      skin.rgba.set(tmp.subarray((y * w + srcX) * 4, (y * w + srcX) * 4 + 4), i);
+    }
+}
+
+// Classic zombie (and old player) skins are 64x32: only the right limbs are
+// painted. The game mirrors them onto the left at runtime. Do the same so the
+// 64x64 model UVs are not empty.
+export function normalizePlayerSkin(skin) {
+  if (skin.width < 64) throw new Error("expected a skin at least 64 px wide");
+  if (skin.height === 32) {
+    const rgba = new Uint8Array(skin.width * 64 * 4);
+    rgba.set(skin.rgba);
+    skin = { width: skin.width, height: 64, rgba };
   }
+  if (skin.height >= 64 && regionOpaqueCount(skin, 36, 52, 4, 12) === 0) {
+    // Right arm 40,16 → left arm 32,48. Swap ±x faces and flip the rest.
+    copyRect(skin, 48, 20, 32, 52, 4, 12, true); // +x → −x
+    copyRect(skin, 44, 20, 36, 52, 4, 12, true); // front
+    copyRect(skin, 40, 20, 40, 52, 4, 12, true); // −x → +x
+    copyRect(skin, 52, 20, 44, 52, 4, 12, true); // back
+    copyRect(skin, 44, 16, 36, 48, 4, 4, true); // top
+    copyRect(skin, 48, 16, 40, 48, 4, 4, true); // bottom
+    // Right leg 0,16 → left leg 16,48.
+    copyRect(skin, 8, 20, 16, 52, 4, 12, true);
+    copyRect(skin, 4, 20, 20, 52, 4, 12, true);
+    copyRect(skin, 0, 20, 24, 52, 4, 12, true);
+    copyRect(skin, 12, 20, 28, 52, 4, 12, true);
+    copyRect(skin, 4, 16, 20, 48, 4, 4, true);
+    copyRect(skin, 8, 16, 24, 48, 4, 4, true);
+  }
+  return skin;
+}
+
+// Without an explicit path the official template is downloaded once and
+// cached, so repeat runs stay offline-friendly. Pass `{ url, cache }` for
+// another 64x64 (or classic 64x32) player-layout skin such as the zombie.
+export async function loadSkin(explicitPath, options = {}) {
+  const url = options.url ?? SKIN_URL;
+  const cache = options.cache ?? (url === ZOMBIE_SKIN_URL ? ZOMBIE_CACHE : CACHE);
+  let decoded;
+  if (explicitPath) decoded = decodePng(await readFile(explicitPath));
+  else {
+    try {
+      decoded = decodePng(await readFile(cache));
+    } catch {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`could not download ${url} (${res.status})`);
+      const buf = Buffer.from(await res.arrayBuffer());
+      await mkdir(dirname(cache), { recursive: true });
+      await writeFile(cache, buf);
+      decoded = decodePng(buf);
+    }
+  }
+  return normalizePlayerSkin(decoded);
+}
+
+export async function loadZombieSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: ZOMBIE_SKIN_URL, cache: ZOMBIE_CACHE });
 }
 
 // ------------------------------------------------------------------- 3d helpers
