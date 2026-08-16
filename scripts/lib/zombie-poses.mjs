@@ -93,3 +93,36 @@ export function sampleIdle(t) {
     ? lerpPose(idleA(), idleB(), easeInOut(x * 2))
     : lerpPose(idleB(), idleA(), easeInOut((x - 0.5) * 2));
 }
+
+// One shambling cycle. Phase is 0..1; the first and last samples meet so a
+// flipbook loops. Arms stay reached forward — only a small droop rides on
+// top of the classic Java zombie pose. Legs take a short, dragged stride.
+export function walkFrame(phase) {
+  const tau = (phase % 1) * Math.PI * 2;
+  const stride = Math.sin(tau);
+  const dragged = Math.sign(stride) * Math.abs(stride) ** 0.85;
+  const bob = Math.sin(tau * 2);
+  const sway = Math.sin(tau);
+  return pose(
+    {
+      torso: { pitch: 10 + bob * 2.5, roll: sway * 2.5 },
+      head: { ...FACE, pitch: 8 + bob * 2, roll: sway * -2 },
+      "arm-right": limb(NEAR, { pitch: -84 + sway * 8, roll: 6 + bob * 2 }),
+      "arm-left": limb(FAR, { pitch: -76 - sway * 7, roll: -8 - bob * 2 }),
+      "leg-right": limb(NEAR, { pitch: 4 - dragged * 26, roll: 2 }),
+      "leg-left": limb(FAR, { pitch: -4 + dragged * 24, roll: -2 }),
+    },
+    { y: 0.2 + bob * 0.35, x: sway * 0.18 },
+  );
+}
+
+export const WALK_FRAMES = 16;
+
+export function catalog() {
+  return Array.from({ length: WALK_FRAMES }, (_, i) => ({
+    id: `walk-${i}`,
+    label: `Walk ${i + 1}/${WALK_FRAMES}`,
+    pose: walkFrame(i / WALK_FRAMES),
+    tags: ["walk"],
+  }));
+}

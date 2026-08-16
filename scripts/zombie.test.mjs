@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { loadZombieSkin, normalizePlayerSkin } from "./lib/steve-model.mjs";
-import { FACE, idleA, sampleIdle } from "./lib/zombie-poses.mjs";
+import { FACE, WALK_FRAMES, idleA, sampleIdle, walkFrame } from "./lib/zombie-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -54,6 +54,25 @@ describe("zombie pose", () => {
       assert.equal(sampleIdle(i / 8).parts.head.yaw, -45);
     }
   });
+
+  it("loops the walk cycle and keeps the zombie reach", () => {
+    const a = walkFrame(0);
+    const b = walkFrame(1);
+    assert.equal(a.parts["arm-right"].pitch, b.parts["arm-right"].pitch);
+    assert.equal(a.parts["leg-left"].pitch, b.parts["leg-left"].pitch);
+    assert.equal(a.root.y, b.root.y);
+    assert.equal(a.parts.head.yaw, -45);
+    for (let i = 0; i < WALK_FRAMES; i++) {
+      const pose = walkFrame(i / WALK_FRAMES);
+      assert.equal(pose.parts.head.yaw, -45, `walk-${i} head`);
+      assert.ok(pose.parts["arm-right"].pitch < -60, `walk-${i} right arm stays forward`);
+      assert.ok(pose.parts["arm-left"].pitch < -60, `walk-${i} left arm stays forward`);
+    }
+    const passing = walkFrame(0.25);
+    assert.ok(passing.parts["leg-right"].pitch < passing.parts["leg-left"].pitch, "right leg leads at 1/4");
+    const other = walkFrame(0.75);
+    assert.ok(other.parts["leg-left"].pitch < other.parts["leg-right"].pitch, "left leg leads at 3/4");
+  });
 });
 
 describe("generated zombie assets", () => {
@@ -66,18 +85,38 @@ describe("generated zombie assets", () => {
     assert.match(svg, /45 degrees|45°/);
   });
 
-  it("ships a self-contained shape flipbook", async () => {
-    const lottie = JSON.parse(
-      await readFile(resolve(ROOT, "public/projects/zombie/scene-1/lottie.json"), "utf8"),
-    );
-    assert.equal(lottie.ip, 0);
-    assert.ok(lottie.op > lottie.ip);
-    assert.equal(lottie.assets.length, 0);
-    const shapes = lottie.layers.filter((l) => l.ty === 4);
-    assert.ok(shapes.length >= 2);
-    for (const layer of shapes) {
-      assert.ok(layer.shapes.length > 0, layer.nm);
-      assert.ok(layer.ip < layer.op, layer.nm);
+  it("ships self-contained idle and walk flipbooks", async () => {
+    const scenes = [
+      ["scene-1", 8],
+      ["scene-2", WALK_FRAMES],
+    ];
+    for (const [scene, minLayers] of scenes) {
+      const lottie = JSON.parse(
+        await readFile(resolve(ROOT, "public/projects/zombie", scene, "lottie.json"), "utf8"),
+      );
+      assert.equal(lottie.ip, 0, scene);
+      assert.ok(lottie.op > lottie.ip, scene);
+      assert.equal(lottie.w, 512, scene);
+      assert.equal(lottie.h, 520, scene);
+      assert.equal(lottie.assets.length, 0, scene);
+      const shapes = lottie.layers.filter((l) => l.ty === 4);
+      assert.ok(shapes.length >= minLayers, `${scene} layers`);
+      for (const layer of shapes) {
+        assert.ok(layer.shapes.length > 0, layer.nm);
+        assert.ok(layer.ip < layer.op, layer.nm);
+      }
+    }
+  });
+
+  it("writes walk SVG frames without broken numbers", async () => {
+    const walk = await readFile(resolve(ROOT, "assets/zombie-walk.svg"), "utf8");
+    assert.match(walk, /<svg /);
+    assert.match(walk, /id="head"/);
+    assert.doesNotMatch(walk, /NaN|undefined/);
+    for (let i = 0; i < WALK_FRAMES; i++) {
+      const svg = await readFile(resolve(ROOT, "assets/zombie-sprites", `walk-${i}.svg`), "utf8");
+      assert.match(svg, /<svg /);
+      assert.doesNotMatch(svg, /NaN|undefined/);
     }
   });
 });

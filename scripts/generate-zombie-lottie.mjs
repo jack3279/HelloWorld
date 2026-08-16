@@ -1,8 +1,9 @@
-// Builds a Skottie scene from the posed zombie cuboids:
+// Builds Skottie scenes from the posed zombie cuboids:
 //
 //   public/projects/zombie/scene-1   side-view idle (head at 45°)
+//   public/projects/zombie/scene-2   shambling walk (arms stay forward)
 //
-// Transparent background — this is a character loop, not a full-frame card.
+// Transparent background — these are character loops, not a full-frame card.
 //
 // Usage:
 //   node scripts/generate-zombie-lottie.mjs [--skin=<png>]
@@ -10,7 +11,7 @@ import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildFigure, figureToLottieShapes, loadZombieSkin, makeProjector, parseArgs } from "./lib/steve-model.mjs";
-import { SPRITE, TOLERANCE, sampleIdle } from "./lib/zombie-poses.mjs";
+import { SPRITE, TOLERANCE, WALK_FRAMES, sampleIdle, walkFrame } from "./lib/zombie-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -104,6 +105,24 @@ await writeScene(
     h: SPRITE.h,
     frames,
     fps: 8,
+    hold: 1,
+    loop: true,
+  }),
+);
+
+const walk = Array.from({ length: WALK_FRAMES }, (_, i) => ({
+  id: `walk-${i}`,
+  shapes: bake(skin, walkFrame(i / WALK_FRAMES), SPRITE),
+}));
+
+await writeScene(
+  resolve(ROOT, "public/projects/zombie/scene-2"),
+  flipbook({
+    name: "Zombie — Walk",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: walk,
+    fps: 10,
     hold: 1,
     loop: true,
   }),
