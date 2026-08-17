@@ -29,10 +29,10 @@ function rgbOf(hex) {
 }
 
 describe("minecraft block catalog", () => {
-  it("has three pages including terrain and interactives", () => {
+  it("has four pages including terrain, interactives, and nature", () => {
     const ids = BLOCKS.map((b) => b.id);
-    assert.equal(BLOCKS.length, PAGE_SIZE * 3);
-    assert.equal(blockPages().length, 3);
+    assert.equal(BLOCKS.length, PAGE_SIZE * 4);
+    assert.equal(blockPages().length, 4);
     for (const id of [
       "grass",
       "dirt",
@@ -45,6 +45,11 @@ describe("minecraft block catalog", () => {
       "door-oak",
       "tnt",
       "bedrock",
+      "oak-leaves",
+      "water",
+      "torch",
+      "ladder",
+      "cactus",
     ]) {
       assert.ok(ids.includes(id), id);
     }
@@ -163,6 +168,75 @@ describe("block colors", () => {
     );
     assert.ok(door.length > 8, "oak door has planks");
   });
+
+  it("tints leaves green, water blue, torch warm, ladder brown, cactus green", async () => {
+    const oak = runsOf(await loadBlock("oak-leaves"));
+    const birch = runsOf(await loadBlock("birch-leaves"));
+    const spruce = runsOf(await loadBlock("spruce-leaves"));
+    const water = runsOf(await loadBlock("water"));
+    const torch = runsOf(await loadBlock("torch"));
+    const ladder = runsOf(await loadBlock("ladder"));
+    const cactus = runsOf(await loadBlock("cactus"));
+    const lily = runsOf(await loadBlock("lily-pad"));
+    assert.ok(
+      runCoverage(oak, (hex) => {
+        const [r, g, b] = rgbOf(hex);
+        return g > r && g > b && g > 40;
+      }) > TILE * TILE * 0.4,
+      "oak leaves are green after foliage tint",
+    );
+    assert.ok(
+      runCoverage(birch, (hex) => {
+        const [r, g, b] = rgbOf(hex);
+        return g > r && g > 50;
+      }) > TILE * TILE * 0.4,
+      "birch leaves are green after foliage tint",
+    );
+    assert.ok(
+      runCoverage(spruce, (hex) => {
+        const [r, g, b] = rgbOf(hex);
+        return g > r && g > b;
+      }) > TILE * TILE * 0.4,
+      "spruce leaves are green after foliage tint",
+    );
+    assert.ok(
+      runCoverage(water, (hex) => {
+        const [r, g, b] = rgbOf(hex);
+        return b > r && b > 80;
+      }) > TILE * TILE * 0.5,
+      "water is blue",
+    );
+    assert.ok(
+      runCoverage(torch, (hex) => {
+        const [r, g] = rgbOf(hex);
+        return r > 140 && g > 70;
+      }) > 4,
+      "torch has a warm flame",
+    );
+    assert.ok(torch.length > 4, "torch keeps a sparse silhouette");
+    assert.ok(
+      runCoverage(ladder, (hex) => {
+        const [r, g, b] = rgbOf(hex);
+        return r > 70 && r > b && g > 40;
+      }) > 20,
+      "ladder is brown wood",
+    );
+    assert.ok(ladder.length > 8, "ladder keeps a sparse silhouette");
+    assert.ok(
+      runCoverage(cactus, (hex) => {
+        const [r, g, b] = rgbOf(hex);
+        return g > r && g > b && g > 40;
+      }) > TILE * TILE * 0.3,
+      "cactus is green",
+    );
+    assert.ok(
+      runCoverage(lily, (hex) => {
+        const [r, g, b] = rgbOf(hex);
+        return g > r && g > b;
+      }) > TILE * TILE * 0.3,
+      "lily pad is green after lily tint",
+    );
+  });
 });
 
 describe("square layout", () => {
@@ -205,6 +279,7 @@ describe("generated block assets", () => {
       ["scene-1", "Blocks — Faces"],
       ["scene-2", "Blocks — More"],
       ["scene-3", "Blocks — Interact"],
+      ["scene-4", "Blocks — Nature"],
     ];
     for (const [slug, name] of pages) {
       const lottie = JSON.parse(

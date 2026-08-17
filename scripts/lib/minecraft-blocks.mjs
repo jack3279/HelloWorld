@@ -4,7 +4,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { decodePng, hexToRgba01, parseArgs, rgbToHex } from "./steve-model.mjs";
+import { decodeTexture, hexToRgba01, parseArgs, rgbToHex } from "./steve-model.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -21,7 +21,12 @@ export const PAGE_SIZE = ATLAS.cols * ATLAS.rows;
 
 export { parseArgs };
 
-// Official Bedrock faces. Pages: terrain/ores, wood/nether/stone, interactives.
+export const FOLIAGE_OAK = "#48b518";
+export const FOLIAGE_BIRCH = "#80a755";
+export const FOLIAGE_SPRUCE = "#619961";
+export const FOLIAGE_LILY = "#2d8a3a";
+
+// Official Bedrock faces. Pages: terrain, wood/nether, interactives, nature.
 export const BLOCKS = [
   { id: "grass", file: "grass_carried.png", label: "Grass", title: "草地" },
   { id: "dirt", file: "dirt.png", label: "Dirt", title: "土壤" },
@@ -71,6 +76,22 @@ export const BLOCKS = [
   { id: "enchanting-table", file: "enchanting_table_top.png", label: "Enchanting table", title: "附魔台" },
   { id: "hopper", file: "hopper_outside.png", label: "Hopper", title: "漏斗" },
   { id: "observer", file: "observer_front.png", label: "Observer", title: "观察者" },
+  { id: "oak-leaves", file: "leaves_oak_opaque.png", label: "Oak leaves", title: "橡树树叶", tint: FOLIAGE_OAK },
+  { id: "birch-leaves", file: "leaves_birch_opaque.png", label: "Birch leaves", title: "白桦树叶", tint: FOLIAGE_BIRCH },
+  { id: "spruce-leaves", file: "leaves_spruce_opaque.png", label: "Spruce leaves", title: "云杉树叶", tint: FOLIAGE_SPRUCE },
+  { id: "oak-sapling", file: "sapling_oak.png", label: "Oak sapling", title: "橡树树苗" },
+  { id: "grass-side", file: "grass_side_carried.png", label: "Grass side", title: "草地侧面" },
+  { id: "tall-grass", file: "tallgrass.png", label: "Tall grass", title: "高草", tint: FOLIAGE_OAK },
+  { id: "poppy", file: "flower_rose.png", label: "Poppy", title: "虞美人" },
+  { id: "dandelion", file: "flower_dandelion.png", label: "Dandelion", title: "蒲公英" },
+  { id: "vine", file: "vine.png", label: "Vine", title: "藤蔓", tint: FOLIAGE_OAK },
+  { id: "red-mushroom", file: "mushroom_red.png", label: "Red mushroom", title: "红蘑菇" },
+  { id: "brown-mushroom", file: "mushroom_brown.png", label: "Brown mushroom", title: "棕蘑菇" },
+  { id: "cactus", file: "cactus_side.tga", label: "Cactus", title: "仙人掌" },
+  { id: "water", file: "water_still.png", label: "Water", title: "水" },
+  { id: "torch", file: "torch_on.png", label: "Torch", title: "火把" },
+  { id: "ladder", file: "ladder.png", label: "Ladder", title: "梯子" },
+  { id: "lily-pad", file: "waterlily.png", label: "Lily pad", title: "睡莲", tint: FOLIAGE_LILY },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {
@@ -99,11 +120,25 @@ export async function loadBlock(id) {
     await mkdir(CACHE, { recursive: true });
     await writeFile(cachePath, buf);
   }
-  const png = decodePng(buf);
+  const png = decodeTexture(buf);
   if (png.width < TILE || png.height < TILE) {
     throw new Error(`${block.file} is smaller than ${TILE}×${TILE}`);
   }
-  return png;
+  return block.tint ? applyTint(png, block.tint) : png;
+}
+
+function applyTint(png, tintHex) {
+  const tr = parseInt(tintHex.slice(1, 3), 16);
+  const tg = parseInt(tintHex.slice(3, 5), 16);
+  const tb = parseInt(tintHex.slice(5, 7), 16);
+  const rgba = new Uint8Array(png.rgba);
+  for (let i = 0; i < rgba.length; i += 4) {
+    if (rgba[i + 3] < ALPHA_CUTOFF) continue;
+    rgba[i] = Math.round((rgba[i] * tr) / 255);
+    rgba[i + 1] = Math.round((rgba[i + 1] * tg) / 255);
+    rgba[i + 2] = Math.round((rgba[i + 2] * tb) / 255);
+  }
+  return { width: png.width, height: png.height, rgba };
 }
 
 function pixel(png, x, y) {
