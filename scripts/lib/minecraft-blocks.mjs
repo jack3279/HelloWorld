@@ -15,10 +15,11 @@ export const TILE = 16;
 export const TOLERANCE = 4;
 export const SINGLE = { w: 512, h: 512, pad: 56 };
 export const ATLAS = { w: 512, h: 512, cols: 4, rows: 4, texel: 7, gap: 8 };
+export const PAGE_SIZE = ATLAS.cols * ATLAS.rows;
 
 export { parseArgs };
 
-// Plains-green carried grass top, plus the usual terrain and ores.
+// Official Bedrock faces. First page is terrain/ores; second is wood, nether, stone.
 export const BLOCKS = [
   { id: "grass", file: "grass_carried.png", label: "Grass", title: "草地" },
   { id: "dirt", file: "dirt.png", label: "Dirt", title: "土壤" },
@@ -36,7 +37,29 @@ export const BLOCKS = [
   { id: "oak-log", file: "log_oak.png", label: "Oak log", title: "橡木原木" },
   { id: "bricks", file: "brick.png", label: "Bricks", title: "砖块" },
   { id: "mossy-cobblestone", file: "cobblestone_mossy.png", label: "Mossy cobblestone", title: "苔石" },
+  { id: "spruce-planks", file: "planks_spruce.png", label: "Spruce planks", title: "云杉木板" },
+  { id: "birch-planks", file: "planks_birch.png", label: "Birch planks", title: "白桦木板" },
+  { id: "acacia-planks", file: "planks_acacia.png", label: "Acacia planks", title: "金合欢木板" },
+  { id: "dark-oak-planks", file: "planks_big_oak.png", label: "Dark oak planks", title: "深色橡木木板" },
+  { id: "netherrack", file: "netherrack.png", label: "Netherrack", title: "下界岩" },
+  { id: "soul-sand", file: "soul_sand.png", label: "Soul sand", title: "灵魂沙" },
+  { id: "glowstone", file: "glowstone.png", label: "Glowstone", title: "荧石" },
+  { id: "magma", file: "magma.png", label: "Magma", title: "岩浆块" },
+  { id: "nether-bricks", file: "nether_brick.png", label: "Nether bricks", title: "下界砖" },
+  { id: "obsidian", file: "obsidian.png", label: "Obsidian", title: "黑曜石" },
+  { id: "granite", file: "stone_granite.png", label: "Granite", title: "花岗岩" },
+  { id: "diorite", file: "stone_diorite.png", label: "Diorite", title: "闪长岩" },
+  { id: "andesite", file: "stone_andesite.png", label: "Andesite", title: "安山岩" },
+  { id: "emerald-ore", file: "emerald_ore.png", label: "Emerald ore", title: "绿宝石矿" },
+  { id: "lapis-ore", file: "lapis_ore.png", label: "Lapis ore", title: "青金石矿" },
+  { id: "snow", file: "snow.png", label: "Snow", title: "雪块" },
 ];
+
+export function blockPages(pageSize = PAGE_SIZE) {
+  const pages = [];
+  for (let i = 0; i < BLOCKS.length; i += pageSize) pages.push(BLOCKS.slice(i, i + pageSize));
+  return pages;
+}
 
 export function blockById(id) {
   const block = BLOCKS.find((b) => b.id === id);
@@ -133,14 +156,14 @@ export function layoutSingle(canvas = SINGLE) {
   return { x: (w - size) / 2, y: (h - size) / 2, size, texel: size / TILE, w, h };
 }
 
-export function layoutAtlas(spec = ATLAS) {
+export function layoutAtlas(blocks = BLOCKS, spec = ATLAS) {
   const { w, h, cols, rows, texel, gap } = spec;
   const size = TILE * texel;
   const gridW = cols * size + (cols - 1) * gap;
   const gridH = rows * size + (rows - 1) * gap;
   const originX = (w - gridW) / 2;
   const originY = (h - gridH) / 2;
-  const cells = BLOCKS.map((block, i) => {
+  const cells = blocks.map((block, i) => {
     const col = i % cols;
     const row = Math.floor(i / cols);
     return {

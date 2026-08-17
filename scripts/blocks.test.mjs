@@ -6,8 +6,10 @@ import { fileURLToPath } from "node:url";
 import {
   ATLAS,
   BLOCKS,
+  PAGE_SIZE,
   SINGLE,
   TILE,
+  blockPages,
   layoutAtlas,
   layoutSingle,
   loadBlock,
@@ -30,10 +32,13 @@ function coverage(runs, pred) {
 }
 
 describe("minecraft block catalog", () => {
-  it("has sixteen square faces including grass, dirt, stone, and iron ore", () => {
+  it("has two pages of square faces including grass, ores, wood, and nether", () => {
     const ids = BLOCKS.map((b) => b.id);
-    assert.equal(BLOCKS.length, 16);
-    for (const id of ["grass", "dirt", "stone", "iron-ore"]) assert.ok(ids.includes(id));
+    assert.equal(BLOCKS.length, PAGE_SIZE * 2);
+    assert.equal(blockPages().length, 2);
+    for (const id of ["grass", "dirt", "stone", "iron-ore", "netherrack", "glowstone", "snow"]) {
+      assert.ok(ids.includes(id), id);
+    }
   });
 
   it("loads official 16×16 faces", async () => {
@@ -46,7 +51,7 @@ describe("minecraft block catalog", () => {
 });
 
 describe("block colors", () => {
-  it("keeps grass green, dirt brown, stone gray, iron ore speckled", async () => {
+  it("keeps grass green, dirt brown, netherrack red, snow white", async () => {
     const grass = runsOf(await loadBlock("grass"));
     const dirt = runsOf(await loadBlock("dirt"));
     const stone = runsOf(await loadBlock("stone"));
@@ -67,6 +72,21 @@ describe("block colors", () => {
       coverage(iron, ([r, g, b]) => r > 160 && g > 130 && b < 130) > 4,
       "iron ore has tan specks",
     );
+    const netherrack = runsOf(await loadBlock("netherrack"));
+    const snow = runsOf(await loadBlock("snow"));
+    const glow = runsOf(await loadBlock("glowstone"));
+    assert.ok(
+      coverage(netherrack, ([r, g, b]) => r > 80 && r > g && r > b) > TILE * TILE * 0.4,
+      "netherrack is red",
+    );
+    assert.ok(
+      coverage(snow, ([r, g, b]) => r > 200 && g > 200 && b > 200) > TILE * TILE * 0.6,
+      "snow is white",
+    );
+    assert.ok(
+      coverage(glow, ([r, g, b]) => r > 160 && g > 70 && r > b) > TILE * TILE * 0.3,
+      "glowstone is amber",
+    );
   });
 });
 
@@ -79,8 +99,8 @@ describe("square layout", () => {
   });
 
   it("lays out a 4×4 atlas of squares with gaps, no overlap", () => {
-    const atlas = layoutAtlas();
-    assert.equal(atlas.cells.length, BLOCKS.length);
+    const atlas = layoutAtlas(blockPages()[0]);
+    assert.equal(atlas.cells.length, PAGE_SIZE);
     assert.equal(atlas.cols, 4);
     assert.equal(atlas.rows, 4);
     for (const cell of atlas.cells) {
@@ -105,16 +125,22 @@ describe("generated block assets", () => {
     }
   });
 
-  it("ships a static atlas scene", async () => {
-    const lottie = JSON.parse(
-      await readFile(resolve(ROOT, "public/projects/blocks/scene-1/lottie.json"), "utf8"),
-    );
-    assert.equal(lottie.ip, 0);
-    assert.equal(lottie.op, 1);
-    assert.equal(lottie.w, lottie.h);
-    assert.equal(lottie.nm, "Blocks — Faces");
-    const shapes = lottie.layers.filter((l) => l.ty === 4);
-    assert.equal(shapes.length, 1);
-    assert.ok(shapes[0].shapes.length >= BLOCKS.length);
+  it("ships a static atlas scene per page", async () => {
+    const pages = [
+      ["scene-1", "Blocks — Faces"],
+      ["scene-2", "Blocks — More"],
+    ];
+    for (const [slug, name] of pages) {
+      const lottie = JSON.parse(
+        await readFile(resolve(ROOT, `public/projects/blocks/${slug}/lottie.json`), "utf8"),
+      );
+      assert.equal(lottie.ip, 0);
+      assert.equal(lottie.op, 1);
+      assert.equal(lottie.w, lottie.h);
+      assert.equal(lottie.nm, name);
+      const shapes = lottie.layers.filter((l) => l.ty === 4);
+      assert.equal(shapes.length, 1);
+      assert.ok(shapes[0].shapes.length >= PAGE_SIZE);
+    }
   });
 });
