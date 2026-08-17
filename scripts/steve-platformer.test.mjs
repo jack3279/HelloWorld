@@ -5,7 +5,7 @@ import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import { isHair } from "./lib/steve-model.mjs";
-import { ANIMATIONS, catalog, lerpPose, runFrame } from "./lib/steve-poses.mjs";
+import { ANIMATIONS, catalog, lerpPose, runFrame, sampleHurt, sampleSwing, swingStrike } from "./lib/steve-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -44,6 +44,25 @@ describe("steve pose catalog", () => {
     assert.ok(mid.root.y > 0);
     assert.ok(mid.root.y < jumpApex().root.y);
   });
+
+  it("swings the sword arm past the idle hang", () => {
+    const idle = catalog().find((f) => f.id === "idle-a").pose;
+    const strike = swingStrike();
+    assert.ok(strike.parts["arm-right"].pitch < idle.parts["arm-right"].pitch - 80);
+    assert.ok(strike.parts["held-sword"]);
+    const mid = sampleSwing(0.38);
+    assert.ok(mid.parts["arm-right"].pitch < 0);
+  });
+
+  it("flashes on hurt and drops the body on death", async () => {
+    const { sampleDeath } = await import("./lib/steve-poses.mjs");
+    const flashes = Array.from({ length: 8 }, (_, i) => sampleHurt(i / 7).flash);
+    assert.ok(flashes.some((f) => f > 0.5), "hurt flashes white");
+    assert.ok(flashes.some((f) => f === 0), "hurt returns to skin color");
+    const dead = sampleDeath(1);
+    assert.ok(dead.root.y < -2);
+    assert.ok(dead.roll > 10);
+  });
 });
 
 describe("generated sprite kit", () => {
@@ -63,6 +82,9 @@ describe("generated sprite kit", () => {
       ["steve-platformer", "scene-1", 256, 320],
       ["steve-platformer", "scene-2", 256, 320],
       ["steve-platformer", "scene-3", 256, 320],
+      ["steve-platformer", "scene-4", 384, 336],
+      ["steve-platformer", "scene-5", 384, 336],
+      ["steve-platformer", "scene-6", 384, 336],
       ["steve", "scene-1", 512, 640],
       ["steve", "scene-2", 512, 640],
     ];
@@ -82,5 +104,7 @@ describe("generated sprite kit", () => {
         assert.ok(layer.ip < layer.op, layer.nm);
       }
     }
+    const swing = await readFile(resolve(ROOT, "public/projects/steve-platformer/scene-4/lottie.json"), "utf8");
+    assert.match(swing, /held-sword/);
   });
 });

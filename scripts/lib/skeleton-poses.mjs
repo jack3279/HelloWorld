@@ -20,6 +20,8 @@ export const TOLERANCE = { default: 18, head: 8 };
 
 export const WALK_FRAMES = 16;
 export const DRAW_FRAMES = 12;
+export const HURT_FRAMES = 8;
+export const DEATH_FRAMES = 12;
 
 function pose(parts, root = {}) {
   return { view: SIDE_VIEW, root, parts };
@@ -81,6 +83,9 @@ export function lerpPose(a, b, t) {
       y: lerpNum(a.root?.y ?? 0, b.root?.y ?? 0, t),
     },
     parts,
+    flash: lerpNum(a.flash ?? 0, b.flash ?? 0, t),
+    roll: lerpNum(a.roll ?? 0, b.roll ?? 0, t),
+    bowPull: lerpNum(a.bowPull ?? 0, b.bowPull ?? 0, t),
   };
 }
 
@@ -112,17 +117,85 @@ export function drawFrame(phase) {
   const t = ((phase % 1) + 1) % 1;
   const raise = t < 0.28 ? easeInOut(t / 0.28) : t > 0.82 ? 1 - easeInOut((t - 0.82) / 0.18) : 1;
   const aim = Math.sin(t * Math.PI * 4) * 3 * raise;
+  const pull = raise;
   const base = idleA();
   return {
     ...base,
+    bowPull: pull,
     parts: {
       ...base.parts,
       torso: { pitch: 4 * raise, roll: 0 },
       head: { ...FACE, pitch: 6 + aim * 0.4, yaw: -45 },
       "arm-left": limb(FAR, { pitch: -8 - 78 * raise, roll: -4 }),
       "arm-right": limb(NEAR, { pitch: 10 - 52 * raise + aim, roll: 8 * raise }),
+      "held-bow": { pitch: -12 * raise, roll: 6 * raise, yaw: 0 },
+      "held-arrow": { pitch: -8 * raise, roll: 0, yaw: 0 },
     },
   };
+}
+
+export function hurtPose() {
+  return {
+    ...pose(
+      {
+        torso: { pitch: 14, roll: -8 },
+        head: { ...FACE, pitch: 12, roll: -10 },
+        "arm-right": limb(NEAR, { pitch: 42, roll: 10 }),
+        "arm-left": limb(FAR, { pitch: -36, roll: -12 }),
+        "leg-right": limb(NEAR, { pitch: 18, roll: 4 }),
+        "leg-left": limb(FAR, { pitch: -20, roll: -4 }),
+      },
+      { x: -1.8, y: 0.5 },
+    ),
+    flash: 0.86,
+  };
+}
+
+export function sampleHurt(t) {
+  const x = Math.min(1, Math.max(0, t));
+  const recoiled = lerpPose(idleA(), hurtPose(), x < 0.35 ? easeInOut(x / 0.35) : 1);
+  const recovering = x < 0.35 ? recoiled : lerpPose(hurtPose(), idleA(), easeInOut((x - 0.35) / 0.65));
+  const i = Math.round(x * (HURT_FRAMES - 1));
+  const flash = i % 2 === 0 ? 0.9 * (1 - x * 0.55) : 0;
+  return { ...recovering, flash };
+}
+
+export function deathPose() {
+  return {
+    ...pose(
+      {
+        torso: { pitch: 78, roll: 6 },
+        head: { ...FACE, pitch: 22, roll: 10 },
+        "arm-right": limb(NEAR, { pitch: 8, roll: 16 }),
+        "arm-left": limb(FAR, { pitch: -12, roll: -10 }),
+        "leg-right": limb(NEAR, { pitch: 48, roll: 8 }),
+        "leg-left": limb(FAR, { pitch: 32, roll: -6 }),
+      },
+      { x: -2.4, y: -5.2 },
+    ),
+    roll: 32,
+    flash: 0,
+  };
+}
+
+export function sampleDeath(t) {
+  const x = Math.min(1, Math.max(0, t));
+  const keys = [
+    { t: 0, pose: { ...idleA(), flash: 0.92 } },
+    { t: 0.12, pose: { ...hurtPose(), flash: 0.7 } },
+    { t: 0.36, pose: lerpPose(hurtPose(), deathPose(), 0.4) },
+    { t: 0.62, pose: lerpPose(hurtPose(), deathPose(), 0.78) },
+    { t: 0.84, pose: deathPose() },
+    { t: 1, pose: deathPose() },
+  ];
+  let i = 0;
+  while (i < keys.length - 2 && x > keys[i + 1].t) i += 1;
+  const a = keys[i];
+  const b = keys[i + 1];
+  const u = (x - a.t) / (b.t - a.t || 1);
+  const out = lerpPose(a.pose, b.pose, easeInOut(u));
+  const flash = x < 0.26 && Math.round(x * 10) % 2 === 0 ? 0.82 * (1 - x / 0.26) : 0;
+  return { ...out, flash };
 }
 
 export function catalog() {

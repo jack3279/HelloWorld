@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { loadEndermanSkin } from "./lib/steve-model.mjs";
-import { FACE, TELEPORT_FRAMES, WALK_FRAMES, idleA, teleportFrame, walkFrame } from "./lib/enderman-poses.mjs";
+import { FACE, TELEPORT_FRAMES, WALK_FRAMES, idleA, sampleDeath, sampleHurt, teleportFrame, walkFrame } from "./lib/enderman-poses.mjs";
 import { ENDERMAN_MODEL } from "./lib/enderman-model.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -45,6 +45,11 @@ describe("enderman pose", () => {
     assert.ok(opacities.some((o) => o === 0), "teleport vanishes for a beat");
     assert.ok(opacities.some((o) => o === 100));
   });
+
+  it("flashes on hurt and crumples on death", () => {
+    assert.ok(sampleHurt(0).flash > 0.5);
+    assert.ok(sampleDeath(1).root.y < -4);
+  });
 });
 
 describe("generated enderman assets", () => {
@@ -61,6 +66,8 @@ describe("generated enderman assets", () => {
       ["scene-1", 8],
       ["scene-2", WALK_FRAMES],
       ["scene-3", TELEPORT_FRAMES],
+      ["scene-4", 8],
+      ["scene-5", 8],
     ]) {
       const lottie = JSON.parse(
         await readFile(resolve(ROOT, "public/projects/enderman", scene, "lottie.json"), "utf8"),

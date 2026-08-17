@@ -7,6 +7,8 @@ import { fileURLToPath } from "node:url";
 import { loadSpiderSkin, parseArgs } from "./lib/steve-model.mjs";
 import { SPIDER_MODEL } from "./lib/spider-model.mjs";
 import {
+  DEATH_FRAMES,
+  HURT_FRAMES,
   REAR_FRAMES,
   SPRITE,
   TOLERANCE,
@@ -14,6 +16,8 @@ import {
   catalog,
   idleA,
   rearFrame,
+  sampleDeath,
+  sampleHurt,
   sampleIdle,
   walkFrame,
 } from "./lib/spider-poses.mjs";
@@ -105,6 +109,54 @@ await writeScene(
     fps: 10,
     hold: 1,
     loop: true,
+    generator: "scripts/generate-spider.mjs",
+  }),
+);
+
+const hurt = Array.from({ length: HURT_FRAMES }, (_, i) => {
+  const baked = bake({
+    skin,
+    pose: sampleHurt(i / (HURT_FRAMES - 1)),
+    canvas: SPRITE,
+    tolerance: TOLERANCE,
+    model,
+  });
+  return { id: `hurt-${i}`, shapes: baked.shapes };
+});
+await writeScene(
+  resolve(ROOT, "public/projects/spider/scene-4"),
+  flipbook({
+    name: "Spider — Hurt",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: hurt,
+    fps: 12,
+    hold: 1,
+    loop: true,
+    generator: "scripts/generate-spider.mjs",
+  }),
+);
+
+const death = Array.from({ length: DEATH_FRAMES }, (_, i) => {
+  const baked = bake({
+    skin,
+    pose: sampleDeath(i / (DEATH_FRAMES - 1)),
+    canvas: SPRITE,
+    tolerance: TOLERANCE,
+    model,
+  });
+  return { id: `death-${i}`, shapes: baked.shapes };
+});
+await writeScene(
+  resolve(ROOT, "public/projects/spider/scene-5"),
+  flipbook({
+    name: "Spider — Death",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: death,
+    fps: 10,
+    hold: 1,
+    loop: false,
     generator: "scripts/generate-spider.mjs",
   }),
 );

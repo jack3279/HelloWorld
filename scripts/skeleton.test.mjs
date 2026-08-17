@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { loadSkeletonSkin } from "./lib/steve-model.mjs";
-import { FACE, WALK_FRAMES, drawFrame, idleA, sampleIdle, walkFrame } from "./lib/skeleton-poses.mjs";
+import { FACE, WALK_FRAMES, drawFrame, idleA, sampleDeath, sampleHurt, sampleIdle, walkFrame } from "./lib/skeleton-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -49,6 +49,14 @@ describe("skeleton pose", () => {
     const drawn = drawFrame(0.5);
     assert.ok(drawn.parts["arm-left"].pitch < idle.parts["arm-left"].pitch - 40);
     assert.equal(drawn.parts.head.yaw, -45);
+    assert.ok(drawn.bowPull > 0.8);
+    assert.ok(drawn.parts["held-bow"]);
+  });
+
+  it("flashes on hurt and collapses on death", () => {
+    const flashes = Array.from({ length: 8 }, (_, i) => sampleHurt(i / 7).flash);
+    assert.ok(flashes.some((f) => f > 0.5));
+    assert.ok(sampleDeath(1).root.y < -2);
   });
 });
 
@@ -62,11 +70,13 @@ describe("generated skeleton assets", () => {
     assert.match(svg, /fill="#([b-fB-F][0-9a-fA-F]{5}|[9a-fA-F]{2}[9a-fA-F]{4})"/);
   });
 
-  it("ships idle, walk, and draw flipbooks", async () => {
+  it("ships idle, walk, draw, hurt, and death flipbooks", async () => {
     const scenes = [
       ["scene-1", 8],
       ["scene-2", WALK_FRAMES],
       ["scene-3", 12],
+      ["scene-4", 8],
+      ["scene-5", 8],
     ];
     for (const [scene, minLayers] of scenes) {
       const lottie = JSON.parse(
@@ -78,5 +88,7 @@ describe("generated skeleton assets", () => {
       const shapes = lottie.layers.filter((l) => l.ty === 4);
       assert.ok(shapes.length >= minLayers, `${scene} layers`);
     }
+    const draw = await readFile(resolve(ROOT, "public/projects/skeleton/scene-3/lottie.json"), "utf8");
+    assert.match(draw, /held-bow/);
   });
 });

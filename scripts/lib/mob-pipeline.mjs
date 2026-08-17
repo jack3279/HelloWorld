@@ -56,13 +56,17 @@ export function flipbook({ name, w, h, frames, fps, hold, loop, generator }) {
   };
 }
 
-export function bake({ skin, pose, canvas, tolerance, model, shading }) {
+export function bake({ skin, pose, canvas, tolerance, model, shading, extras }) {
   const { parts } = buildFigure({
     skin,
     pose,
     tolerance,
     model,
-    shading: shading ?? { ...DEFAULT_SHADING, grade: false },
+    extras,
+    shading: {
+      ...(shading ?? { ...DEFAULT_SHADING, grade: false }),
+      flash: pose.flash ?? shading?.flash ?? 0,
+    },
   });
   const project = makeProjector({
     scale: canvas.scale,

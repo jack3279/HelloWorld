@@ -7,12 +7,16 @@ import { fileURLToPath } from "node:url";
 import { loadEndermanSkin, parseArgs } from "./lib/steve-model.mjs";
 import { ENDERMAN_MODEL } from "./lib/enderman-model.mjs";
 import {
+  DEATH_FRAMES,
+  HURT_FRAMES,
   SPRITE,
   TELEPORT_FRAMES,
   TOLERANCE,
   WALK_FRAMES,
   catalog,
   idleA,
+  sampleDeath,
+  sampleHurt,
   sampleIdle,
   teleportFrame,
   walkFrame,
@@ -106,6 +110,54 @@ await writeScene(
     fps: 12,
     hold: 1,
     loop: true,
+    generator: "scripts/generate-enderman.mjs",
+  }),
+);
+
+const hurt = Array.from({ length: HURT_FRAMES }, (_, i) => {
+  const baked = bake({
+    skin,
+    pose: sampleHurt(i / (HURT_FRAMES - 1)),
+    canvas: SPRITE,
+    tolerance: TOLERANCE,
+    model,
+  });
+  return { id: `hurt-${i}`, shapes: baked.shapes };
+});
+await writeScene(
+  resolve(ROOT, "public/projects/enderman/scene-4"),
+  flipbook({
+    name: "Enderman — Hurt",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: hurt,
+    fps: 12,
+    hold: 1,
+    loop: true,
+    generator: "scripts/generate-enderman.mjs",
+  }),
+);
+
+const death = Array.from({ length: DEATH_FRAMES }, (_, i) => {
+  const baked = bake({
+    skin,
+    pose: sampleDeath(i / (DEATH_FRAMES - 1)),
+    canvas: SPRITE,
+    tolerance: TOLERANCE,
+    model,
+  });
+  return { id: `death-${i}`, shapes: baked.shapes };
+});
+await writeScene(
+  resolve(ROOT, "public/projects/enderman/scene-5"),
+  flipbook({
+    name: "Enderman — Death",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: death,
+    fps: 10,
+    hold: 1,
+    loop: false,
     generator: "scripts/generate-enderman.mjs",
   }),
 );

@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "check:text-slots": "node --experimental-strip-types --test scripts/text-slot-unicode.test.mjs",
+    "check:combat": "node --test scripts/combat.test.mjs",
     "check:steve-sprites": "node --test scripts/steve-platformer.test.mjs",
     "check:coin": "node --test scripts/coin-lottie.test.mjs",
     "check:zombie": "node --test scripts/zombie.test.mjs",
@@ -24,6 +25,7 @@
     "generate:spider": "node scripts/generate-spider.mjs",
     "generate:enderman": "node scripts/generate-enderman.mjs",
     "generate:mobs": "node scripts/generate-skeleton.mjs && node scripts/generate-spider.mjs && node scripts/generate-enderman.mjs",
+    "generate:combat": "npm run generate:steve && npm run generate:zombie && npm run generate:mobs",
     "preview": "vite preview",
     "postinstall": "node scripts/copy-canvaskit.mjs"
   },

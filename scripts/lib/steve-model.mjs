@@ -59,21 +59,26 @@ export function decodePng(buf) {
     else if (type === "IEND") break;
     off += 12 + len;
   }
-  if (bitDepth !== 8) throw new Error(`bit depth ${bitDepth} is unsupported`);
+  if (![1, 2, 4, 8].includes(bitDepth)) throw new Error(`bit depth ${bitDepth} is unsupported`);
   const channels = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[colorType];
   if (!channels) throw new Error(`color type ${colorType} is unsupported`);
+  if (bitDepth < 8 && colorType !== 0 && colorType !== 3) {
+    throw new Error(`bit depth ${bitDepth} is unsupported for color type ${colorType}`);
+  }
 
   const raw = zlib.inflateSync(Buffer.concat(idat));
-  const stride = width * channels;
+  const bitsPerPixel = bitDepth * channels;
+  const stride = Math.ceil((width * bitsPerPixel) / 8);
+  const filterBpp = Math.max(1, Math.ceil(bitsPerPixel / 8));
   const flat = Buffer.alloc(height * stride);
   let prev = Buffer.alloc(stride);
   for (let y = 0; y < height; y++) {
     const filter = raw[y * (stride + 1)];
     const line = Buffer.from(raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1)));
     for (let i = 0; i < stride; i++) {
-      const a = i >= channels ? line[i - channels] : 0;
+      const a = i >= filterBpp ? line[i - filterBpp] : 0;
       const b = prev[i];
-      const c = i >= channels ? prev[i - channels] : 0;
+      const c = i >= filterBpp ? prev[i - filterBpp] : 0;
       if (filter === 1) line[i] = (line[i] + a) & 255;
       else if (filter === 2) line[i] = (line[i] + b) & 255;
       else if (filter === 3) line[i] = (line[i] + ((a + b) >> 1)) & 255;
@@ -89,26 +94,46 @@ export function decodePng(buf) {
     prev = line;
   }
 
+  const samples = unpackPngSamples(flat, width, height, bitDepth, channels);
+  const scale = bitDepth === 8 ? 1 : 255 / ((1 << bitDepth) - 1);
+
   const rgba = new Uint8Array(width * height * 4);
   for (let i = 0; i < width * height; i++) {
     let r;
     let g;
     let b;
     let a = 255;
-    if (colorType === 6) [r, g, b, a] = [flat[i * 4], flat[i * 4 + 1], flat[i * 4 + 2], flat[i * 4 + 3]];
-    else if (colorType === 2) [r, g, b] = [flat[i * 3], flat[i * 3 + 1], flat[i * 3 + 2]];
-    else if (colorType === 0) r = g = b = flat[i];
+    if (colorType === 6) [r, g, b, a] = [samples[i * 4], samples[i * 4 + 1], samples[i * 4 + 2], samples[i * 4 + 3]];
+    else if (colorType === 2) [r, g, b] = [samples[i * 3], samples[i * 3 + 1], samples[i * 3 + 2]];
+    else if (colorType === 0) r = g = b = Math.round(samples[i] * scale);
     else if (colorType === 4) {
-      r = g = b = flat[i * 2];
-      a = flat[i * 2 + 1];
+      r = g = b = samples[i * 2];
+      a = samples[i * 2 + 1];
     } else {
-      const idx = flat[i];
+      const idx = samples[i];
       [r, g, b] = [palette[idx * 3], palette[idx * 3 + 1], palette[idx * 3 + 2]];
       if (alphaTable && idx < alphaTable.length) a = alphaTable[idx];
     }
     rgba.set([r, g, b, a], i * 4);
   }
   return { width, height, rgba };
+}
+
+function unpackPngSamples(flat, width, height, bitDepth, channels) {
+  if (bitDepth === 8) return flat;
+  const ppb = 8 / bitDepth;
+  const mask = (1 << bitDepth) - 1;
+  const packedStride = Math.ceil((width * bitDepth * channels) / 8);
+  const samples = Buffer.alloc(width * height * channels);
+  for (let y = 0; y < height; y++) {
+    const row = flat.subarray(y * packedStride, (y + 1) * packedStride);
+    for (let x = 0; x < width * channels; x++) {
+      const byte = row[Math.floor(x / ppb)];
+      const shift = 8 - bitDepth * ((x % ppb) + 1);
+      samples[y * width * channels + x] = (byte >> shift) & mask;
+    }
+  }
+  return samples;
 }
 
 // Uncompressed true-color TGA (Bedrock spider / enderman skins).
@@ -402,6 +427,12 @@ function shade(shading, rgb, lum, source) {
   return mix(dimmed, hexToRgb(shading.shadowTint), (1 - lum) * 0.35);
 }
 
+// Minecraft hit flash: lerp every shaded texel toward white. `amount` is 0..1.
+export function applyFlash(rgb, amount) {
+  if (!amount) return rgb;
+  return mix(rgb, [255, 255, 255], Math.min(1, Math.max(0, amount)));
+}
+
 // ----------------------------------------------------------------- model layout
 
 const uv = (x, y, w, h) => ({ x, y, w, h });
@@ -598,20 +629,25 @@ function profileHeadKey(skin, partId, faceName, rect, tx, ty, viewYaw, headYaw) 
  * already flattened into horizontal runs of graded, shaded color.
  *
  * `pose` is `{ view: { yaw, pitch }, root: { x, y }, parts: { <id>: { pitch,
- * roll, yaw, faceYaw, shadeScale } } }`.
+ * roll, yaw, faceYaw, shadeScale } }, flash }`.
+ *
+ * `extras` are additional cuboids (held items) that share the pose hierarchy
+ * but paint from their own skin: `{ part, skin, tolerance }`.
  */
-export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, model = MODEL }) {
+export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, model = MODEL, extras = [] }) {
   const yaw = rotY(pose.view?.yaw ?? 0);
   const pitch = rotX(pose.view?.pitch ?? 0);
   const viewMatrix = matMul(pitch, yaw);
   const offset = [pose.root?.x ?? 0, pose.root?.y ?? 0, 0];
   const palette = new Set();
   const parts = [];
-  const lookup = lookupOf(model);
+  const extraParts = extras.map((e) => e.part ?? e);
+  const lookup = new Map([...model, ...extraParts].map((p) => [p.id, p]));
+  const flash = shading.flash ?? pose.flash ?? 0;
 
-  for (const part of model) {
+  const paint = (part, partSkin, partTolerance) => {
     const partPose = poseFor(pose, part.id);
-    const tol = tolerance?.[part.id] ?? tolerance?.default ?? 12;
+    const tol = partTolerance?.[part.id] ?? partTolerance?.default ?? 12;
     const chain = chainMatrix(pose, part, lookup);
     const worldOf = (p) => {
       const q = chainPoint(pose, part, p, lookup);
@@ -622,7 +658,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, 
     let depthSum = 0;
     let depthCount = 0;
 
-    for (const [faceName, rect] of Object.entries(part.uv)) {
+    for (const [faceName, rect] of Object.entries(part.uv ?? {})) {
       const { normal, quad } = faceCorners(part.min, part.max, faceName);
       const worldNormal = norm(apply(chain, normal));
       const cameraNormal = norm(apply(viewMatrix, worldNormal));
@@ -633,7 +669,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, 
       if (cameraNormal[2] <= 0.0015) continue; // back-facing
 
       const lum = luminanceFor(shading, worldNormal, cameraNormal) * (partPose.shadeScale ?? 1);
-      const lookup = flattenRegion(skin, rect, tol);
+      const colors = flattenRegion(partSkin, rect, tol);
       const runs = [];
       const counts = new Map();
       for (let ty = 0; ty < rect.h; ty++) {
@@ -642,7 +678,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, 
           let hex = null;
           if (tx < rect.w) {
             const key = profileHeadKey(
-              skin,
+              partSkin,
               part.id,
               faceName,
               rect,
@@ -652,9 +688,9 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, 
               partPose.yaw,
             );
             if (key != null) {
-              const src = lookup.get(key) ?? [(key >> 16) & 255, (key >> 8) & 255, key & 255];
+              const src = colors.get(key) ?? [(key >> 16) & 255, (key >> 8) & 255, key & 255];
               const colored = shading.grade === false ? src : grade(src);
-              hex = rgbToHex(shade(shading, colored, lum, src));
+              hex = rgbToHex(applyFlash(shade(shading, colored, lum, src), flash));
               palette.add(hex);
             }
           }
@@ -682,6 +718,12 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, 
       faces,
       depth: depthSum / Math.max(1, depthCount),
     });
+  };
+
+  for (const part of model) paint(part, skin, tolerance);
+  for (const extra of extras) {
+    const part = extra.part ?? extra;
+    paint(part, extra.skin ?? skin, extra.tolerance ?? { default: 4 });
   }
 
   parts.sort((a, b) => a.depth - b.depth);

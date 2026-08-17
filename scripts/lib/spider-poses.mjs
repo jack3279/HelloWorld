@@ -20,6 +20,8 @@ export const TOLERANCE = { default: 22, head: 10 };
 
 export const WALK_FRAMES = 16;
 export const REAR_FRAMES = 14;
+export const HURT_FRAMES = 8;
+export const DEATH_FRAMES = 12;
 
 function pose(parts, root = {}) {
   return { view: SIDE_VIEW, root, parts };
@@ -92,6 +94,8 @@ export function lerpPose(a, b, t) {
       y: lerpNum(a.root?.y ?? 0, b.root?.y ?? 0, t),
     },
     parts,
+    flash: lerpNum(a.flash ?? 0, b.flash ?? 0, t),
+    roll: lerpNum(a.roll ?? 0, b.roll ?? 0, t),
   };
 }
 
@@ -159,4 +163,71 @@ export function catalog() {
     pose: walkFrame(i / WALK_FRAMES),
     tags: ["walk"],
   }));
+}
+
+export function hurtPose() {
+  return {
+    ...pose(
+      {
+        body: { pitch: 10, roll: -8 },
+        head: { ...FACE, pitch: 8, roll: -6 },
+        abdomen: { pitch: 6, roll: 4 },
+        ...restLegs({ m: 16, n: 14, o: 14, p: 16, i: 8, j: -6, k: 6, l: -8 }),
+      },
+      { x: -1.2, y: 0.8 },
+    ),
+    flash: 0.86,
+  };
+}
+
+export function sampleHurt(t) {
+  const x = Math.min(1, Math.max(0, t));
+  const recoiled = lerpPose(idleA(), hurtPose(), x < 0.35 ? easeInOut(x / 0.35) : 1);
+  const recovering = x < 0.35 ? recoiled : lerpPose(hurtPose(), idleA(), easeInOut((x - 0.35) / 0.65));
+  const i = Math.round(x * (HURT_FRAMES - 1));
+  const flash = i % 2 === 0 ? 0.9 * (1 - x * 0.55) : 0;
+  return { ...recovering, flash };
+}
+
+export function deathPose() {
+  return {
+    ...pose(
+      {
+        body: { pitch: 8, roll: 0 },
+        head: { ...FACE, pitch: 16 },
+        abdomen: { pitch: 18 },
+        leg0: limb(NEAR, { yaw: 55, roll: 88, pitch: 20 }),
+        leg1: limb(FAR, { yaw: -55, roll: -88, pitch: 20 }),
+        leg2: limb(NEAR, { yaw: 28, roll: 90, pitch: 12 }),
+        leg3: limb(FAR, { yaw: -28, roll: -90, pitch: 12 }),
+        leg4: limb(NEAR, { yaw: -28, roll: 90, pitch: -8 }),
+        leg5: limb(FAR, { yaw: 28, roll: -90, pitch: -8 }),
+        leg6: limb(NEAR, { yaw: -55, roll: 88, pitch: -16 }),
+        leg7: limb(FAR, { yaw: 55, roll: -88, pitch: -16 }),
+      },
+      { x: -0.6, y: -1.4 },
+    ),
+    roll: 162,
+    flash: 0,
+  };
+}
+
+export function sampleDeath(t) {
+  const x = Math.min(1, Math.max(0, t));
+  const keys = [
+    { t: 0, pose: { ...idleA(), flash: 0.9 } },
+    { t: 0.14, pose: { ...hurtPose(), flash: 0.65 } },
+    { t: 0.4, pose: lerpPose(hurtPose(), deathPose(), 0.45) },
+    { t: 0.68, pose: lerpPose(hurtPose(), deathPose(), 0.82) },
+    { t: 0.88, pose: deathPose() },
+    { t: 1, pose: deathPose() },
+  ];
+  let i = 0;
+  while (i < keys.length - 2 && x > keys[i + 1].t) i += 1;
+  const a = keys[i];
+  const b = keys[i + 1];
+  const u = (x - a.t) / (b.t - a.t || 1);
+  const out = lerpPose(a.pose, b.pose, easeInOut(u));
+  const flash = x < 0.26 && Math.round(x * 10) % 2 === 0 ? 0.82 * (1 - x / 0.26) : 0;
+  return { ...out, flash };
 }

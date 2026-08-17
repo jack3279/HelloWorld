@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { decodeTga, loadSpiderSkin } from "./lib/steve-model.mjs";
-import { FACE, WALK_FRAMES, idleA, rearFrame, walkFrame } from "./lib/spider-poses.mjs";
+import { FACE, WALK_FRAMES, idleA, rearFrame, sampleDeath, sampleHurt, walkFrame } from "./lib/spider-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -59,6 +59,11 @@ describe("spider pose", () => {
     assert.ok(rear.parts.body.pitch < idleA().parts.body.pitch - 8);
     assert.ok(rear.root.y > 0.4);
   });
+
+  it("flashes on hurt and flips on death", () => {
+    assert.ok(sampleHurt(0).flash > 0.5);
+    assert.ok(sampleDeath(1).roll > 90);
+  });
 });
 
 describe("generated spider assets", () => {
@@ -75,6 +80,8 @@ describe("generated spider assets", () => {
       ["scene-1", 8],
       ["scene-2", WALK_FRAMES],
       ["scene-3", 8],
+      ["scene-4", 8],
+      ["scene-5", 8],
     ]) {
       const lottie = JSON.parse(
         await readFile(resolve(ROOT, "public/projects/spider", scene, "lottie.json"), "utf8"),

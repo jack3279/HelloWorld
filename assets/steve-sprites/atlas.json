@@ -3,13 +3,22 @@
     "character": "steve",
     "facing": "right",
     "image": "sheet.svg",
+    "combatImage": "combat-sheet.svg",
     "size": {
       "w": 2048,
       "h": 640
     },
+    "combatSize": {
+      "w": 3840,
+      "h": 1008
+    },
     "tile": {
       "w": 256,
       "h": 320
+    },
+    "combatTile": {
+      "w": 384,
+      "h": 336
     },
     "scale": 6.6,
     "generatedBy": "scripts/generate-steve-sprites.mjs"
@@ -269,6 +278,546 @@
         "x": 128,
         "y": 300
       }
+    },
+    "swing-0": {
+      "file": "swing-0.svg",
+      "label": "Sword 1/10",
+      "tags": [
+        "swing",
+        "combat"
+      ],
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "swing-1": {
+      "file": "swing-1.svg",
+      "label": "Sword 2/10",
+      "tags": [
+        "swing",
+        "combat"
+      ],
+      "frame": {
+        "x": 384,
+        "y": 0,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "swing-2": {
+      "file": "swing-2.svg",
+      "label": "Sword 3/10",
+      "tags": [
+        "swing",
+        "combat"
+      ],
+      "frame": {
+        "x": 768,
+        "y": 0,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "swing-3": {
+      "file": "swing-3.svg",
+      "label": "Sword 4/10",
+      "tags": [
+        "swing",
+        "combat"
+      ],
+      "frame": {
+        "x": 1152,
+        "y": 0,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "swing-4": {
+      "file": "swing-4.svg",
+      "label": "Sword 5/10",
+      "tags": [
+        "swing",
+        "combat"
+      ],
+      "frame": {
+        "x": 1536,
+        "y": 0,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "swing-5": {
+      "file": "swing-5.svg",
+      "label": "Sword 6/10",
+      "tags": [
+        "swing",
+        "combat"
+      ],
+      "frame": {
+        "x": 1920,
+        "y": 0,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "swing-6": {
+      "file": "swing-6.svg",
+      "label": "Sword 7/10",
+      "tags": [
+        "swing",
+        "combat"
+      ],
+      "frame": {
+        "x": 2304,
+        "y": 0,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "swing-7": {
+      "file": "swing-7.svg",
+      "label": "Sword 8/10",
+      "tags": [
+        "swing",
+        "combat"
+      ],
+      "frame": {
+        "x": 2688,
+        "y": 0,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "swing-8": {
+      "file": "swing-8.svg",
+      "label": "Sword 9/10",
+      "tags": [
+        "swing",
+        "combat"
+      ],
+      "frame": {
+        "x": 3072,
+        "y": 0,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "swing-9": {
+      "file": "swing-9.svg",
+      "label": "Sword 10/10",
+      "tags": [
+        "swing",
+        "combat"
+      ],
+      "frame": {
+        "x": 3456,
+        "y": 0,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "hurt-0": {
+      "file": "hurt-0.svg",
+      "label": "Hurt 1/8",
+      "tags": [
+        "hurt",
+        "combat"
+      ],
+      "frame": {
+        "x": 0,
+        "y": 336,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "hurt-1": {
+      "file": "hurt-1.svg",
+      "label": "Hurt 2/8",
+      "tags": [
+        "hurt",
+        "combat"
+      ],
+      "frame": {
+        "x": 384,
+        "y": 336,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "hurt-2": {
+      "file": "hurt-2.svg",
+      "label": "Hurt 3/8",
+      "tags": [
+        "hurt",
+        "combat"
+      ],
+      "frame": {
+        "x": 768,
+        "y": 336,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "hurt-3": {
+      "file": "hurt-3.svg",
+      "label": "Hurt 4/8",
+      "tags": [
+        "hurt",
+        "combat"
+      ],
+      "frame": {
+        "x": 1152,
+        "y": 336,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "hurt-4": {
+      "file": "hurt-4.svg",
+      "label": "Hurt 5/8",
+      "tags": [
+        "hurt",
+        "combat"
+      ],
+      "frame": {
+        "x": 1536,
+        "y": 336,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "hurt-5": {
+      "file": "hurt-5.svg",
+      "label": "Hurt 6/8",
+      "tags": [
+        "hurt",
+        "combat"
+      ],
+      "frame": {
+        "x": 1920,
+        "y": 336,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "hurt-6": {
+      "file": "hurt-6.svg",
+      "label": "Hurt 7/8",
+      "tags": [
+        "hurt",
+        "combat"
+      ],
+      "frame": {
+        "x": 2304,
+        "y": 336,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "hurt-7": {
+      "file": "hurt-7.svg",
+      "label": "Hurt 8/8",
+      "tags": [
+        "hurt",
+        "combat"
+      ],
+      "frame": {
+        "x": 2688,
+        "y": 336,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "death-0": {
+      "file": "death-0.svg",
+      "label": "Death 1/12",
+      "tags": [
+        "death",
+        "combat"
+      ],
+      "frame": {
+        "x": 3072,
+        "y": 336,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "death-1": {
+      "file": "death-1.svg",
+      "label": "Death 2/12",
+      "tags": [
+        "death",
+        "combat"
+      ],
+      "frame": {
+        "x": 3456,
+        "y": 336,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "death-2": {
+      "file": "death-2.svg",
+      "label": "Death 3/12",
+      "tags": [
+        "death",
+        "combat"
+      ],
+      "frame": {
+        "x": 0,
+        "y": 672,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "death-3": {
+      "file": "death-3.svg",
+      "label": "Death 4/12",
+      "tags": [
+        "death",
+        "combat"
+      ],
+      "frame": {
+        "x": 384,
+        "y": 672,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "death-4": {
+      "file": "death-4.svg",
+      "label": "Death 5/12",
+      "tags": [
+        "death",
+        "combat"
+      ],
+      "frame": {
+        "x": 768,
+        "y": 672,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "death-5": {
+      "file": "death-5.svg",
+      "label": "Death 6/12",
+      "tags": [
+        "death",
+        "combat"
+      ],
+      "frame": {
+        "x": 1152,
+        "y": 672,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "death-6": {
+      "file": "death-6.svg",
+      "label": "Death 7/12",
+      "tags": [
+        "death",
+        "combat"
+      ],
+      "frame": {
+        "x": 1536,
+        "y": 672,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "death-7": {
+      "file": "death-7.svg",
+      "label": "Death 8/12",
+      "tags": [
+        "death",
+        "combat"
+      ],
+      "frame": {
+        "x": 1920,
+        "y": 672,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "death-8": {
+      "file": "death-8.svg",
+      "label": "Death 9/12",
+      "tags": [
+        "death",
+        "combat"
+      ],
+      "frame": {
+        "x": 2304,
+        "y": 672,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "death-9": {
+      "file": "death-9.svg",
+      "label": "Death 10/12",
+      "tags": [
+        "death",
+        "combat"
+      ],
+      "frame": {
+        "x": 2688,
+        "y": 672,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "death-10": {
+      "file": "death-10.svg",
+      "label": "Death 11/12",
+      "tags": [
+        "death",
+        "combat"
+      ],
+      "frame": {
+        "x": 3072,
+        "y": 672,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "death-11": {
+      "file": "death-11.svg",
+      "label": "Death 12/12",
+      "tags": [
+        "death",
+        "combat"
+      ],
+      "frame": {
+        "x": 3456,
+        "y": 672,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
     }
   },
   "animations": {
@@ -301,6 +850,54 @@
         "jump-apex",
         "jump-fall",
         "jump-land"
+      ],
+      "fps": 10,
+      "loop": false
+    },
+    "swing": {
+      "frames": [
+        "swing-0",
+        "swing-1",
+        "swing-2",
+        "swing-3",
+        "swing-4",
+        "swing-5",
+        "swing-6",
+        "swing-7",
+        "swing-8",
+        "swing-9"
+      ],
+      "fps": 12,
+      "loop": false
+    },
+    "hurt": {
+      "frames": [
+        "hurt-0",
+        "hurt-1",
+        "hurt-2",
+        "hurt-3",
+        "hurt-4",
+        "hurt-5",
+        "hurt-6",
+        "hurt-7"
+      ],
+      "fps": 12,
+      "loop": false
+    },
+    "death": {
+      "frames": [
+        "death-0",
+        "death-1",
+        "death-2",
+        "death-3",
+        "death-4",
+        "death-5",
+        "death-6",
+        "death-7",
+        "death-8",
+        "death-9",
+        "death-10",
+        "death-11"
       ],
       "fps": 10,
       "loop": false
