@@ -35,9 +35,9 @@ export const BAR_SRC_H = 5;
 export const ATLAS = { w: 512, h: 512, cols: 4, rows: 4, cell: 112, gap: 12 };
 export const SURVIVAL = { w: 640, h: 220, padX: 20, padY: 24 };
 export const HEARTS_CANVAS = { w: 640, h: 180 };
-export const BUTTON_CANVAS = { w: 640, h: 180 };
+export const BUTTON_CANVAS = { w: 640, h: 180, padX: 100, padY: 52, maxTexel: 4 };
 export const BAR_CANVAS = { w: 640, h: 140 };
-export const BUTTON_SIZE = { w: 80, h: 16 };
+export const BUTTON_SIZE = { w: 100, h: 20 };
 export const BAR_SIZE = { w: HOTBAR_W, h: BAR_SRC_H };
 
 export { parseArgs };
@@ -325,8 +325,6 @@ export async function composeBar({
   let full = await loadHud(fullId);
   if (kind === "health") {
     empty = remapPixels(empty, (hex) => {
-      const mapped = xpToHealth(hex);
-      if (mapped !== hex) return mapped;
       const [r, g, b] = hexToRgb(hex);
       if (g >= r && g >= b) return "#0e1110";
       return hex;
@@ -421,8 +419,11 @@ export async function loadAtlasSprite(entry) {
 }
 
 export function layoutCentered(src, canvas) {
-  const { w, h, padX = 40, padY = 32 } = canvas;
-  const texel = Math.max(1, Math.floor(Math.min((w - padX * 2) / src.w, (h - padY * 2) / src.h)));
+  const { w, h, padX = 40, padY = 32, maxTexel = Infinity } = canvas;
+  const texel = Math.max(
+    1,
+    Math.min(maxTexel, Math.floor(Math.min((w - padX * 2) / src.w, (h - padY * 2) / src.h))),
+  );
   return {
     x: (w - src.w * texel) / 2,
     y: (h - src.h * texel) / 2,

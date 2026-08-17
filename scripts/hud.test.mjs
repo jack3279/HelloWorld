@@ -87,7 +87,7 @@ describe("composed chrome", () => {
     const full = await composeBar({ fill: 1, kind: "health" });
     assert.equal(full.w, 182);
     assert.equal(full.h, 5);
-    assert.equal(empty.pixels.filter((hex) => hex === HEART_RED).length, 0);
+    assert.equal(empty.pixels.filter((hex) => hex === HEART_RED || hex === "#bb1313").length, 0);
     assert.ok(full.pixels.filter((hex) => hex === HEART_RED).length > 80);
   });
 

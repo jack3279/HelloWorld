@@ -81,9 +81,8 @@
     <path fill="#8c8c8c" d="M274 440h8v4h-8zM354 440h8v4h-8zM282 444h72v4h-72z"/>
     <path fill="#b9b9b9" d="M282 440h56v4h-56z"/>
     <path fill="#adadad" d="M338 440h16v4h-16z"/>
-    <path fill="#0e1110" d="M398 432h88v4h-88zM394 436h4v4h-4zM462 436h28v4h-28zM394 440h4v4h-4zM470 440h20v4h-20zM394 444h4v4h-4zM462 444h28v4h-28zM398 448h88v4h-88z"/>
+    <path fill="#0e1110" d="M398 432h88v4h-88zM394 436h4v4h-4zM462 436h28v4h-28zM394 440h4v4h-4zM462 440h28v4h-28zM394 444h4v4h-4zM462 444h28v4h-28zM398 448h88v4h-88z"/>
     <path fill="#ff1313" d="M398 436h64v4h-64zM398 444h64v4h-64z"/>
     <path fill="#ffc8c8" d="M398 440h64v4h-64z"/>
-    <path fill="#bb1313" d="M462 440h8v4h-8z"/>
   </g>
 </svg>
