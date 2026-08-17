@@ -1,6 +1,9 @@
 // Static Skottie atlases of official Minecraft item sprites.
 //   public/projects/items/scene-1  swords, pickaxes, diamond tools, bow
 //   public/projects/items/scene-2  axes, shovels, hoes, extras
+//   public/projects/items/scene-3  iron / diamond / netherite / gold armor
+//   public/projects/items/scene-4  potion bottles
+//   public/projects/items/scene-5  food
 //
 // Usage:
 //   node scripts/generate-items-lottie.mjs
@@ -19,7 +22,13 @@ import {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
-const TITLES = ["Items — Tools", "Items — More"];
+const TITLES = [
+  "Items — Tools",
+  "Items — More",
+  "Items — Armor",
+  "Items — Potions",
+  "Items — Food",
+];
 
 function atlasScene(name, shapes) {
   return {

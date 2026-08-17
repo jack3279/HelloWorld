@@ -32,13 +32,24 @@ function coverage(runs, pred) {
 }
 
 describe("minecraft item catalog", () => {
-  it("has two pages of tools including swords and pickaxes", () => {
+  it("has five pages covering tools, armor, potions, and food", () => {
     const ids = ITEMS.map((it) => it.id);
-    assert.equal(ITEMS.length, PAGE_SIZE * 2);
-    assert.equal(itemPages().length, 2);
-    for (const id of ["diamond-sword", "iron-sword", "diamond-pickaxe", "wood-pickaxe", "bow"]) {
+    assert.equal(ITEMS.length, PAGE_SIZE * 5);
+    assert.equal(itemPages().length, 5);
+    for (const id of [
+      "diamond-sword",
+      "iron-sword",
+      "diamond-pickaxe",
+      "wood-pickaxe",
+      "bow",
+      "diamond-helmet",
+      "iron-chestplate",
+      "potion-heal",
+      "golden-apple",
+    ]) {
       assert.ok(ids.includes(id), id);
     }
+    assert.equal(ids.filter((id) => id === "apple" || id === "bread").length, 2);
   });
 
   it("loads official 16×16 sprites", async () => {
@@ -75,6 +86,54 @@ describe("item sprites", () => {
     assert.ok(
       coverage(pick, ([r, g, b]) => r > 80 && g > 40 && g > b && r > b) > 4,
       "pickaxe has a wood handle",
+    );
+  });
+
+  it("paints diamond helmet teal and iron chestplate gray", async () => {
+    const helmet = runsOf(await loadItem("diamond-helmet"));
+    const chest = runsOf(await loadItem("iron-chestplate"));
+    assert.ok(
+      coverage(helmet, ([r, g, b]) => g > 40 && b > 40 && r < 80) > 8,
+      "diamond helmet is teal",
+    );
+    assert.ok(
+      coverage(chest, ([r, g, b]) => Math.abs(r - g) < 16 && Math.abs(g - b) < 16 && r > 40) > 8,
+      "iron chestplate is gray",
+    );
+  });
+
+  it("keeps potion glass and a colored liquid fill", async () => {
+    const heal = runsOf(await loadItem("potion-heal"));
+    const empty = runsOf(await loadItem("potion-empty"));
+    assert.ok(
+      coverage(heal, ([r, g, b]) => r > 160 && g < 80 && b < 80) > 4,
+      "healing potion liquid is red",
+    );
+    assert.ok(
+      coverage(heal, ([r, g, b]) => r > 180 && g > 180 && b > 180) > 4,
+      "healing potion has glass highlights",
+    );
+    assert.ok(
+      coverage(empty, ([r, g, b]) => b > r && b > g && b > 80) > 8,
+      "empty bottle is mostly cool glass",
+    );
+    assert.ok(
+      coverage(heal, ([r, g, b]) => r > 160 && g < 80 && b < 80) >
+        coverage(empty, ([r, g, b]) => r > 160 && g < 80 && b < 80) + 4,
+      "healing potion has more red liquid than an empty cork",
+    );
+  });
+
+  it("paints a golden apple gold, not red like a plain apple", async () => {
+    const golden = runsOf(await loadItem("golden-apple"));
+    const apple = runsOf(await loadItem("apple"));
+    assert.ok(
+      coverage(golden, ([r, g, b]) => r > 160 && g > 100 && b < 80) > 8,
+      "golden apple is gold",
+    );
+    assert.ok(
+      coverage(apple, ([r, g, b]) => r > 140 && g < 80 && b < 80) > 8,
+      "plain apple is red",
     );
   });
 });
@@ -114,7 +173,20 @@ describe("generated item assets", () => {
     const pages = [
       ["scene-1", "Items — Tools"],
       ["scene-2", "Items — More"],
+      ["scene-3", "Items — Armor"],
+      ["scene-4", "Items — Potions"],
+      ["scene-5", "Items — Food"],
     ];
+    for (const sheet of [
+      "items-sheet.svg",
+      "items-sheet-2.svg",
+      "items-sheet-3.svg",
+      "items-sheet-4.svg",
+      "items-sheet-5.svg",
+    ]) {
+      const svg = await readFile(resolve(ROOT, `assets/${sheet}`), "utf8");
+      assert.match(svg, /viewBox="0 0 512 512"/);
+    }
     for (const [slug, name] of pages) {
       const lottie = JSON.parse(
         await readFile(resolve(ROOT, `public/projects/items/${slug}/lottie.json`), "utf8"),

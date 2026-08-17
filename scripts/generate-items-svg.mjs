@@ -1,7 +1,7 @@
 // Writes one square SVG per Minecraft item sprite, plus a 4×4 sheet per page:
 //   assets/items/<id>.svg
 //   assets/items-sheet.svg
-//   assets/items-sheet-2.svg
+//   assets/items-sheet-2.svg … assets/items-sheet-5.svg
 //
 // Usage:
 //   node scripts/generate-items-svg.mjs
