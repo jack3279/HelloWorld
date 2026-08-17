@@ -653,7 +653,8 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, 
             );
             if (key != null) {
               const src = lookup.get(key) ?? [(key >> 16) & 255, (key >> 8) & 255, key & 255];
-              hex = rgbToHex(shade(shading, grade(src), lum, src));
+              const colored = shading.grade === false ? src : grade(src);
+              hex = rgbToHex(shade(shading, colored, lum, src));
               palette.add(hex);
             }
           }

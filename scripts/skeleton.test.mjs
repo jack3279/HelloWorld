@@ -59,6 +59,7 @@ describe("generated skeleton assets", () => {
     assert.match(svg, /id="head"/);
     assert.match(svg, /id="skeleton"/);
     assert.doesNotMatch(svg, /NaN|undefined/);
+    assert.match(svg, /fill="#([b-fB-F][0-9a-fA-F]{5}|[9a-fA-F]{2}[9a-fA-F]{4})"/);
   });
 
   it("ships idle, walk, and draw flipbooks", async () => {
