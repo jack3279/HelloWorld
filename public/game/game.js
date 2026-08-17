@@ -259,7 +259,18 @@ function rectHitsSolid(x, y, w, h) {
   return false;
 }
 
+function unstick(body) {
+  if (!rectHitsSolid(body.x - body.hw, body.y - body.hh, body.hw * 2, body.hh)) return;
+  for (const dx of [6, -6, 12, -12, 20, -20]) {
+    if (!rectHitsSolid(body.x - body.hw + dx, body.y - body.hh, body.hw * 2, body.hh)) {
+      body.x += dx;
+      return;
+    }
+  }
+}
+
 function moveBody(body, dt) {
+  unstick(body);
   const prevVy = body.vy;
   body.vy = Math.min(MAX_FALL, body.vy + GRAVITY * dt);
 
@@ -782,24 +793,55 @@ function frame(ts) {
   requestAnimationFrame(frame);
 }
 
+const CODE_KEYS = {
+  KeyA: "a",
+  KeyD: "d",
+  KeyW: "w",
+  KeyJ: "j",
+  KeyE: "e",
+  KeyR: "r",
+  Space: " ",
+  ArrowLeft: "arrowleft",
+  ArrowRight: "arrowright",
+  ArrowUp: "arrowup",
+};
+
+function bindKey(e) {
+  if (CODE_KEYS[e.code]) return CODE_KEYS[e.code];
+  const key = e.key.toLowerCase();
+  if (key === "right") return "arrowright";
+  if (key === "left") return "arrowleft";
+  return key;
+}
+
 function startGame() {
   resetGame();
   mode = "play";
   overlay.hidden = true;
+  document.getElementById("hud-layer").hidden = false;
+  startBtn.blur();
+  canvas.focus();
 }
 
 window.addEventListener("keydown", (e) => {
-  const key = e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase();
+  const key = bindKey(e);
   keys.add(key);
   if ([" ", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) e.preventDefault();
-  if (key >= "1" && key <= "9") player && (player.selected = Number(key) - 1);
+  if (e.code.startsWith("Digit")) {
+    const n = Number(e.code.slice(5));
+    if (n >= 1 && n <= 9 && player) player.selected = n - 1;
+  } else if (key >= "1" && key <= "9" && player) {
+    player.selected = Number(key) - 1;
+  }
   if (key === "j" || key === "e") useSelected();
   if (key === "r" && mode === "play") resetGame();
 });
 
 window.addEventListener("keyup", (e) => {
-  keys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase());
+  keys.delete(bindKey(e));
 });
+
+window.addEventListener("blur", () => keys.clear());
 
 canvas.addEventListener("mousedown", (e) => {
   if (mode !== "play") return;

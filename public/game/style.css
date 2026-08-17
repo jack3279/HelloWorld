@@ -123,12 +123,16 @@ kbd {
   cursor: wait;
 }
 
+#hud-layer[hidden] {
+  display: none;
+}
+
 #touch {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 118px;
-  display: none;
+  display: flex;
   justify-content: space-between;
   padding: 0 16px;
   pointer-events: none;
@@ -145,8 +149,6 @@ kbd {
   font-size: 22px;
 }
 
-@media (pointer: coarse) {
-  #touch {
-    display: flex;
-  }
+#game:focus {
+  outline: none;
 }
