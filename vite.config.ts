@@ -5,6 +5,7 @@ import solidSvg from 'vite-plugin-solid-svg';
 import solidPlugin from 'vite-plugin-solid';
 import devtools from 'solid-devtools/vite';
 import { scenesPlugin } from './vite-plugins/scenes';
+import { repoAssetsPlugin } from './vite-plugins/repo-assets';
 
 export default defineConfig({
   plugins: [
@@ -13,6 +14,7 @@ export default defineConfig({
     tailwindcss(),
     solidSvg({ defaultAsComponent: true }),
     scenesPlugin(),
+    repoAssetsPlugin(),
   ],
   server: {
     host: true,
