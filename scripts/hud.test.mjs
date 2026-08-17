@@ -4,20 +4,26 @@ import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
+  COUNT_WHITE,
   HEART_EMPTY,
   HEART_RED,
   HOTBAR_SLOTS,
   HOTBAR_W,
   composeBar,
   composeButton,
+  composeCount,
   composeHearts,
   composeHotbar,
+  composeOverlay,
   composeSurvival,
+  composeTip,
+  loadCrosshair,
   loadHud,
   runCoverage,
   runsOf,
   slice9,
 } from "./lib/minecraft-hud.mjs";
+import { WORLD_LOADOUT, loadItemPixels } from "./lib/minecraft-items.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -129,7 +135,7 @@ describe("generated HUD assets", () => {
     assert.match(survival, /#ff1313/);
   });
 
-  it("ships six Skottie HUD scenes", async () => {
+  it("ships eight Skottie HUD scenes", async () => {
     const names = [
       "HUD — Chrome",
       "HUD — Survival",
@@ -137,6 +143,8 @@ describe("generated HUD assets", () => {
       "HUD — Button",
       "HUD — Health bar",
       "HUD — Hotbar",
+      "HUD — Stacks",
+      "HUD — Crosshair",
     ];
     for (let i = 0; i < names.length; i++) {
       const lottie = JSON.parse(
@@ -175,5 +183,61 @@ describe("generated HUD assets", () => {
     assert.equal(hotbar.layers.filter((layer) => layer.ty === 4).length, 9);
     const dump = JSON.stringify(hotbar);
     assert.match(dump, /0\.2|0\.3/, "diamond teal survives in the loadout");
+  });
+});
+
+describe("stacks, crosshair, and tip", () => {
+  it("hides a count of 1 and paints 64 in white", async () => {
+    const one = await composeCount(1);
+    const stack = await composeCount(64);
+    assert.ok(one.pixels.filter((hex) => hex === COUNT_WHITE).length > 4);
+    assert.ok(stack.w > one.w, "64 is wider than 1");
+    assert.ok(stack.pixels.filter((hex) => hex === COUNT_WHITE).length > one.pixels.filter((hex) => hex === COUNT_WHITE).length);
+  });
+
+  it("puts stack numerals on block slots only when count > 1", async () => {
+    const items = [];
+    const counts = [];
+    for (const slot of WORLD_LOADOUT) {
+      items.push(await loadItemPixels(slot.id));
+      counts.push(slot.count);
+    }
+    const bare = await composeHotbar({ items, selected: 1 });
+    const stacked = await composeHotbar({ items, counts, selected: 1 });
+    const white = (src) => src.pixels.filter((hex) => hex === COUNT_WHITE).length;
+    assert.ok(white(stacked) > white(bare) + 10, "stack counts add white glyphs");
+  });
+
+  it("keeps a white plus crosshair and a dark item tip", async () => {
+    const hair = await loadCrosshair();
+    assert.equal(hair.w, 16);
+    assert.equal(hair.h, 16);
+    assert.equal(hair.pixels[0], null, "crosshair corner is empty");
+    const mid = hair.pixels[7 * 16 + 7];
+    assert.ok(mid && parseInt(mid.slice(1, 3), 16) > 200, "crosshair center is white");
+    const tip = await composeTip("Dirt");
+    assert.ok(tip.w > 20);
+    assert.ok(tip.pixels.includes("#000000") || tip.pixels.some((hex) => hex && hex.startsWith("#0")), "tip has a dark well");
+    assert.ok(tip.pixels.includes(COUNT_WHITE), "tip paints the name");
+  });
+
+  it("composites crosshair, tip, blocks, and stacks on the overlay", async () => {
+    const items = [];
+    const counts = [];
+    for (const slot of WORLD_LOADOUT) {
+      items.push(await loadItemPixels(slot.id));
+      counts.push(slot.count);
+    }
+    const overlay = await composeOverlay({ items, counts, selected: 1, tip: "Dirt" });
+    assert.ok(overlay.h > 300);
+    assert.ok(overlay.pixels.includes(COUNT_WHITE));
+    const brown = overlay.pixels.filter((hex) => {
+      if (!hex) return false;
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return r > 90 && r > g && g > b;
+    }).length;
+    assert.ok(brown > 20, "dirt block is in a slot");
   });
 });

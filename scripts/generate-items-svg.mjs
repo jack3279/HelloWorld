@@ -9,6 +9,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   ATLAS,
+  BLOCK_ITEMS,
   ITEMS,
   SINGLE,
   itemPages,
@@ -28,7 +29,7 @@ await mkdir(outDir, { recursive: true });
 
 const singleBox = layoutSingle();
 
-for (const item of ITEMS) {
+for (const item of [...ITEMS, ...BLOCK_ITEMS]) {
   const png = await loadItem(item.id);
   const svg = wrapSvg(
     item.id,
@@ -52,4 +53,4 @@ for (const [index, page] of itemPages().entries()) {
   console.log(`Wrote ${path}`);
 }
 
-console.log(`Wrote ${ITEMS.length} squares in ${outDir}`);
+console.log(`Wrote ${ITEMS.length + BLOCK_ITEMS.length} squares in ${outDir}`);

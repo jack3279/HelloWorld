@@ -8,7 +8,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { HOTBAR_LOADOUT, loadItemPixels } from "./lib/minecraft-items.mjs";
+import { HOTBAR_LOADOUT, WORLD_LOADOUT, loadItemPixels } from "./lib/minecraft-items.mjs";
 import { loadItemTexture } from "./lib/held-item.mjs";
 import {
   ATLAS,
@@ -20,7 +20,10 @@ import {
   composeButton,
   composeHearts,
   composeHotbar,
+  composeOverlay,
   composeSurvival,
+  composeTip,
+  loadCrosshair,
   fitSprite,
   itemPixelsFromRgba,
   layoutAtlas,
@@ -88,6 +91,24 @@ const filled = await composeSurvival({ items: loadout, selected: 0 });
 await writeFile(resolve(OUT, "survival-items.svg"), spriteSvg("survival-items", "Survival HUD with items", filled, SURVIVAL));
 const filledBar = await composeHotbar({ items: loadout, selected: 0 });
 await writeFile(resolve(OUT, "hotbar-items.svg"), spriteSvg("hotbar-items", "Hotbar with items", filledBar, SURVIVAL));
+
+const worldItems = [];
+const worldCounts = [];
+for (const slot of WORLD_LOADOUT) {
+  worldItems.push(await loadItemPixels(slot.id));
+  worldCounts.push(slot.count);
+}
+const stacked = await composeHotbar({ items: worldItems, counts: worldCounts, selected: 1 });
+await writeFile(resolve(OUT, "hotbar-stacks.svg"), spriteSvg("hotbar-stacks", "Hotbar with blocks and stacks", stacked, SURVIVAL));
+await writeFile(resolve(OUT, "crosshair.svg"), spriteSvg("crosshair", "Crosshair", await loadCrosshair(), { w: 256, h: 256 }));
+await writeFile(resolve(OUT, "item-tip.svg"), spriteSvg("item-tip", "Item name tip", await composeTip("Dirt"), { w: 320, h: 96 }));
+const overlay = await composeOverlay({
+  items: worldItems,
+  counts: worldCounts,
+  selected: 1,
+  tip: "Dirt",
+});
+await writeFile(resolve(OUT, "survival-overlay.svg"), spriteSvg("survival-overlay", "Crosshair and item tip", overlay, { w: 640, h: 360 }));
 
 const atlas = layoutAtlas();
 const atlasParts = [];

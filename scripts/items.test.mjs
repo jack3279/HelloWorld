@@ -9,8 +9,10 @@ import {
   DROP,
   DROP_LOADOUT,
   HOTBAR_LOADOUT,
+  BLOCK_ITEMS,
   ITEMS,
   PAGE_SIZE,
+  WORLD_LOADOUT,
   PICKUP,
   SINGLE,
   TILE,
@@ -52,6 +54,40 @@ describe("hotbar item catalog", () => {
       assert.ok(png.width >= TILE, item.id);
       assert.ok(png.height >= TILE, item.id);
     }
+  });
+
+  it("loads block faces used as hotbar items", async () => {
+    assert.equal(WORLD_LOADOUT.length, 9);
+    for (const block of BLOCK_ITEMS) {
+      const png = await loadItem(block.id);
+      assert.ok(png.width >= TILE, block.id);
+    }
+    const dirt = runsOf(await loadItem("dirt"));
+    const cobble = runsOf(await loadItem("cobblestone"));
+    const torch = runsOf(await loadItem("torch"));
+    assert.ok(
+      runCoverage(dirt, (hex) => {
+        const [r, g, b] = rgbOf(hex);
+        return r > 90 && r > b && g > 40;
+      }) > TILE * TILE * 0.4,
+      "dirt is brown",
+    );
+    assert.ok(
+      runCoverage(cobble, (hex) => {
+        const [r, g, b] = rgbOf(hex);
+        return Math.abs(r - g) < 20 && Math.abs(g - b) < 20;
+      }) > TILE * TILE * 0.4,
+      "cobble is gray",
+    );
+    const painted = runCoverage(torch, () => true);
+    assert.ok(painted < TILE * TILE * 0.5, "torch stays a silhouette");
+    assert.ok(
+      runCoverage(torch, (hex) => {
+        const [r, g] = rgbOf(hex);
+        return r > 140 && g > 70;
+      }) > 4,
+      "torch has a warm flame",
+    );
   });
 });
 

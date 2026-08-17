@@ -9,6 +9,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const ITEMS_BASE =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items";
+export const BLOCKS_BASE =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/blocks";
 const CACHE = resolve(__dirname, "../../node_modules/.cache/minecraft-items");
 
 export const TILE = 16;
@@ -56,6 +58,31 @@ export const HOTBAR_LOADOUT = [
 
 export const DROP_LOADOUT = ["diamond", "apple", "diamond-sword", "potion-heal"];
 
+// Block faces that go in the hotbar as items (not the terrain atlas).
+export const BLOCK_ITEMS = [
+  { id: "dirt", file: "dirt.png", label: "Dirt", title: "土壤", base: BLOCKS_BASE },
+  { id: "cobblestone", file: "cobblestone.png", label: "Cobblestone", title: "圆石", base: BLOCKS_BASE },
+  { id: "oak-planks", file: "planks_oak.png", label: "Oak Planks", title: "橡木木板", base: BLOCKS_BASE },
+  { id: "stone", file: "stone.png", label: "Stone", title: "石头", base: BLOCKS_BASE },
+  { id: "sand", file: "sand.png", label: "Sand", title: "沙子", base: BLOCKS_BASE },
+  { id: "oak-log", file: "log_oak.png", label: "Oak Log", title: "橡木原木", base: BLOCKS_BASE },
+  { id: "torch", file: "torch_on.png", label: "Torch", title: "火把", base: BLOCKS_BASE },
+  { id: "bricks", file: "brick.png", label: "Bricks", title: "砖块", base: BLOCKS_BASE },
+];
+
+// Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.
+export const WORLD_LOADOUT = [
+  { id: "diamond-sword", count: 1 },
+  { id: "dirt", count: 64 },
+  { id: "cobblestone", count: 64 },
+  { id: "oak-planks", count: 32 },
+  { id: "torch", count: 16 },
+  { id: "arrow", count: 64 },
+  { id: "bread", count: 8 },
+  { id: "steak", count: 3 },
+  { id: "diamond", count: 2 },
+];
+
 export function itemPages(pageSize = PAGE_SIZE) {
   const pages = [];
   for (let i = 0; i < ITEMS.length; i += pageSize) pages.push(ITEMS.slice(i, i + pageSize));
@@ -63,7 +90,7 @@ export function itemPages(pageSize = PAGE_SIZE) {
 }
 
 export function itemById(id) {
-  const item = ITEMS.find((it) => it.id === id);
+  const item = ITEMS.find((it) => it.id === id) ?? BLOCK_ITEMS.find((it) => it.id === id);
   if (!item) throw new Error(`unknown item ${id}`);
   return item;
 }
@@ -75,7 +102,7 @@ export async function loadItem(id) {
   try {
     buf = await readFile(cachePath);
   } catch {
-    const url = `${ITEMS_BASE}/${item.file}`;
+    const url = `${item.base ?? ITEMS_BASE}/${item.file}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`could not download ${url} (${res.status})`);
     buf = Buffer.from(await res.arrayBuffer());

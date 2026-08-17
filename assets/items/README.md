@@ -19,7 +19,11 @@ Skottie scenes live at `public/projects/items/scene-N`.
 | 2 | Four items drop, bounce, then bob |
 | 3 | Diamond sword drops and flies into slot 1 |
 
-The filled survival hotbar is `public/projects/hud/scene-6`.
+Block faces used as items (`dirt`, `cobblestone`, `oak-planks`, `torch`, …)
+live in the same folder. The mixed survival bar is `public/projects/hud/scene-7`
+(stacks) and `scene-8` (crosshair + name tip).
+
+The tool-only filled hotbar is `public/projects/hud/scene-6`.
 
 Regenerate after a catalog change:
 
