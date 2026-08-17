@@ -58,7 +58,7 @@ const BLOCKS = {
   m: "blocks/mossy-cobblestone.svg",
 };
 
-const SOLID = new Set("gdscoLpabBTFimxB".split(""));
+const SOLID = new Set("gdscpLabBTFimxB".split(""));
 
 const canvas = document.getElementById("game");
 const overlay = document.getElementById("overlay");
