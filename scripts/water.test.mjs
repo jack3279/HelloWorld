@@ -127,22 +127,24 @@ describe("generated water assets", () => {
     assert.equal(shapes.length, lottie.op);
   });
 
-  it("instances one tile precomp across a 3×3 floor", async () => {
+  it("paints the 3×3 floor as one surface so ripples cross the join", async () => {
     const lottie = JSON.parse(
       await readFile(resolve(ROOT, "public/projects/water/scene-2/lottie.json"), "utf8"),
     );
     assert.equal(lottie.w, lottie.h);
-    assert.equal(lottie.assets.length, 1);
-    assert.equal(lottie.assets[0].id, "water-tile");
-    const refs = lottie.layers.filter((l) => l.ty === 0);
-    assert.equal(refs.length, FLOOR.cols * FLOOR.rows);
-    assert.ok(refs.every((l) => l.refId === "water-tile"));
-    const xs = [...new Set(refs.map((l) => l.ks.p.k[0]))].sort((a, b) => a - b);
-    const ys = [...new Set(refs.map((l) => l.ks.p.k[1]))].sort((a, b) => a - b);
-    assert.equal(xs.length, FLOOR.cols);
-    assert.equal(ys.length, FLOOR.rows);
-    const tile = refs[0].w;
-    for (let i = 1; i < xs.length; i++) assert.equal(xs[i] - xs[i - 1], tile);
-    for (let i = 1; i < ys.length; i++) assert.equal(ys[i] - ys[i - 1], tile);
+    assert.equal(lottie.assets.length, 0);
+    const shapes = lottie.layers.filter((l) => l.ty === 4);
+    assert.equal(shapes.length, lottie.op);
+    const tilePx = FLOOR.texel * TILE;
+    let crossed = 0;
+    for (const layer of shapes) {
+      for (const group of layer.shapes) {
+        for (const item of group.it) {
+          if (item.ty !== "rc") continue;
+          if (item.s.k[0] > tilePx) crossed += 1;
+        }
+      }
+    }
+    assert.ok(crossed > 0, "some rects span more than one tile");
   });
 });

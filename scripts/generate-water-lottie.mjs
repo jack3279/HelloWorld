@@ -2,8 +2,8 @@
 //   public/projects/water/scene-1  one square tile, looping ripple
 //   public/projects/water/scene-2  3×3 floor of the same tile, in sync
 //
-// Scene 2 instances one precomp so every block plays the same frame.
-// The official strip wraps, so the floor reads as one continuous surface.
+// Scene 2 paints the repeated 16px period as one surface so color runs
+// cross the joins. The official strip wraps, so the floor stays continuous.
 //
 // Usage:
 //   node scripts/generate-water-lottie.mjs [--skin=<png>]
@@ -21,8 +21,8 @@ import {
   loadWaterStrip,
   lottieShapesFromRuns,
   parseArgs,
-  precompLayer,
   runsOf,
+  runsOfTiled,
   shapeLayer,
 } from "./lib/water-block.mjs";
 
@@ -72,19 +72,13 @@ const single = {
 };
 
 const floor = layoutFloor();
-const tilePx = TILE * floor.texel;
-const tileBox = { x: 0, y: 0, size: tilePx, texel: floor.texel };
-const tiles = floor.tiles.map((tile, i) =>
-  precompLayer({
-    ind: floor.tiles.length - i,
-    name: `tile-${tile.col}-${tile.row}`,
-    refId: "water-tile",
-    x: tile.x,
-    y: tile.y,
-    w: tilePx,
-    h: tilePx,
-    ip: 0,
-    op: n,
+const tiledLayers = Array.from({ length: n }, (_, i) =>
+  shapeLayer({
+    ind: n - i,
+    name: `floor-${i}`,
+    ip: i,
+    op: i + 1,
+    shapes: lottieShapesFromRuns(runsOfTiled(strip, i, floor.cols, floor.rows), floor),
   }),
 );
 
@@ -97,16 +91,8 @@ const tiled = {
   h: FLOOR.h,
   nm: "Water — Tiles",
   ddd: 0,
-  assets: [
-    {
-      id: "water-tile",
-      nm: "Water tile",
-      w: tilePx,
-      h: tilePx,
-      layers: flipbookLayers(strip, n, tileBox),
-    },
-  ],
-  layers: tiles,
+  assets: [],
+  layers: tiledLayers,
   meta: { loop: true, g: "scripts/generate-water-lottie.mjs" },
 };
 

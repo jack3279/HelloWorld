@@ -236,31 +236,6 @@ export function shapeLayer({ ind, name, ip, op, shapes }) {
   };
 }
 
-export function precompLayer({ ind, name, refId, x, y, w, h, ip, op }) {
-  return {
-    ddd: 0,
-    ind,
-    ty: 0,
-    nm: name,
-    refId,
-    sr: 1,
-    ks: {
-      o: { a: 0, k: 100 },
-      r: { a: 0, k: 0 },
-      p: { a: 0, k: [x, y, 0] },
-      a: { a: 0, k: [0, 0, 0] },
-      s: { a: 0, k: [100, 100, 100] },
-    },
-    ao: 0,
-    w,
-    h,
-    ip,
-    op,
-    st: 0,
-    bm: 0,
-  };
-}
-
 export function frameSignature(strip, frame) {
   const y0 = frame * TILE;
   let h = 0;
