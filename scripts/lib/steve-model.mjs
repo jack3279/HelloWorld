@@ -7,8 +7,8 @@
 // visible face is painted texel by texel from a 64x64 player skin, so facial
 // features land exactly where the skin puts them.
 //
-// Consumers: generate-steve-svg.mjs (hero pose), generate-steve-sprites.mjs
-// (side-view sprite frames), generate-steve-lottie.mjs (animated rig).
+// Consumers: generate-steve-*.mjs, generate-zombie-*.mjs, generate-skeleton.mjs,
+// generate-spider.mjs, generate-enderman.mjs.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,9 +18,18 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const STEVE_SKIN_URL = "https://assets.mojang.com/SkinTemplates/steve.png";
 export const ZOMBIE_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/zombie/zombie.png";
+export const SKELETON_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/skeleton/skeleton.png";
+export const SPIDER_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/spider/spider.tga";
+export const ENDERMAN_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/enderman/enderman.tga";
 const SKIN_URL = STEVE_SKIN_URL;
 const CACHE = resolve(__dirname, "../../node_modules/.cache/steve-skin.png");
 const ZOMBIE_CACHE = resolve(__dirname, "../../node_modules/.cache/zombie-skin.png");
+const SKELETON_CACHE = resolve(__dirname, "../../node_modules/.cache/skeleton-skin.png");
+const SPIDER_CACHE = resolve(__dirname, "../../node_modules/.cache/spider-skin.tga");
+const ENDERMAN_CACHE = resolve(__dirname, "../../node_modules/.cache/enderman-skin.tga");
 
 // ---------------------------------------------------------------- png decoding
 
@@ -102,6 +111,39 @@ export function decodePng(buf) {
   return { width, height, rgba };
 }
 
+// Uncompressed true-color TGA (Bedrock spider / enderman skins).
+export function decodeTga(buf) {
+  const idLen = buf[0];
+  const imageType = buf[2];
+  const width = buf.readUInt16LE(12);
+  const height = buf.readUInt16LE(14);
+  const bpp = buf[16];
+  const desc = buf[17];
+  if (imageType !== 2) throw new Error(`tga type ${imageType} is unsupported`);
+  if (bpp !== 24 && bpp !== 32) throw new Error(`tga bit depth ${bpp} is unsupported`);
+  const originTop = (desc & 0x20) !== 0;
+  const channels = bpp / 8;
+  const off = 18 + idLen;
+  const rgba = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    const srcY = originTop ? y : height - 1 - y;
+    for (let x = 0; x < width; x++) {
+      const i = off + (srcY * width + x) * channels;
+      const b = buf[i];
+      const g = buf[i + 1];
+      const r = buf[i + 2];
+      const a = channels === 4 ? buf[i + 3] : 255;
+      rgba.set([r, g, b, a], (y * width + x) * 4);
+    }
+  }
+  return { width, height, rgba };
+}
+
+export function decodeTexture(buf) {
+  if (buf.length >= 8 && buf.readUInt32BE(0) === 0x89504e47) return decodePng(buf);
+  return decodeTga(buf);
+}
+
 function regionOpaqueCount(skin, x, y, w, h) {
   let n = 0;
   for (let yy = y; yy < y + h; yy++)
@@ -161,25 +203,38 @@ export function normalizePlayerSkin(skin) {
 export async function loadSkin(explicitPath, options = {}) {
   const url = options.url ?? SKIN_URL;
   const cache = options.cache ?? (url === ZOMBIE_SKIN_URL ? ZOMBIE_CACHE : CACHE);
+  const shouldNormalize = options.normalize ?? true;
   let decoded;
-  if (explicitPath) decoded = decodePng(await readFile(explicitPath));
+  if (explicitPath) decoded = decodeTexture(await readFile(explicitPath));
   else {
     try {
-      decoded = decodePng(await readFile(cache));
+      decoded = decodeTexture(await readFile(cache));
     } catch {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`could not download ${url} (${res.status})`);
       const buf = Buffer.from(await res.arrayBuffer());
       await mkdir(dirname(cache), { recursive: true });
       await writeFile(cache, buf);
-      decoded = decodePng(buf);
+      decoded = decodeTexture(buf);
     }
   }
-  return normalizePlayerSkin(decoded);
+  return shouldNormalize ? normalizePlayerSkin(decoded) : decoded;
 }
 
 export async function loadZombieSkin(explicitPath) {
   return loadSkin(explicitPath, { url: ZOMBIE_SKIN_URL, cache: ZOMBIE_CACHE });
+}
+
+export async function loadSkeletonSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: SKELETON_SKIN_URL, cache: SKELETON_CACHE, normalize: false });
+}
+
+export async function loadSpiderSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: SPIDER_SKIN_URL, cache: SPIDER_CACHE, normalize: false });
+}
+
+export async function loadEndermanSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: ENDERMAN_SKIN_URL, cache: ENDERMAN_CACHE, normalize: false });
 }
 
 // ------------------------------------------------------------------- 3d helpers
@@ -353,7 +408,7 @@ const uv = (x, y, w, h) => ({ x, y, w, h });
 
 // Classic 64x64 skin layout: faces sit around the box net as
 // [-x, front, +x, back] with top and bottom above them.
-const boxUv = (ox, oy, w, h, d) => ({
+export const boxUv = (ox, oy, w, h, d) => ({
   nx: uv(ox, oy + d, d, h),
   front: uv(ox + d, oy + d, w, h),
   px: uv(ox + d + w, oy + d, d, h),
@@ -419,6 +474,10 @@ export const MODEL = [
 ];
 
 const byId = new Map(MODEL.map((p) => [p.id, p]));
+
+function lookupOf(model) {
+  return model === MODEL ? byId : new Map(model.map((p) => [p.id, p]));
+}
 
 // Corner order per face is [u0v0, u1v0, u1v1, u0v1] seen from outside the box.
 function faceCorners(min, max, face) {
@@ -491,18 +550,23 @@ function poseFor(pose, id) {
 }
 
 // Walks the parent chain so a torso lean carries the head and arms with it.
-function chainMatrix(pose, part) {
+function chainMatrix(pose, part, lookup = byId) {
   const own = localMatrix(poseFor(pose, part.id));
   if (!part.parent) return own;
-  return matMul(chainMatrix(pose, byId.get(part.parent)), own);
+  const parent = lookup.get(part.parent);
+  if (!parent) throw new Error(`missing parent ${part.parent} for ${part.id}`);
+  return matMul(chainMatrix(pose, parent, lookup), own);
 }
 
-function chainPoint(pose, part, point) {
+function chainPoint(pose, part, point, lookup = byId) {
   const rot = localMatrix(poseFor(pose, part.id));
   const local = [point[0] - part.pivot[0], point[1] - part.pivot[1], point[2] - part.pivot[2]];
   const spun = apply(rot, local);
   const placed = [spun[0] + part.pivot[0], spun[1] + part.pivot[1], spun[2] + part.pivot[2]];
-  return part.parent ? chainPoint(pose, byId.get(part.parent), placed) : placed;
+  if (!part.parent) return placed;
+  const parent = lookup.get(part.parent);
+  if (!parent) throw new Error(`missing parent ${part.parent} for ${part.id}`);
+  return chainPoint(pose, parent, placed, lookup);
 }
 
 function skinKey(skin, x, y) {
@@ -536,20 +600,21 @@ function profileHeadKey(skin, partId, faceName, rect, tx, ty, viewYaw, headYaw) 
  * `pose` is `{ view: { yaw, pitch }, root: { x, y }, parts: { <id>: { pitch,
  * roll, yaw, faceYaw, shadeScale } } }`.
  */
-export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }) {
+export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, model = MODEL }) {
   const yaw = rotY(pose.view?.yaw ?? 0);
   const pitch = rotX(pose.view?.pitch ?? 0);
   const viewMatrix = matMul(pitch, yaw);
   const offset = [pose.root?.x ?? 0, pose.root?.y ?? 0, 0];
   const palette = new Set();
   const parts = [];
+  const lookup = lookupOf(model);
 
-  for (const part of MODEL) {
+  for (const part of model) {
     const partPose = poseFor(pose, part.id);
     const tol = tolerance?.[part.id] ?? tolerance?.default ?? 12;
-    const chain = chainMatrix(pose, part);
+    const chain = chainMatrix(pose, part, lookup);
     const worldOf = (p) => {
-      const q = chainPoint(pose, part, p);
+      const q = chainPoint(pose, part, p, lookup);
       return [q[0] + offset[0], q[1] + offset[1], q[2] + offset[2]];
     };
 
@@ -604,6 +669,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
         }
       }
       const base = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
+      if (!base) continue;
       faces.push({ faceName, points, depth, rect, runs, base });
     }
 
