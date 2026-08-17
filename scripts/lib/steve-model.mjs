@@ -50,21 +50,26 @@ export function decodePng(buf) {
     else if (type === "IEND") break;
     off += 12 + len;
   }
-  if (bitDepth !== 8) throw new Error(`bit depth ${bitDepth} is unsupported`);
+  if (![1, 2, 4, 8].includes(bitDepth)) throw new Error(`bit depth ${bitDepth} is unsupported`);
   const channels = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[colorType];
   if (!channels) throw new Error(`color type ${colorType} is unsupported`);
+  if (bitDepth < 8 && colorType !== 0 && colorType !== 3) {
+    throw new Error(`bit depth ${bitDepth} is unsupported for color type ${colorType}`);
+  }
 
   const raw = zlib.inflateSync(Buffer.concat(idat));
-  const stride = width * channels;
+  const bitsPerPixel = bitDepth * channels;
+  const stride = Math.ceil((width * bitsPerPixel) / 8);
+  const filterBpp = Math.max(1, Math.ceil(bitsPerPixel / 8));
   const flat = Buffer.alloc(height * stride);
   let prev = Buffer.alloc(stride);
   for (let y = 0; y < height; y++) {
     const filter = raw[y * (stride + 1)];
     const line = Buffer.from(raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1)));
     for (let i = 0; i < stride; i++) {
-      const a = i >= channels ? line[i - channels] : 0;
+      const a = i >= filterBpp ? line[i - filterBpp] : 0;
       const b = prev[i];
-      const c = i >= channels ? prev[i - channels] : 0;
+      const c = i >= filterBpp ? prev[i - filterBpp] : 0;
       if (filter === 1) line[i] = (line[i] + a) & 255;
       else if (filter === 2) line[i] = (line[i] + b) & 255;
       else if (filter === 3) line[i] = (line[i] + ((a + b) >> 1)) & 255;
@@ -80,26 +85,46 @@ export function decodePng(buf) {
     prev = line;
   }
 
+  const samples = unpackPngSamples(flat, width, height, bitDepth, channels);
+  const scale = bitDepth === 8 ? 1 : 255 / ((1 << bitDepth) - 1);
+
   const rgba = new Uint8Array(width * height * 4);
   for (let i = 0; i < width * height; i++) {
     let r;
     let g;
     let b;
     let a = 255;
-    if (colorType === 6) [r, g, b, a] = [flat[i * 4], flat[i * 4 + 1], flat[i * 4 + 2], flat[i * 4 + 3]];
-    else if (colorType === 2) [r, g, b] = [flat[i * 3], flat[i * 3 + 1], flat[i * 3 + 2]];
-    else if (colorType === 0) r = g = b = flat[i];
+    if (colorType === 6) [r, g, b, a] = [samples[i * 4], samples[i * 4 + 1], samples[i * 4 + 2], samples[i * 4 + 3]];
+    else if (colorType === 2) [r, g, b] = [samples[i * 3], samples[i * 3 + 1], samples[i * 3 + 2]];
+    else if (colorType === 0) r = g = b = Math.round(samples[i] * scale);
     else if (colorType === 4) {
-      r = g = b = flat[i * 2];
-      a = flat[i * 2 + 1];
+      r = g = b = samples[i * 2];
+      a = samples[i * 2 + 1];
     } else {
-      const idx = flat[i];
+      const idx = samples[i];
       [r, g, b] = [palette[idx * 3], palette[idx * 3 + 1], palette[idx * 3 + 2]];
       if (alphaTable && idx < alphaTable.length) a = alphaTable[idx];
     }
     rgba.set([r, g, b, a], i * 4);
   }
   return { width, height, rgba };
+}
+
+function unpackPngSamples(flat, width, height, bitDepth, channels) {
+  if (bitDepth === 8) return flat;
+  const ppb = 8 / bitDepth;
+  const mask = (1 << bitDepth) - 1;
+  const packedStride = Math.ceil((width * bitDepth * channels) / 8);
+  const samples = Buffer.alloc(width * height * channels);
+  for (let y = 0; y < height; y++) {
+    const row = flat.subarray(y * packedStride, (y + 1) * packedStride);
+    for (let x = 0; x < width * channels; x++) {
+      const byte = row[Math.floor(x / ppb)];
+      const shift = 8 - bitDepth * ((x % ppb) + 1);
+      samples[y * width * channels + x] = (byte >> shift) & mask;
+    }
+  }
+  return samples;
 }
 
 function regionOpaqueCount(skin, x, y, w, h) {
