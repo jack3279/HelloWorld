@@ -7,8 +7,8 @@
 // visible face is painted texel by texel from a 64x64 player skin, so facial
 // features land exactly where the skin puts them.
 //
-// Consumers: generate-steve-svg.mjs (hero pose), generate-steve-sprites.mjs
-// (side-view sprite frames), generate-steve-lottie.mjs (animated rig).
+// Consumers: generate-steve-*.mjs, generate-zombie-*.mjs, generate-skeleton.mjs,
+// generate-spider.mjs, generate-enderman.mjs.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,9 +18,18 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const STEVE_SKIN_URL = "https://assets.mojang.com/SkinTemplates/steve.png";
 export const ZOMBIE_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/zombie/zombie.png";
+export const SKELETON_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/skeleton/skeleton.png";
+export const SPIDER_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/spider/spider.tga";
+export const ENDERMAN_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/enderman/enderman.tga";
 const SKIN_URL = STEVE_SKIN_URL;
 const CACHE = resolve(__dirname, "../../node_modules/.cache/steve-skin.png");
 const ZOMBIE_CACHE = resolve(__dirname, "../../node_modules/.cache/zombie-skin.png");
+const SKELETON_CACHE = resolve(__dirname, "../../node_modules/.cache/skeleton-skin.png");
+const SPIDER_CACHE = resolve(__dirname, "../../node_modules/.cache/spider-skin.tga");
+const ENDERMAN_CACHE = resolve(__dirname, "../../node_modules/.cache/enderman-skin.tga");
 
 // ---------------------------------------------------------------- png decoding
 
@@ -50,21 +59,26 @@ export function decodePng(buf) {
     else if (type === "IEND") break;
     off += 12 + len;
   }
-  if (bitDepth !== 8) throw new Error(`bit depth ${bitDepth} is unsupported`);
+  if (![1, 2, 4, 8].includes(bitDepth)) throw new Error(`bit depth ${bitDepth} is unsupported`);
   const channels = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[colorType];
   if (!channels) throw new Error(`color type ${colorType} is unsupported`);
+  if (bitDepth < 8 && colorType !== 0 && colorType !== 3) {
+    throw new Error(`bit depth ${bitDepth} is unsupported for color type ${colorType}`);
+  }
 
   const raw = zlib.inflateSync(Buffer.concat(idat));
-  const stride = width * channels;
+  const bitsPerPixel = bitDepth * channels;
+  const stride = Math.ceil((width * bitsPerPixel) / 8);
+  const filterBpp = Math.max(1, Math.ceil(bitsPerPixel / 8));
   const flat = Buffer.alloc(height * stride);
   let prev = Buffer.alloc(stride);
   for (let y = 0; y < height; y++) {
     const filter = raw[y * (stride + 1)];
     const line = Buffer.from(raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1)));
     for (let i = 0; i < stride; i++) {
-      const a = i >= channels ? line[i - channels] : 0;
+      const a = i >= filterBpp ? line[i - filterBpp] : 0;
       const b = prev[i];
-      const c = i >= channels ? prev[i - channels] : 0;
+      const c = i >= filterBpp ? prev[i - filterBpp] : 0;
       if (filter === 1) line[i] = (line[i] + a) & 255;
       else if (filter === 2) line[i] = (line[i] + b) & 255;
       else if (filter === 3) line[i] = (line[i] + ((a + b) >> 1)) & 255;
@@ -80,26 +94,79 @@ export function decodePng(buf) {
     prev = line;
   }
 
+  const samples = unpackPngSamples(flat, width, height, bitDepth, channels);
+  const scale = bitDepth === 8 ? 1 : 255 / ((1 << bitDepth) - 1);
+
   const rgba = new Uint8Array(width * height * 4);
   for (let i = 0; i < width * height; i++) {
     let r;
     let g;
     let b;
     let a = 255;
-    if (colorType === 6) [r, g, b, a] = [flat[i * 4], flat[i * 4 + 1], flat[i * 4 + 2], flat[i * 4 + 3]];
-    else if (colorType === 2) [r, g, b] = [flat[i * 3], flat[i * 3 + 1], flat[i * 3 + 2]];
-    else if (colorType === 0) r = g = b = flat[i];
+    if (colorType === 6) [r, g, b, a] = [samples[i * 4], samples[i * 4 + 1], samples[i * 4 + 2], samples[i * 4 + 3]];
+    else if (colorType === 2) [r, g, b] = [samples[i * 3], samples[i * 3 + 1], samples[i * 3 + 2]];
+    else if (colorType === 0) r = g = b = Math.round(samples[i] * scale);
     else if (colorType === 4) {
-      r = g = b = flat[i * 2];
-      a = flat[i * 2 + 1];
+      r = g = b = samples[i * 2];
+      a = samples[i * 2 + 1];
     } else {
-      const idx = flat[i];
+      const idx = samples[i];
       [r, g, b] = [palette[idx * 3], palette[idx * 3 + 1], palette[idx * 3 + 2]];
       if (alphaTable && idx < alphaTable.length) a = alphaTable[idx];
     }
     rgba.set([r, g, b, a], i * 4);
   }
   return { width, height, rgba };
+}
+
+function unpackPngSamples(flat, width, height, bitDepth, channels) {
+  if (bitDepth === 8) return flat;
+  const ppb = 8 / bitDepth;
+  const mask = (1 << bitDepth) - 1;
+  const packedStride = Math.ceil((width * bitDepth * channels) / 8);
+  const samples = Buffer.alloc(width * height * channels);
+  for (let y = 0; y < height; y++) {
+    const row = flat.subarray(y * packedStride, (y + 1) * packedStride);
+    for (let x = 0; x < width * channels; x++) {
+      const byte = row[Math.floor(x / ppb)];
+      const shift = 8 - bitDepth * ((x % ppb) + 1);
+      samples[y * width * channels + x] = (byte >> shift) & mask;
+    }
+  }
+  return samples;
+}
+
+// Uncompressed true-color TGA (Bedrock spider / enderman skins).
+export function decodeTga(buf) {
+  const idLen = buf[0];
+  const imageType = buf[2];
+  const width = buf.readUInt16LE(12);
+  const height = buf.readUInt16LE(14);
+  const bpp = buf[16];
+  const desc = buf[17];
+  if (imageType !== 2) throw new Error(`tga type ${imageType} is unsupported`);
+  if (bpp !== 24 && bpp !== 32) throw new Error(`tga bit depth ${bpp} is unsupported`);
+  const originTop = (desc & 0x20) !== 0;
+  const channels = bpp / 8;
+  const off = 18 + idLen;
+  const rgba = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    const srcY = originTop ? y : height - 1 - y;
+    for (let x = 0; x < width; x++) {
+      const i = off + (srcY * width + x) * channels;
+      const b = buf[i];
+      const g = buf[i + 1];
+      const r = buf[i + 2];
+      const a = channels === 4 ? buf[i + 3] : 255;
+      rgba.set([r, g, b, a], (y * width + x) * 4);
+    }
+  }
+  return { width, height, rgba };
+}
+
+export function decodeTexture(buf) {
+  if (buf.length >= 8 && buf.readUInt32BE(0) === 0x89504e47) return decodePng(buf);
+  return decodeTga(buf);
 }
 
 function regionOpaqueCount(skin, x, y, w, h) {
@@ -161,25 +228,38 @@ export function normalizePlayerSkin(skin) {
 export async function loadSkin(explicitPath, options = {}) {
   const url = options.url ?? SKIN_URL;
   const cache = options.cache ?? (url === ZOMBIE_SKIN_URL ? ZOMBIE_CACHE : CACHE);
+  const shouldNormalize = options.normalize ?? true;
   let decoded;
-  if (explicitPath) decoded = decodePng(await readFile(explicitPath));
+  if (explicitPath) decoded = decodeTexture(await readFile(explicitPath));
   else {
     try {
-      decoded = decodePng(await readFile(cache));
+      decoded = decodeTexture(await readFile(cache));
     } catch {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`could not download ${url} (${res.status})`);
       const buf = Buffer.from(await res.arrayBuffer());
       await mkdir(dirname(cache), { recursive: true });
       await writeFile(cache, buf);
-      decoded = decodePng(buf);
+      decoded = decodeTexture(buf);
     }
   }
-  return normalizePlayerSkin(decoded);
+  return shouldNormalize ? normalizePlayerSkin(decoded) : decoded;
 }
 
 export async function loadZombieSkin(explicitPath) {
   return loadSkin(explicitPath, { url: ZOMBIE_SKIN_URL, cache: ZOMBIE_CACHE });
+}
+
+export async function loadSkeletonSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: SKELETON_SKIN_URL, cache: SKELETON_CACHE, normalize: false });
+}
+
+export async function loadSpiderSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: SPIDER_SKIN_URL, cache: SPIDER_CACHE, normalize: false });
+}
+
+export async function loadEndermanSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: ENDERMAN_SKIN_URL, cache: ENDERMAN_CACHE, normalize: false });
 }
 
 // ------------------------------------------------------------------- 3d helpers
@@ -347,13 +427,19 @@ function shade(shading, rgb, lum, source) {
   return mix(dimmed, hexToRgb(shading.shadowTint), (1 - lum) * 0.35);
 }
 
+// Minecraft hit flash: lerp every shaded texel toward white. `amount` is 0..1.
+export function applyFlash(rgb, amount) {
+  if (!amount) return rgb;
+  return mix(rgb, [255, 255, 255], Math.min(1, Math.max(0, amount)));
+}
+
 // ----------------------------------------------------------------- model layout
 
 const uv = (x, y, w, h) => ({ x, y, w, h });
 
 // Classic 64x64 skin layout: faces sit around the box net as
 // [-x, front, +x, back] with top and bottom above them.
-const boxUv = (ox, oy, w, h, d) => ({
+export const boxUv = (ox, oy, w, h, d) => ({
   nx: uv(ox, oy + d, d, h),
   front: uv(ox + d, oy + d, w, h),
   px: uv(ox + d + w, oy + d, d, h),
@@ -419,6 +505,10 @@ export const MODEL = [
 ];
 
 const byId = new Map(MODEL.map((p) => [p.id, p]));
+
+function lookupOf(model) {
+  return model === MODEL ? byId : new Map(model.map((p) => [p.id, p]));
+}
 
 // Corner order per face is [u0v0, u1v0, u1v1, u0v1] seen from outside the box.
 function faceCorners(min, max, face) {
@@ -491,18 +581,23 @@ function poseFor(pose, id) {
 }
 
 // Walks the parent chain so a torso lean carries the head and arms with it.
-function chainMatrix(pose, part) {
+function chainMatrix(pose, part, lookup = byId) {
   const own = localMatrix(poseFor(pose, part.id));
   if (!part.parent) return own;
-  return matMul(chainMatrix(pose, byId.get(part.parent)), own);
+  const parent = lookup.get(part.parent);
+  if (!parent) throw new Error(`missing parent ${part.parent} for ${part.id}`);
+  return matMul(chainMatrix(pose, parent, lookup), own);
 }
 
-function chainPoint(pose, part, point) {
+function chainPoint(pose, part, point, lookup = byId) {
   const rot = localMatrix(poseFor(pose, part.id));
   const local = [point[0] - part.pivot[0], point[1] - part.pivot[1], point[2] - part.pivot[2]];
   const spun = apply(rot, local);
   const placed = [spun[0] + part.pivot[0], spun[1] + part.pivot[1], spun[2] + part.pivot[2]];
-  return part.parent ? chainPoint(pose, byId.get(part.parent), placed) : placed;
+  if (!part.parent) return placed;
+  const parent = lookup.get(part.parent);
+  if (!parent) throw new Error(`missing parent ${part.parent} for ${part.id}`);
+  return chainPoint(pose, parent, placed, lookup);
 }
 
 function skinKey(skin, x, y) {
@@ -534,22 +629,28 @@ function profileHeadKey(skin, partId, faceName, rect, tx, ty, viewYaw, headYaw) 
  * already flattened into horizontal runs of graded, shaded color.
  *
  * `pose` is `{ view: { yaw, pitch }, root: { x, y }, parts: { <id>: { pitch,
- * roll, yaw, faceYaw, shadeScale } } }`.
+ * roll, yaw, faceYaw, shadeScale } }, flash }`.
+ *
+ * `extras` are additional cuboids (held items) that share the pose hierarchy
+ * but paint from their own skin: `{ part, skin, tolerance }`.
  */
-export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }) {
+export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, model = MODEL, extras = [] }) {
   const yaw = rotY(pose.view?.yaw ?? 0);
   const pitch = rotX(pose.view?.pitch ?? 0);
   const viewMatrix = matMul(pitch, yaw);
   const offset = [pose.root?.x ?? 0, pose.root?.y ?? 0, 0];
   const palette = new Set();
   const parts = [];
+  const extraParts = extras.map((e) => e.part ?? e);
+  const lookup = new Map([...model, ...extraParts].map((p) => [p.id, p]));
+  const flash = shading.flash ?? pose.flash ?? 0;
 
-  for (const part of MODEL) {
+  const paint = (part, partSkin, partTolerance) => {
     const partPose = poseFor(pose, part.id);
-    const tol = tolerance?.[part.id] ?? tolerance?.default ?? 12;
-    const chain = chainMatrix(pose, part);
+    const tol = partTolerance?.[part.id] ?? partTolerance?.default ?? 12;
+    const chain = chainMatrix(pose, part, lookup);
     const worldOf = (p) => {
-      const q = chainPoint(pose, part, p);
+      const q = chainPoint(pose, part, p, lookup);
       return [q[0] + offset[0], q[1] + offset[1], q[2] + offset[2]];
     };
 
@@ -557,7 +658,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
     let depthSum = 0;
     let depthCount = 0;
 
-    for (const [faceName, rect] of Object.entries(part.uv)) {
+    for (const [faceName, rect] of Object.entries(part.uv ?? {})) {
       const { normal, quad } = faceCorners(part.min, part.max, faceName);
       const worldNormal = norm(apply(chain, normal));
       const cameraNormal = norm(apply(viewMatrix, worldNormal));
@@ -568,7 +669,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
       if (cameraNormal[2] <= 0.0015) continue; // back-facing
 
       const lum = luminanceFor(shading, worldNormal, cameraNormal) * (partPose.shadeScale ?? 1);
-      const lookup = flattenRegion(skin, rect, tol);
+      const colors = flattenRegion(partSkin, rect, tol);
       const runs = [];
       const counts = new Map();
       for (let ty = 0; ty < rect.h; ty++) {
@@ -577,7 +678,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
           let hex = null;
           if (tx < rect.w) {
             const key = profileHeadKey(
-              skin,
+              partSkin,
               part.id,
               faceName,
               rect,
@@ -587,8 +688,9 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
               partPose.yaw,
             );
             if (key != null) {
-              const src = lookup.get(key) ?? [(key >> 16) & 255, (key >> 8) & 255, key & 255];
-              hex = rgbToHex(shade(shading, grade(src), lum, src));
+              const src = colors.get(key) ?? [(key >> 16) & 255, (key >> 8) & 255, key & 255];
+              const colored = shading.grade === false ? src : grade(src);
+              hex = rgbToHex(applyFlash(shade(shading, colored, lum, src), flash));
               palette.add(hex);
             }
           }
@@ -604,7 +706,8 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
         }
       }
       const base = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
-      faces.push({ faceName, points, depth, rect, runs, base });
+      if (!base) continue;
+      faces.push({ faceName, points, depth, rect, runs, base, sparse: Boolean(part.sparse) });
     }
 
     parts.push({
@@ -615,6 +718,12 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance }
       faces,
       depth: depthSum / Math.max(1, depthCount),
     });
+  };
+
+  for (const part of model) paint(part, skin, tolerance);
+  for (const extra of extras) {
+    const part = extra.part ?? extra;
+    paint(part, extra.skin ?? skin, extra.tolerance ?? { default: 4 });
   }
 
   parts.sort((a, b) => a.depth - b.depth);
@@ -690,10 +799,10 @@ export function runQuad(corners, rect, run) {
 }
 
 // Groups a face's runs by color so each color becomes one path.
-export function faceColorPaths(face, corners) {
+export function faceColorPaths(face, corners, { includeBase = false } = {}) {
   const byColor = new Map();
   for (const run of face.runs) {
-    if (run.hex === face.base) continue;
+    if (!includeBase && run.hex === face.base) continue;
     const list = byColor.get(run.hex) ?? [];
     list.push(runQuad(corners, face.rect, run));
     byColor.set(run.hex, list);
@@ -710,9 +819,10 @@ export function svgFigureBody(parts, project, indent = "    ", idPrefix = "") {
     for (const face of part.faces) {
       const corners = face.points.map(project);
       out.push(`${indent}  <g class="face" data-face="${face.faceName}">`);
-      // Base quad first: it fills the face and hides hairlines between texels.
-      out.push(`${indent}    <path fill="${face.base}" d="${quadPath(corners)}"/>`);
-      for (const [hex, quads] of faceColorPaths(face, corners))
+      // Opaque cubes get a base quad so hairlines between texels disappear.
+      // Item silhouettes are sparse — only paint the actual texel runs.
+      if (!face.sparse) out.push(`${indent}    <path fill="${face.base}" d="${quadPath(corners)}"/>`);
+      for (const [hex, quads] of faceColorPaths(face, corners, { includeBase: face.sparse }))
         out.push(
           `${indent}    <path fill="${hex}" stroke="${hex}" stroke-width=".6" stroke-linejoin="round" d="${quads.map(quadPath).join("")}"/>`,
         );
@@ -789,13 +899,15 @@ export function figureToLottieShapes(parts, project) {
     const items = [];
     for (const face of part.faces) {
       const corners = face.points.map(project);
-      items.push(
-        lottieGroup(`${part.id}/${face.faceName}`, [
-          { ty: "sh", nm: "base", ks: { a: 0, k: lottieQuad(corners) } },
-          lottieFill(face.base),
-        ]),
-      );
-      for (const [hex, quads] of faceColorPaths(face, corners)) {
+      if (!face.sparse) {
+        items.push(
+          lottieGroup(`${part.id}/${face.faceName}`, [
+            { ty: "sh", nm: "base", ks: { a: 0, k: lottieQuad(corners) } },
+            lottieFill(face.base),
+          ]),
+        );
+      }
+      for (const [hex, quads] of faceColorPaths(face, corners, { includeBase: face.sparse })) {
         const paths = quads.map((q, i) => ({
           ty: "sh",
           nm: `texel-${i}`,

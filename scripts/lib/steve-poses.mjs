@@ -25,6 +25,15 @@ export const SPRITE = {
   originY: 300,
 };
 
+// Sword reach and death fall need more room in front and below the feet.
+export const COMBAT_SPRITE = {
+  w: 384,
+  h: 336,
+  scale: 6.6,
+  originX: 168,
+  originY: 308,
+};
+
 export const TOLERANCE = { default: 30, head: 12 };
 
 function pose(parts, root = {}) {
@@ -171,7 +180,157 @@ export function lerpPose(a, b, t) {
       y: lerpNum(a.root?.y ?? 0, b.root?.y ?? 0, t),
     },
     parts,
+    flash: lerpNum(a.flash ?? 0, b.flash ?? 0, t),
+    roll: lerpNum(a.roll ?? 0, b.roll ?? 0, t),
+    opacity: lerpNum(a.opacity ?? 100, b.opacity ?? 100, t),
   };
+}
+
+export const SWING_FRAMES = 10;
+export const HURT_FRAMES = 8;
+export const DEATH_FRAMES = 12;
+
+function withSword(base, sword = {}) {
+  return {
+    ...base,
+    parts: {
+      ...base.parts,
+      "held-sword": { pitch: -28, roll: 0, yaw: 0, ...sword },
+    },
+  };
+}
+
+export function swingWindup() {
+  return withSword(
+    pose(
+      {
+        torso: { pitch: -10, roll: -4 },
+        head: { ...FACE, pitch: -4 },
+        "arm-right": limb(NEAR, { pitch: 62, roll: 8 }),
+        "arm-left": limb(FAR, { pitch: 22, roll: -6 }),
+        "leg-right": limb(NEAR, { pitch: 8, roll: 0 }),
+        "leg-left": limb(FAR, { pitch: -10, roll: 0 }),
+      },
+      { x: -0.4, y: 0.15 },
+    ),
+    { pitch: -8 },
+  );
+}
+
+export function swingStrike() {
+  return withSword(
+    pose(
+      {
+        torso: { pitch: 8, roll: 6 },
+        head: { ...FACE, pitch: 4 },
+        "arm-right": limb(NEAR, { pitch: -118, roll: 4 }),
+        "arm-left": limb(FAR, { pitch: 28, roll: -10 }),
+        "leg-right": limb(NEAR, { pitch: -12, roll: 0 }),
+        "leg-left": limb(FAR, { pitch: 10, roll: 0 }),
+      },
+      { x: 1.1, y: 0.35 },
+    ),
+    { pitch: -42 },
+  );
+}
+
+export function swingFollow() {
+  return withSword(
+    pose(
+      {
+        torso: { pitch: 14, roll: 8 },
+        head: { ...FACE, pitch: 8 },
+        "arm-right": limb(NEAR, { pitch: -158, roll: 2 }),
+        "arm-left": limb(FAR, { pitch: 18, roll: -4 }),
+        "leg-right": limb(NEAR, { pitch: -6, roll: 0 }),
+        "leg-left": limb(FAR, { pitch: 8, roll: 0 }),
+      },
+      { x: 0.6, y: 0.1 },
+    ),
+    { pitch: -55 },
+  );
+}
+
+export function sampleSwing(t) {
+  const keys = [
+    { t: 0, pose: withSword(idleA()) },
+    { t: 0.18, pose: swingWindup() },
+    { t: 0.38, pose: swingStrike() },
+    { t: 0.58, pose: swingFollow() },
+    { t: 0.82, pose: withSword(idleA(), { pitch: -22 }) },
+    { t: 1, pose: withSword(idleA()) },
+  ];
+  const x = Math.min(1, Math.max(0, t));
+  let i = 0;
+  while (i < keys.length - 2 && x > keys[i + 1].t) i += 1;
+  const a = keys[i];
+  const b = keys[i + 1];
+  const u = (x - a.t) / (b.t - a.t || 1);
+  return lerpPose(a.pose, b.pose, easeInOut(u));
+}
+
+export function hurtPose() {
+  return {
+    ...pose(
+      {
+        torso: { pitch: 12, roll: -6 },
+        head: { ...FACE, pitch: 10, roll: -8 },
+        "arm-right": limb(NEAR, { pitch: -48, roll: 12 }),
+        "arm-left": limb(FAR, { pitch: 38, roll: -14 }),
+        "leg-right": limb(NEAR, { pitch: 16, roll: 4 }),
+        "leg-left": limb(FAR, { pitch: -18, roll: -4 }),
+      },
+      { x: -1.6, y: 0.55 },
+    ),
+    flash: 0.86,
+  };
+}
+
+export function sampleHurt(t) {
+  const x = Math.min(1, Math.max(0, t));
+  const recoiled = lerpPose(idleA(), hurtPose(), x < 0.35 ? easeInOut(x / 0.35) : 1);
+  const recovering = x < 0.35 ? recoiled : lerpPose(hurtPose(), idleA(), easeInOut((x - 0.35) / 0.65));
+  const i = Math.round(x * (HURT_FRAMES - 1));
+  const flash = i % 2 === 0 ? 0.88 * (1 - x * 0.55) : 0;
+  return { ...recovering, flash };
+}
+
+export function deathPose() {
+  return {
+    ...pose(
+      {
+        torso: { pitch: 72, roll: 4 },
+        head: { ...FACE, pitch: 18, roll: 8 },
+        "arm-right": limb(NEAR, { pitch: -20, roll: 18 }),
+        "arm-left": limb(FAR, { pitch: 8, roll: -12 }),
+        "leg-right": limb(NEAR, { pitch: 42, roll: 6 }),
+        "leg-left": limb(FAR, { pitch: 28, roll: -4 }),
+      },
+      { x: -2.2, y: -4.8 },
+    ),
+    roll: 28,
+    flash: 0,
+  };
+}
+
+export function sampleDeath(t) {
+  const keys = [
+    { t: 0, pose: { ...idleA(), flash: 0.9 } },
+    { t: 0.12, pose: { ...hurtPose(), flash: 0.7 } },
+    { t: 0.32, pose: lerpPose(hurtPose(), deathPose(), 0.35) },
+    { t: 0.58, pose: lerpPose(hurtPose(), deathPose(), 0.72) },
+    { t: 0.82, pose: deathPose() },
+    { t: 1, pose: deathPose() },
+  ];
+  const x = Math.min(1, Math.max(0, t));
+  let i = 0;
+  while (i < keys.length - 2 && x > keys[i + 1].t) i += 1;
+  const a = keys[i];
+  const b = keys[i + 1];
+  const u = (x - a.t) / (b.t - a.t || 1);
+  const pose = lerpPose(a.pose, b.pose, easeInOut(u));
+  const flash = x < 0.28 && Math.round(x * 10) % 2 === 0 ? 0.8 * (1 - x / 0.28) : 0;
+  return { ...pose, flash };
 }
 
 // Every named frame a game or the Lottie flipbook can ask for.
@@ -182,6 +341,24 @@ export function catalog() {
     pose: runFrame(i / 8),
     tags: ["run"],
   }));
+  const swing = Array.from({ length: SWING_FRAMES }, (_, i) => ({
+    id: `swing-${i}`,
+    label: `Sword ${i + 1}/${SWING_FRAMES}`,
+    pose: sampleSwing(i / (SWING_FRAMES - 1)),
+    tags: ["swing", "combat"],
+  }));
+  const hurt = Array.from({ length: HURT_FRAMES }, (_, i) => ({
+    id: `hurt-${i}`,
+    label: `Hurt ${i + 1}/${HURT_FRAMES}`,
+    pose: sampleHurt(i / (HURT_FRAMES - 1)),
+    tags: ["hurt", "combat"],
+  }));
+  const death = Array.from({ length: DEATH_FRAMES }, (_, i) => ({
+    id: `death-${i}`,
+    label: `Death ${i + 1}/${DEATH_FRAMES}`,
+    pose: sampleDeath(i / (DEATH_FRAMES - 1)),
+    tags: ["death", "combat"],
+  }));
   return [
     { id: "idle-a", label: "Idle A", pose: idleA(), tags: ["idle"] },
     { id: "idle-b", label: "Idle B", pose: idleB(), tags: ["idle"] },
@@ -191,6 +368,9 @@ export function catalog() {
     { id: "jump-apex", label: "Jump apex", pose: jumpApex(), tags: ["jump"] },
     { id: "jump-fall", label: "Jump fall", pose: jumpFall(), tags: ["jump"] },
     { id: "jump-land", label: "Jump land", pose: jumpLand(), tags: ["jump"] },
+    ...swing,
+    ...hurt,
+    ...death,
   ];
 }
 
@@ -203,6 +383,21 @@ export const ANIMATIONS = {
   },
   jump: {
     frames: ["jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"],
+    fps: 10,
+    loop: false,
+  },
+  swing: {
+    frames: Array.from({ length: SWING_FRAMES }, (_, i) => `swing-${i}`),
+    fps: 12,
+    loop: false,
+  },
+  hurt: {
+    frames: Array.from({ length: HURT_FRAMES }, (_, i) => `hurt-${i}`),
+    fps: 12,
+    loop: false,
+  },
+  death: {
+    frames: Array.from({ length: DEATH_FRAMES }, (_, i) => `death-${i}`),
     fps: 10,
     loop: false,
   },

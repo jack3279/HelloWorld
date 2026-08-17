@@ -2,6 +2,8 @@
 //
 //   public/projects/zombie/scene-1   side-view idle (head at 45°)
 //   public/projects/zombie/scene-2   shambling walk (arms stay forward)
+//   public/projects/zombie/scene-3   hurt flash
+//   public/projects/zombie/scene-4   death
 //
 // Transparent background — these are character loops, not a full-frame card.
 //
@@ -11,7 +13,7 @@ import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildFigure, figureToLottieShapes, loadZombieSkin, makeProjector, parseArgs } from "./lib/steve-model.mjs";
-import { SPRITE, TOLERANCE, WALK_FRAMES, sampleIdle, walkFrame } from "./lib/zombie-poses.mjs";
+import { SPRITE, TOLERANCE, WALK_FRAMES, DEATH_FRAMES, HURT_FRAMES, sampleDeath, sampleHurt, sampleIdle, walkFrame } from "./lib/zombie-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -125,5 +127,39 @@ await writeScene(
     fps: 10,
     hold: 1,
     loop: true,
+  }),
+);
+
+const hurt = Array.from({ length: HURT_FRAMES }, (_, i) => ({
+  id: `hurt-${i}`,
+  shapes: bake(skin, sampleHurt(i / (HURT_FRAMES - 1)), SPRITE),
+}));
+await writeScene(
+  resolve(ROOT, "public/projects/zombie/scene-3"),
+  flipbook({
+    name: "Zombie — Hurt",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: hurt,
+    fps: 12,
+    hold: 1,
+    loop: true,
+  }),
+);
+
+const death = Array.from({ length: DEATH_FRAMES }, (_, i) => ({
+  id: `death-${i}`,
+  shapes: bake(skin, sampleDeath(i / (DEATH_FRAMES - 1)), SPRITE),
+}));
+await writeScene(
+  resolve(ROOT, "public/projects/zombie/scene-4"),
+  flipbook({
+    name: "Zombie — Death",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: death,
+    fps: 10,
+    hold: 1,
+    loop: false,
   }),
 );

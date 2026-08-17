@@ -6,6 +6,9 @@
 //   public/projects/steve-platformer/scene-1   idle
 //   public/projects/steve-platformer/scene-2   run
 //   public/projects/steve-platformer/scene-3   jump
+//   public/projects/steve-platformer/scene-4   sword swing
+//   public/projects/steve-platformer/scene-5   hurt flash
+//   public/projects/steve-platformer/scene-6   death
 //
 // Every scene uses the same right-facing side camera.
 //
@@ -17,13 +20,21 @@ import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildFigure, figureToLottieShapes, loadSkin, makeProjector, parseArgs } from "./lib/steve-model.mjs";
+import { swordExtra } from "./lib/held-item.mjs";
 import {
+  COMBAT_SPRITE,
+  DEATH_FRAMES,
+  HURT_FRAMES,
   SPRITE,
+  SWING_FRAMES,
   TOLERANCE,
   catalog,
   demoReel,
+  sampleDeath,
+  sampleHurt,
   sampleIdle,
   sampleJump,
+  sampleSwing,
   runFrame,
 } from "./lib/steve-poses.mjs";
 
@@ -79,8 +90,8 @@ function flipbook({ name, w, h, frames, fps, hold, loop }) {
   };
 }
 
-function bake(skin, pose, canvas) {
-  const { parts } = buildFigure({ skin, pose, tolerance: TOLERANCE });
+function bake(skin, pose, canvas, extras) {
+  const { parts } = buildFigure({ skin, pose, tolerance: TOLERANCE, extras });
   const project = makeProjector({
     scale: canvas.scale,
     originX: canvas.originX,
@@ -113,7 +124,7 @@ function spriteShapes(pose, id) {
   return spriteCache.get(key);
 }
 
-for (const entry of catalog()) spriteShapes(entry.pose, entry.id);
+for (const entry of catalog().filter((e) => !e.tags.includes("combat"))) spriteShapes(entry.pose, entry.id);
 
 const platformer = resolve(ROOT, "public/projects/steve-platformer");
 const idleFrames = Array.from({ length: 8 }, (_, i) => ({
@@ -205,5 +216,56 @@ await writeScene(
     fps: 24,
     hold: 1,
     loop: true,
+  }),
+);
+
+const heldSword = await swordExtra();
+const swingFrames = Array.from({ length: SWING_FRAMES }, (_, i) => ({
+  id: `swing-${i}`,
+  shapes: bake(skin, sampleSwing(i / (SWING_FRAMES - 1)), COMBAT_SPRITE, [heldSword]),
+}));
+const hurtFrames = Array.from({ length: HURT_FRAMES }, (_, i) => ({
+  id: `hurt-${i}`,
+  shapes: bake(skin, sampleHurt(i / (HURT_FRAMES - 1)), COMBAT_SPRITE),
+}));
+const deathFrames = Array.from({ length: DEATH_FRAMES }, (_, i) => ({
+  id: `death-${i}`,
+  shapes: bake(skin, sampleDeath(i / (DEATH_FRAMES - 1)), COMBAT_SPRITE),
+}));
+
+await writeScene(
+  resolve(platformer, "scene-4"),
+  flipbook({
+    name: "Steve — Sword swing",
+    w: COMBAT_SPRITE.w,
+    h: COMBAT_SPRITE.h,
+    frames: swingFrames,
+    fps: 12,
+    hold: 1,
+    loop: true,
+  }),
+);
+await writeScene(
+  resolve(platformer, "scene-5"),
+  flipbook({
+    name: "Steve — Hurt",
+    w: COMBAT_SPRITE.w,
+    h: COMBAT_SPRITE.h,
+    frames: hurtFrames,
+    fps: 12,
+    hold: 1,
+    loop: true,
+  }),
+);
+await writeScene(
+  resolve(platformer, "scene-6"),
+  flipbook({
+    name: "Steve — Death",
+    w: COMBAT_SPRITE.w,
+    h: COMBAT_SPRITE.h,
+    frames: deathFrames,
+    fps: 10,
+    hold: 1,
+    loop: false,
   }),
 );

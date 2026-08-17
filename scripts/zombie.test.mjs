@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { loadZombieSkin, normalizePlayerSkin } from "./lib/steve-model.mjs";
-import { FACE, WALK_FRAMES, idleA, sampleIdle, walkFrame } from "./lib/zombie-poses.mjs";
+import { FACE, WALK_FRAMES, idleA, sampleDeath, sampleHurt, sampleIdle, walkFrame } from "./lib/zombie-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -73,6 +73,11 @@ describe("zombie pose", () => {
     const other = walkFrame(0.75);
     assert.ok(other.parts["leg-left"].pitch < other.parts["leg-right"].pitch, "left leg leads at 3/4");
   });
+
+  it("flashes on hurt and collapses on death", () => {
+    assert.ok(sampleHurt(0).flash > 0.5);
+    assert.ok(sampleDeath(1).root.y < -2);
+  });
 });
 
 describe("generated zombie assets", () => {
@@ -89,6 +94,8 @@ describe("generated zombie assets", () => {
     const scenes = [
       ["scene-1", 8],
       ["scene-2", WALK_FRAMES],
+      ["scene-3", 8],
+      ["scene-4", 8],
     ];
     for (const [scene, minLayers] of scenes) {
       const lottie = JSON.parse(
