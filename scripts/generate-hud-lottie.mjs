@@ -5,6 +5,9 @@
 //   public/projects/hud/scene-3  hearts take damage
 //   public/projects/hud/scene-4  button press
 //   public/projects/hud/scene-5  health bar fill
+//   public/projects/hud/scene-6  hotbar loadout, selected slot cycles
+//   public/projects/hud/scene-7  blocks in slots with stack counts
+//   public/projects/hud/scene-8  crosshair + selected-item tip
 //
 // Transparent background — these are UI overlays, not a full-frame card.
 //
@@ -13,16 +16,20 @@
 import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { HOTBAR_LOADOUT, WORLD_LOADOUT, itemById, loadItemPixels } from "./lib/minecraft-items.mjs";
 import { loadItemTexture } from "./lib/held-item.mjs";
 import {
   ATLAS,
   BAR_CANVAS,
   BUTTON_CANVAS,
   HEARTS_CANVAS,
+  OVERLAY,
   SURVIVAL,
   composeBar,
   composeButton,
   composeHearts,
+  composeHotbar,
+  composeOverlay,
   composeSurvival,
   fitSprite,
   flipbookScene,
@@ -161,6 +168,85 @@ await writeScene(
     frames: barFrames,
     fps: 10,
     hold: 2,
+    loop: true,
+    generator: GEN,
+  }),
+);
+
+const loadout = [];
+for (const id of HOTBAR_LOADOUT) loadout.push(await loadItemPixels(id));
+const hotbarFrames = [];
+for (let selected = 0; selected < loadout.length; selected++) {
+  const src = await composeHotbar({ items: loadout, selected });
+  hotbarFrames.push({
+    id: `hotbar-${selected}`,
+    hold: 8,
+    shapes: lottieShapesFromRuns(runsOf(src), layoutCentered(src, SURVIVAL)),
+  });
+}
+await writeScene(
+  resolve(ROOT, "public/projects/hud/scene-6"),
+  flipbookScene({
+    name: "HUD — Hotbar",
+    w: SURVIVAL.w,
+    h: SURVIVAL.h,
+    frames: hotbarFrames,
+    fps: 8,
+    loop: true,
+    generator: GEN,
+  }),
+);
+
+const worldItems = [];
+const worldCounts = [];
+for (const slot of WORLD_LOADOUT) {
+  worldItems.push(await loadItemPixels(slot.id));
+  worldCounts.push(slot.count);
+}
+const stackFrames = [];
+for (let selected = 0; selected < worldItems.length; selected++) {
+  const src = await composeHotbar({ items: worldItems, counts: worldCounts, selected });
+  stackFrames.push({
+    id: `stacks-${selected}`,
+    hold: 8,
+    shapes: lottieShapesFromRuns(runsOf(src), layoutCentered(src, SURVIVAL)),
+  });
+}
+await writeScene(
+  resolve(ROOT, "public/projects/hud/scene-7"),
+  flipbookScene({
+    name: "HUD — Stacks",
+    w: SURVIVAL.w,
+    h: SURVIVAL.h,
+    frames: stackFrames,
+    fps: 8,
+    loop: true,
+    generator: GEN,
+  }),
+);
+
+const overlayFrames = [];
+for (let selected = 0; selected < worldItems.length; selected++) {
+  const src = await composeOverlay({
+    items: worldItems,
+    counts: worldCounts,
+    selected,
+    tip: itemById(WORLD_LOADOUT[selected].id).label,
+  });
+  overlayFrames.push({
+    id: `overlay-${selected}`,
+    hold: 10,
+    shapes: lottieShapesFromRuns(runsOf(src), layoutCentered(src, OVERLAY)),
+  });
+}
+await writeScene(
+  resolve(ROOT, "public/projects/hud/scene-8"),
+  flipbookScene({
+    name: "HUD — Crosshair",
+    w: OVERLAY.w,
+    h: OVERLAY.h,
+    frames: overlayFrames,
+    fps: 6,
     loop: true,
     generator: GEN,
   }),

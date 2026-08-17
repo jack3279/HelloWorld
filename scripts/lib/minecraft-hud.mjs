@@ -10,6 +10,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const HUD_BASE =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/ui";
+export const GUI_BASE =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/gui";
+export const FONT_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/font/ascii.png";
 const CACHE = resolve(__dirname, "../../node_modules/.cache/minecraft-hud");
 
 export const ALPHA_CUTOFF = 16;
@@ -17,6 +21,8 @@ export const HEART_RED = "#ff1313";
 export const HEART_HIGHLIGHT = "#ffc8c8";
 export const HEART_SHADOW = "#bb1313";
 export const HEART_EMPTY = "#282828";
+export const COUNT_WHITE = "#f8f8f8";
+export const COUNT_SHADOW = "#3e3e3e";
 
 export const ICON = 9;
 export const ICON_STRIDE = 8;
@@ -34,6 +40,7 @@ export const BAR_SRC_H = 5;
 
 export const ATLAS = { w: 512, h: 512, cols: 4, rows: 4, cell: 112, gap: 12 };
 export const SURVIVAL = { w: 640, h: 220, padX: 20, padY: 24 };
+export const OVERLAY = { w: 640, h: 360, padX: 20, padY: 24 };
 export const HEARTS_CANVAS = { w: 640, h: 180 };
 export const BUTTON_CANVAS = { w: 640, h: 180, padX: 100, padY: 52, maxTexel: 4 };
 export const BAR_CANVAS = { w: 640, h: 140 };
@@ -64,6 +71,7 @@ export const HUD_FILES = {
   "xp-full": "experiencebarfull.png",
   "progress-empty": "empty_progress_bar.png",
   "progress-full": "filled_progress_bar.png",
+  tip: "hud_tip_text_background.png",
 };
 
 for (let i = 0; i < HOTBAR_SLOTS; i++) HUD_FILES[`hotbar-${i}`] = `hotbar_${i}.png`;
@@ -75,6 +83,7 @@ const FLATTEN = {
   "xp-empty": 12,
   "progress-empty": 6,
   "progress-full": 8,
+  tip: 0,
 };
 
 for (let i = 0; i < HOTBAR_SLOTS; i++) FLATTEN[`hotbar-${i}`] = 16;
@@ -165,6 +174,123 @@ export function blit(dest, src, dx, dy, { clipW, clipH } = {}) {
       if (tx < 0 || tx >= dest.w) continue;
       dest.pixels[ty * dest.w + tx] = hex;
     }
+  }
+  return dest;
+}
+
+export function cropPixels(src, x, y, w, h) {
+  const dest = makeCanvas(w, h);
+  for (let yy = 0; yy < h; yy++) {
+    for (let xx = 0; xx < w; xx++) {
+      dest.pixels[yy * w + xx] = src.pixels[(y + yy) * src.w + (x + xx)] ?? null;
+    }
+  }
+  return dest;
+}
+
+async function loadCachedPng(url, cacheName) {
+  const cachePath = resolve(CACHE, cacheName);
+  let buf;
+  try {
+    buf = await readFile(cachePath);
+  } catch {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`could not download ${url} (${res.status})`);
+    buf = Buffer.from(await res.arrayBuffer());
+    await mkdir(CACHE, { recursive: true });
+    await writeFile(cachePath, buf);
+  }
+  return decodePng(buf);
+}
+
+let asciiPng = null;
+export async function loadAscii() {
+  if (!asciiPng) asciiPng = await loadCachedPng(FONT_URL, "ascii.png");
+  return asciiPng;
+}
+
+export async function loadCrosshair() {
+  const png = await loadCachedPng(`${GUI_BASE}/icons.png`, "icons.png");
+  return cropPixels(pngToPixels(png, { flatten: 0 }), 0, 0, 16, 16);
+}
+
+function glyphCell(ch) {
+  const code = ch.charCodeAt(0);
+  return { x: (code % 16) * 8, y: Math.floor(code / 16) * 8 };
+}
+
+export function glyphAdvance(png, ch) {
+  if (ch === " ") return 4;
+  const { x, y } = glyphCell(ch);
+  let max = 0;
+  for (let yy = 0; yy < 8; yy++) {
+    for (let xx = 0; xx < 8; xx++) {
+      if (png.rgba[((y + yy) * png.width + (x + xx)) * 4 + 3] < ALPHA_CUTOFF) continue;
+      if (xx > max) max = xx;
+    }
+  }
+  return Math.max(1, max + 2);
+}
+
+function blitGlyph(dest, png, ch, dx, dy, hex) {
+  const { x, y } = glyphCell(ch);
+  for (let yy = 0; yy < 8; yy++) {
+    for (let xx = 0; xx < 8; xx++) {
+      if (png.rgba[((y + yy) * png.width + (x + xx)) * 4 + 3] < ALPHA_CUTOFF) continue;
+      const tx = dx + xx;
+      const ty = dy + yy;
+      if (tx < 0 || ty < 0 || tx >= dest.w || ty >= dest.h) continue;
+      dest.pixels[ty * dest.w + tx] = hex;
+    }
+  }
+}
+
+export async function composeText(text, { fill = COUNT_WHITE, shadow = COUNT_SHADOW } = {}) {
+  const png = await loadAscii();
+  const advances = [...text].map((ch) => glyphAdvance(png, ch));
+  const w = advances.reduce((n, a) => n + a, 0) + 1;
+  const dest = makeCanvas(w, 9);
+  let x = 0;
+  for (let i = 0; i < text.length; i++) {
+    blitGlyph(dest, png, text[i], x + 1, 1, shadow);
+    blitGlyph(dest, png, text[i], x, 0, fill);
+    x += advances[i];
+  }
+  return dest;
+}
+
+export async function composeCount(n) {
+  return composeText(String(n));
+}
+
+export async function composeTip(label) {
+  const text = await composeText(label);
+  const padX = 3;
+  const padY = 2;
+  const bg = slice9(await loadHud("tip"), text.w + padX * 2, text.h + padY * 2, { border: 2 });
+  blit(bg, text, padX, padY);
+  return bg;
+}
+
+export async function composeOverlay({
+  items = null,
+  counts = null,
+  selected = 0,
+  tip = null,
+  crosshair = true,
+} = {}) {
+  const hud = await composeSurvival({ items, counts, selected, xp: 0.45, armor: 10 });
+  const dest = makeCanvas(OVERLAY.w, OVERLAY.h);
+  const hudX = Math.floor((OVERLAY.w - hud.w) / 2);
+  const hudY = OVERLAY.h - hud.h - 16;
+  blit(dest, hud, hudX, hudY);
+  if (tip) {
+    const label = await composeTip(tip);
+    blit(dest, label, Math.floor((OVERLAY.w - label.w) / 2), hudY - label.h - 6);
+  }
+  if (crosshair) {
+    const hair = await loadCrosshair();
+    blit(dest, hair, Math.floor((OVERLAY.w - hair.w) / 2), Math.floor((OVERLAY.h - hair.h) / 2) - 36);
   }
   return dest;
 }
@@ -285,7 +411,13 @@ export async function composeArmor(points, max = 20) {
   return composeIconRow(points, max, { empty, half, full });
 }
 
-export async function composeHotbar({ selected = null, item = null, itemSlot = 0 } = {}) {
+export async function composeHotbar({
+  selected = null,
+  item = null,
+  itemSlot = 0,
+  items = null,
+  counts = null,
+} = {}) {
   const pad = selected == null ? 0 : 1;
   const dest = makeCanvas(HOTBAR_W + pad * 2, HOTBAR_SLOT_H + pad * 2);
   const ox = pad;
@@ -295,15 +427,31 @@ export async function composeHotbar({ selected = null, item = null, itemSlot = 0
     blit(dest, await loadHud(`hotbar-${i}`), ox + HOTBAR_CAP + i * HOTBAR_SLOT_W, oy);
   }
   blit(dest, await loadHud("hotbar-end"), ox + HOTBAR_CAP + HOTBAR_SLOTS * HOTBAR_SLOT_W, oy);
-  if (item) {
-    const ix = ox + HOTBAR_CAP + itemSlot * HOTBAR_SLOT_W + Math.floor((HOTBAR_SLOT_W - item.w) / 2);
-    const iy = oy + Math.floor((HOTBAR_SLOT_H - item.h) / 2);
-    blit(dest, item, ix, iy);
+  const slotItems = items ?? (item ? Array.from({ length: HOTBAR_SLOTS }, (_, i) => (i === itemSlot ? item : null)) : []);
+  for (let i = 0; i < HOTBAR_SLOTS; i++) {
+    const it = slotItems[i];
+    if (!it) continue;
+    const ix = ox + HOTBAR_CAP + i * HOTBAR_SLOT_W + Math.floor((HOTBAR_SLOT_W - it.w) / 2);
+    const iy = oy + Math.floor((HOTBAR_SLOT_H - it.h) / 2);
+    blit(dest, it, ix, iy);
   }
   if (selected != null) {
     const sx = ox + HOTBAR_CAP + selected * HOTBAR_SLOT_W - 2;
     const sy = oy - 1;
     blit(dest, await loadHud("selected"), sx, sy);
+  }
+  if (counts) {
+    for (let i = 0; i < HOTBAR_SLOTS; i++) {
+      const n = counts[i];
+      if (!n || n <= 1) continue;
+      const it = slotItems[i];
+      const num = await composeCount(n);
+      const itemW = it?.w ?? 16;
+      const itemH = it?.h ?? 16;
+      const itemX = ox + HOTBAR_CAP + i * HOTBAR_SLOT_W + Math.floor((HOTBAR_SLOT_W - itemW) / 2);
+      const itemY = oy + Math.floor((HOTBAR_SLOT_H - itemH) / 2);
+      blit(dest, num, itemX + itemW - num.w + 1, itemY + itemH - num.h + 1);
+    }
   }
   return dest;
 }
@@ -344,12 +492,14 @@ export async function composeSurvival({
   xp = 0.45,
   selected = 0,
   item = null,
+  items = null,
+  counts = null,
 } = {}) {
   const heartRow = await composeHearts(hearts);
   const hungerRow = await composeHunger(hunger);
   const armorRow = await composeArmor(armor);
   const xpBar = await composeBar({ fill: xp, kind: "xp" });
-  const hotbar = await composeHotbar({ selected, item, itemSlot: selected ?? 0 });
+  const hotbar = await composeHotbar({ selected, item, itemSlot: selected ?? 0, items, counts });
   const w = Math.max(HOTBAR_W, hotbar.w);
   const h = 10 + ICON + 1 + BAR_SRC_H + 1 + hotbar.h;
   const dest = makeCanvas(w, h);
