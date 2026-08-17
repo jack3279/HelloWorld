@@ -8,6 +8,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { HOTBAR_LOADOUT, loadItemPixels } from "./lib/minecraft-items.mjs";
 import { loadItemTexture } from "./lib/held-item.mjs";
 import {
   ATLAS,
@@ -80,6 +81,13 @@ for (const [id, label, load, canvas] of singles) {
 const sword = await maybeSword();
 const survival = await composeSurvival({ item: sword, selected: 0 });
 await writeFile(resolve(OUT, "survival.svg"), spriteSvg("survival", "Survival HUD", survival, SURVIVAL));
+
+const loadout = [];
+for (const id of HOTBAR_LOADOUT) loadout.push(await loadItemPixels(id));
+const filled = await composeSurvival({ items: loadout, selected: 0 });
+await writeFile(resolve(OUT, "survival-items.svg"), spriteSvg("survival-items", "Survival HUD with items", filled, SURVIVAL));
+const filledBar = await composeHotbar({ items: loadout, selected: 0 });
+await writeFile(resolve(OUT, "hotbar-items.svg"), spriteSvg("hotbar-items", "Hotbar with items", filledBar, SURVIVAL));
 
 const atlas = layoutAtlas();
 const atlasParts = [];

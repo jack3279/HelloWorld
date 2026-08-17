@@ -129,13 +129,14 @@ describe("generated HUD assets", () => {
     assert.match(survival, /#ff1313/);
   });
 
-  it("ships five Skottie HUD scenes", async () => {
+  it("ships six Skottie HUD scenes", async () => {
     const names = [
       "HUD — Chrome",
       "HUD — Survival",
       "HUD — Hearts",
       "HUD — Button",
       "HUD — Health bar",
+      "HUD — Hotbar",
     ];
     for (let i = 0; i < names.length; i++) {
       const lottie = JSON.parse(
@@ -164,5 +165,15 @@ describe("generated HUD assets", () => {
     const dump = (doc) => JSON.stringify(doc);
     assert.match(dump(survival), /#ff1313|0\.996/);
     assert.match(dump(bar), /#ff1313|0\.996/);
+  });
+
+  it("puts item icons in the cycling hotbar scene", async () => {
+    const hotbar = JSON.parse(
+      await readFile(resolve(ROOT, "public/projects/hud/scene-6/lottie.json"), "utf8"),
+    );
+    assert.equal(hotbar.nm, "HUD — Hotbar");
+    assert.equal(hotbar.layers.filter((layer) => layer.ty === 4).length, 9);
+    const dump = JSON.stringify(hotbar);
+    assert.match(dump, /0\.2|0\.3/, "diamond teal survives in the loadout");
   });
 });

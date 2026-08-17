@@ -285,7 +285,7 @@ export async function composeArmor(points, max = 20) {
   return composeIconRow(points, max, { empty, half, full });
 }
 
-export async function composeHotbar({ selected = null, item = null, itemSlot = 0 } = {}) {
+export async function composeHotbar({ selected = null, item = null, itemSlot = 0, items = null } = {}) {
   const pad = selected == null ? 0 : 1;
   const dest = makeCanvas(HOTBAR_W + pad * 2, HOTBAR_SLOT_H + pad * 2);
   const ox = pad;
@@ -295,10 +295,13 @@ export async function composeHotbar({ selected = null, item = null, itemSlot = 0
     blit(dest, await loadHud(`hotbar-${i}`), ox + HOTBAR_CAP + i * HOTBAR_SLOT_W, oy);
   }
   blit(dest, await loadHud("hotbar-end"), ox + HOTBAR_CAP + HOTBAR_SLOTS * HOTBAR_SLOT_W, oy);
-  if (item) {
-    const ix = ox + HOTBAR_CAP + itemSlot * HOTBAR_SLOT_W + Math.floor((HOTBAR_SLOT_W - item.w) / 2);
-    const iy = oy + Math.floor((HOTBAR_SLOT_H - item.h) / 2);
-    blit(dest, item, ix, iy);
+  const slotItems = items ?? (item ? Array.from({ length: HOTBAR_SLOTS }, (_, i) => (i === itemSlot ? item : null)) : []);
+  for (let i = 0; i < HOTBAR_SLOTS; i++) {
+    const it = slotItems[i];
+    if (!it) continue;
+    const ix = ox + HOTBAR_CAP + i * HOTBAR_SLOT_W + Math.floor((HOTBAR_SLOT_W - it.w) / 2);
+    const iy = oy + Math.floor((HOTBAR_SLOT_H - it.h) / 2);
+    blit(dest, it, ix, iy);
   }
   if (selected != null) {
     const sx = ox + HOTBAR_CAP + selected * HOTBAR_SLOT_W - 2;
@@ -344,12 +347,13 @@ export async function composeSurvival({
   xp = 0.45,
   selected = 0,
   item = null,
+  items = null,
 } = {}) {
   const heartRow = await composeHearts(hearts);
   const hungerRow = await composeHunger(hunger);
   const armorRow = await composeArmor(armor);
   const xpBar = await composeBar({ fill: xp, kind: "xp" });
-  const hotbar = await composeHotbar({ selected, item, itemSlot: selected ?? 0 });
+  const hotbar = await composeHotbar({ selected, item, itemSlot: selected ?? 0, items });
   const w = Math.max(HOTBAR_W, hotbar.w);
   const h = 10 + ICON + 1 + BAR_SRC_H + 1 + hotbar.h;
   const dest = makeCanvas(w, h);

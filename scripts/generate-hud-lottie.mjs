@@ -5,6 +5,7 @@
 //   public/projects/hud/scene-3  hearts take damage
 //   public/projects/hud/scene-4  button press
 //   public/projects/hud/scene-5  health bar fill
+//   public/projects/hud/scene-6  hotbar loadout, selected slot cycles
 //
 // Transparent background — these are UI overlays, not a full-frame card.
 //
@@ -13,6 +14,7 @@
 import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { HOTBAR_LOADOUT, loadItemPixels } from "./lib/minecraft-items.mjs";
 import { loadItemTexture } from "./lib/held-item.mjs";
 import {
   ATLAS,
@@ -23,6 +25,7 @@ import {
   composeBar,
   composeButton,
   composeHearts,
+  composeHotbar,
   composeSurvival,
   fitSprite,
   flipbookScene,
@@ -161,6 +164,30 @@ await writeScene(
     frames: barFrames,
     fps: 10,
     hold: 2,
+    loop: true,
+    generator: GEN,
+  }),
+);
+
+const loadout = [];
+for (const id of HOTBAR_LOADOUT) loadout.push(await loadItemPixels(id));
+const hotbarFrames = [];
+for (let selected = 0; selected < loadout.length; selected++) {
+  const src = await composeHotbar({ items: loadout, selected });
+  hotbarFrames.push({
+    id: `hotbar-${selected}`,
+    hold: 8,
+    shapes: lottieShapesFromRuns(runsOf(src), layoutCentered(src, SURVIVAL)),
+  });
+}
+await writeScene(
+  resolve(ROOT, "public/projects/hud/scene-6"),
+  flipbookScene({
+    name: "HUD — Hotbar",
+    w: SURVIVAL.w,
+    h: SURVIVAL.h,
+    frames: hotbarFrames,
+    fps: 8,
     loop: true,
     generator: GEN,
   }),

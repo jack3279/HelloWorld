@@ -18,6 +18,7 @@
     "check:enderman": "node --test scripts/enderman.test.mjs",
     "check:mobs": "node --test scripts/skeleton.test.mjs scripts/spider.test.mjs scripts/enderman.test.mjs",
     "check:hud": "node --test scripts/hud.test.mjs",
+    "check:items": "node --test scripts/items.test.mjs",
     "generate:steve": "node scripts/generate-steve-svg.mjs && node scripts/generate-steve-sprites.mjs && node scripts/generate-steve-lottie.mjs",
     "generate:coin": "node scripts/generate-coin-lottie.mjs",
     "generate:zombie": "node scripts/generate-zombie-svg.mjs && node scripts/generate-zombie-sprites.mjs && node scripts/generate-zombie-lottie.mjs",
@@ -28,6 +29,7 @@
     "generate:mobs": "node scripts/generate-skeleton.mjs && node scripts/generate-spider.mjs && node scripts/generate-enderman.mjs",
     "generate:combat": "npm run generate:steve && npm run generate:zombie && npm run generate:mobs",
     "generate:hud": "node scripts/generate-hud-svg.mjs && node scripts/generate-hud-lottie.mjs",
+    "generate:items": "node scripts/generate-items-svg.mjs && node scripts/generate-items-lottie.mjs",
     "preview": "vite preview",
     "postinstall": "node scripts/copy-canvaskit.mjs"
   },

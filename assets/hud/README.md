@@ -11,6 +11,7 @@ can draw hearts, the hotbar, menu buttons, and bars without a bitmap.
 | `button-idle.svg` / `button-hover.svg` / `button-pressed.svg` | 9-slice menu button |
 | `xp-bar.svg` / `health-bar.svg` | XP green and heart-red bars |
 | `survival.svg` | Armor + hearts + hunger + XP + hotbar |
+| `survival-items.svg` / `hotbar-items.svg` | Same chrome with a 9-item loadout |
 | `sheet.svg` | 4×4 atlas of the pieces |
 
 Skottie scenes live at `public/projects/hud/scene-N`.
@@ -22,6 +23,7 @@ Skottie scenes live at `public/projects/hud/scene-N`.
 | 3 | Hearts 20 → 0 with a flash on the hit |
 | 4 | Button idle → hover → pressed |
 | 5 | Health bar fill 0 → 100% |
+| 6 | Filled hotbar, selected slot cycles |
 
 Regenerate after a texture or layout change:
 
