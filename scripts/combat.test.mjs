@@ -51,4 +51,22 @@ describe("held items", () => {
     for (let i = 3; i < sword.rgba.length; i += 4) if (sword.rgba[i] > 0) opaque += 1;
     assert.ok(opaque > 20, "sword silhouette has pixels");
   });
+
+  it("keeps the sword silhouette instead of filling a solid slab", async () => {
+    const { buildFigure, loadSkin } = await import("./lib/steve-model.mjs");
+    const { swordExtra } = await import("./lib/held-item.mjs");
+    const { swingStrike } = await import("./lib/steve-poses.mjs");
+    const extra = await swordExtra();
+    assert.equal(extra.part.sparse, true);
+    const { parts } = buildFigure({
+      skin: await loadSkin(),
+      pose: swingStrike(),
+      extras: [extra],
+    });
+    const sword = parts.find((p) => p.id === "held-sword");
+    assert.ok(sword, "sword part exists");
+    assert.ok(sword.faces.some((f) => f.sparse), "item faces stay sparse");
+    const body = parts.find((p) => p.id === "torso");
+    assert.ok(body.faces.every((f) => !f.sparse), "body cubes keep a solid base fill");
+  });
 });

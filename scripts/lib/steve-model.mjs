@@ -707,7 +707,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, 
       }
       const base = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
       if (!base) continue;
-      faces.push({ faceName, points, depth, rect, runs, base });
+      faces.push({ faceName, points, depth, rect, runs, base, sparse: Boolean(part.sparse) });
     }
 
     parts.push({
@@ -799,10 +799,10 @@ export function runQuad(corners, rect, run) {
 }
 
 // Groups a face's runs by color so each color becomes one path.
-export function faceColorPaths(face, corners) {
+export function faceColorPaths(face, corners, { includeBase = false } = {}) {
   const byColor = new Map();
   for (const run of face.runs) {
-    if (run.hex === face.base) continue;
+    if (!includeBase && run.hex === face.base) continue;
     const list = byColor.get(run.hex) ?? [];
     list.push(runQuad(corners, face.rect, run));
     byColor.set(run.hex, list);
@@ -819,9 +819,10 @@ export function svgFigureBody(parts, project, indent = "    ", idPrefix = "") {
     for (const face of part.faces) {
       const corners = face.points.map(project);
       out.push(`${indent}  <g class="face" data-face="${face.faceName}">`);
-      // Base quad first: it fills the face and hides hairlines between texels.
-      out.push(`${indent}    <path fill="${face.base}" d="${quadPath(corners)}"/>`);
-      for (const [hex, quads] of faceColorPaths(face, corners))
+      // Opaque cubes get a base quad so hairlines between texels disappear.
+      // Item silhouettes are sparse — only paint the actual texel runs.
+      if (!face.sparse) out.push(`${indent}    <path fill="${face.base}" d="${quadPath(corners)}"/>`);
+      for (const [hex, quads] of faceColorPaths(face, corners, { includeBase: face.sparse }))
         out.push(
           `${indent}    <path fill="${hex}" stroke="${hex}" stroke-width=".6" stroke-linejoin="round" d="${quads.map(quadPath).join("")}"/>`,
         );
@@ -898,13 +899,15 @@ export function figureToLottieShapes(parts, project) {
     const items = [];
     for (const face of part.faces) {
       const corners = face.points.map(project);
-      items.push(
-        lottieGroup(`${part.id}/${face.faceName}`, [
-          { ty: "sh", nm: "base", ks: { a: 0, k: lottieQuad(corners) } },
-          lottieFill(face.base),
-        ]),
-      );
-      for (const [hex, quads] of faceColorPaths(face, corners)) {
+      if (!face.sparse) {
+        items.push(
+          lottieGroup(`${part.id}/${face.faceName}`, [
+            { ty: "sh", nm: "base", ks: { a: 0, k: lottieQuad(corners) } },
+            lottieFill(face.base),
+          ]),
+        );
+      }
+      for (const [hex, quads] of faceColorPaths(face, corners, { includeBase: face.sparse })) {
         const paths = quads.map((q, i) => ({
           ty: "sh",
           nm: `texel-${i}`,

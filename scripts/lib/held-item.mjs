@@ -80,6 +80,7 @@ export function heldSlab({
     max: max ?? [thickness / 2, size, size],
     pivot: pivot ?? handle,
     uv: itemSlabUv(size),
+    sparse: true,
   };
 }
 
@@ -91,9 +92,9 @@ export function swordPart() {
     parent: "arm-right",
     size: 16,
     thickness: 0.9,
-    min: [-0.45, -1, 0],
-    max: [0.45, 15, 16],
-    pivot: [0, 0.8, 2.2],
+    min: [-0.4, -0.4, 0],
+    max: [0.4, 10.6, 11],
+    pivot: [0, 0.6, 1.6],
   });
 }
 
@@ -106,9 +107,9 @@ export function bowPart() {
     parent: "arm-left",
     size: 16,
     thickness: 1,
-    min: [-3.2, 0, 2],
-    max: [-2.2, 16, 18],
-    pivot: [-2.7, 2, 4],
+    min: [-2.4, 1, 3],
+    max: [-1.5, 13, 15],
+    pivot: [-1.95, 2.2, 4.2],
   });
 }
 
@@ -119,9 +120,9 @@ export function arrowPart() {
     parent: "arm-left",
     size: 16,
     thickness: 0.7,
-    min: [-2.6, 4, 6],
-    max: [-1.9, 20, 22],
-    pivot: [-2.25, 6, 8],
+    min: [-4.4, 6, 8],
+    max: [-3.6, 17, 19],
+    pivot: [-4.0, 7.5, 9.5],
   });
 }
 
