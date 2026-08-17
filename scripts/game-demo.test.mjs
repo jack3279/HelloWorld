@@ -17,6 +17,7 @@ describe("html game demo", () => {
     const html = await readFile(resolve(ROOT, "public/game/index.html"), "utf8");
     assert.match(html, /id="game"/);
     assert.match(html, /id="start"/);
+    assert.match(html, /id="demo"/);
     assert.match(html, /src="\.\/game\.js"/);
     assert.match(html, /type="module"/);
   });

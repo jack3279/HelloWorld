@@ -63,6 +63,7 @@ const SOLID = new Set("gdscoLpabBTFimxB".split(""));
 const canvas = document.getElementById("game");
 const overlay = document.getElementById("overlay");
 const startBtn = document.getElementById("start");
+const demoBtn = document.getElementById("demo");
 const loadStatus = document.getElementById("load-status");
 const ctx = canvas.getContext("2d");
 
@@ -84,6 +85,7 @@ let time = 0;
 let message = "";
 let messageT = 0;
 let win = false;
+let demo = null;
 
 function asset(rel) {
   return `${ROOT}/${rel}`;
@@ -391,6 +393,8 @@ function resetGame() {
   cam = { x: 0, y: 0 };
   time = 0;
   win = false;
+  demo = null;
+  hold.left = hold.right = hold.jump = hold.use = false;
   message = "向东走。挥剑清怪，捡齐 5 颗钻石。";
   messageT = 4;
 }
@@ -777,6 +781,7 @@ function frame(ts) {
   if (mode === "play") {
     time += dt;
     if (messageT > 0) messageT -= dt;
+    updateDemo(dt);
     updatePlayer(dt);
     updateMobs(dt);
     updateDrops(dt);
@@ -814,13 +819,39 @@ function bindKey(e) {
   return key;
 }
 
-function startGame() {
+function pulse(t, a, b) {
+  return t >= a && t < b;
+}
+
+function updateDemo(dt) {
+  if (!demo) return;
+  demo.t += dt;
+  const t = demo.t;
+  hold.right = t < 9;
+  hold.left = false;
+  hold.jump = pulse(t, 1.15, 1.35) || pulse(t, 3.1, 3.3) || pulse(t, 5.4, 5.6);
+  if (pulse(t, 2.2, 2.28) || pulse(t, 4.4, 4.48) || pulse(t, 6.2, 6.28) || pulse(t, 7.1, 7.18)) {
+    useSelected();
+  }
+  if (t > 12) {
+    demo = null;
+    hold.right = hold.jump = false;
+    say("可以接着自己玩，或按 R 重来。", 4);
+  }
+}
+
+function startGame(asDemo = false) {
   resetGame();
   mode = "play";
   overlay.hidden = true;
   document.getElementById("hud-layer").hidden = false;
   startBtn.blur();
+  demoBtn.blur();
   canvas.focus();
+  if (asDemo) {
+    demo = { t: 0 };
+    say("自动演示：向东走、跳跃、挥剑。", 3);
+  }
 }
 
 window.addEventListener("keydown", (e) => {
@@ -866,7 +897,8 @@ for (const btn of document.querySelectorAll("#touch button")) {
   btn.addEventListener("pointerleave", () => press(false));
 }
 
-startBtn.addEventListener("click", startGame);
+startBtn.addEventListener("click", () => startGame(false));
+demoBtn.addEventListener("click", () => startGame(true));
 
 resize();
 requestAnimationFrame(frame);
@@ -875,10 +907,13 @@ loadAll()
   .then(() => {
     loadStatus.textContent = "素材已就绪。";
     startBtn.disabled = false;
+    demoBtn.disabled = false;
   })
   .catch((err) => {
     loadStatus.textContent = err.message;
     startBtn.disabled = true;
+    demoBtn.disabled = true;
   });
 
 startBtn.disabled = true;
+demoBtn.disabled = true;
