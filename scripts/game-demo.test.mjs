@@ -26,7 +26,7 @@ describe("html game demo", () => {
   it("preloads existing repo art instead of inventing new sprites", async () => {
     const src = await readFile(resolve(ROOT, "public/game/game.js"), "utf8");
     const rels = new Set();
-    for (const match of src.matchAll(/["']((?:blocks|items|hud|steve-sprites|zombie-sprites|skeleton-sprites|spider-sprites|enderman-sprites|creeper-sprites|lava-sprites)\/[a-z0-9-]+\.svg)["']/g)) {
+    for (const match of src.matchAll(/["']((?:blocks|items|hud|steve-sprites|zombie-sprites|skeleton-sprites|spider-sprites|enderman-sprites|creeper-sprites|pig-sprites|cow-sprites|lava-sprites)\/[a-z0-9-]+\.svg)["']/g)) {
       rels.add(match[1]);
     }
     const steve = ["idle-a", "idle-b", ...Array.from({ length: 8 }, (_, i) => `run-${i}`), "jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"];
@@ -34,12 +34,12 @@ describe("html game demo", () => {
     for (let i = 0; i < 10; i++) rels.add(`steve-sprites/swing-${i}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`steve-sprites/hurt-${i}.svg`);
     for (let i = 0; i < 12; i++) rels.add(`steve-sprites/death-${i}.svg`);
-    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper"]) {
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/walk-${i * 2}.svg`);
     }
     for (let i = 0; i < 10; i++) rels.add(`creeper-sprites/swell-${i * 2}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`lava-sprites/boil-${i * 4}.svg`);
-    const itemIds = [...src.matchAll(/["'](diamond-sword|diamond-pickaxe|torch|bread|steak|apple|golden-apple|potion-heal|diamond)["']/g)].map((m) => m[1]);
+    const itemIds = [...src.matchAll(/["'](diamond-sword|diamond-pickaxe|torch|bread|steak|apple|golden-apple|potion-heal|diamond|cooked-porkchop)["']/g)].map((m) => m[1]);
     for (const id of new Set(itemIds)) rels.add(`items/${id}.svg`);
     assert.ok(rels.size >= 40, `expected a full loadout, got ${rels.size}`);
     for (const rel of rels) {

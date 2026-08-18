@@ -5,7 +5,7 @@ Skottie can draw hotbar icons and world drops without a bitmap.
 
 This is the survival loadout, not a full item museum: swords, tools, food,
 a potion, and a few materials the HUD actually puts in slots. Two extra
-pages cover armor and the mob-drop / food icons the overworld demo uses.
+pages cover armor, mob drops / food, and materials the overworld demo uses.
 
 | File | What it is |
 | --- | --- |
@@ -21,6 +21,7 @@ Skottie scenes live at `public/projects/items/scene-N`.
 | 3 | Diamond sword drops and flies into slot 1 |
 | 4 | Armor (iron / diamond / gold / netherite) |
 | 5 | Mob drops and extra food |
+| 6 | Materials: chainmail, ingots, bucket, saddle |
 
 Block faces used as items (`dirt`, `cobblestone`, `oak-planks`, `torch`, …)
 live in the same folder. The mixed survival bar is `public/projects/hud/scene-7`
@@ -28,8 +29,8 @@ live in the same folder. The mixed survival bar is `public/projects/hud/scene-7`
 
 The tool-only filled hotbar is `public/projects/hud/scene-6`.
 
-Extra pages (armor, mob drops, more food) live at `scene-4` and `scene-5`.
-Leather helmet / leggings / boots are not in this Bedrock items pack.
+Extra pages live at `scene-4` (armor), `scene-5` (drops & food), and `scene-6`
+(materials). Leather helmet / leggings / boots are not in this Bedrock items pack.
 
 Regenerate after a catalog change:
 

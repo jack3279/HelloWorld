@@ -31,6 +31,9 @@ const ITEM_LABELS = {
   "cooked-porkchop": "熟猪排",
   "cooked-chicken": "熟鸡肉",
   carrot: "胡萝卜",
+  leather: "皮革",
+  emerald: "绿宝石",
+  saddle: "鞍",
 };
 
 const FOOD = {
@@ -70,9 +73,16 @@ const BLOCKS = {
   x: "blocks/coal-ore.svg",
   h: "blocks/ladder.svg",
   m: "blocks/mossy-cobblestone.svg",
+  j: "blocks/glass.svg",
+  I: "blocks/ice.svg",
+  u: "blocks/pumpkin.svg",
+  y: "blocks/hay.svg",
+  e: "blocks/melon.svg",
+  n: "blocks/farmland.svg",
+  q: "blocks/clay.svg",
 };
 
-const SOLID = new Set("gdscpLabBTFimxB".split(""));
+const SOLID = new Set("gdscpLabBTFimxIjuyenq".split(""));
 
 const canvas = document.getElementById("game");
 const overlay = document.getElementById("overlay");
@@ -124,6 +134,8 @@ const MANIFEST = [
   ...range(8, (i) => `enderman-sprites/walk-${i * 2}.svg`),
   ...range(8, (i) => `creeper-sprites/walk-${i * 2}.svg`),
   ...range(10, (i) => `creeper-sprites/swell-${i * 2}.svg`),
+  ...range(8, (i) => `pig-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `cow-sprites/walk-${i * 2}.svg`),
   ...Object.keys(ITEM_LABELS).map((id) => `items/${id}.svg`),
   "hud/heart.svg",
   "hud/heart-half.svg",
@@ -225,6 +237,18 @@ function buildWorld() {
   tree(tiles, 8, ground);
   tree(tiles, 48, ground);
 
+  fillRow(tiles, ground, 2, 4, "n");
+  setCell(tiles, 6, ground - 1, "u");
+  setCell(tiles, 9, ground - 1, "u");
+  setCell(tiles, 13, ground, "I");
+  setCell(tiles, 18, ground, "I");
+  setCell(tiles, 15, ground + 3, "q");
+  setCell(tiles, 47, ground - 1, "e");
+  setCell(tiles, 49, ground - 1, "u");
+  setCell(tiles, 60, ground - 1, "y");
+  setCell(tiles, 61, ground - 1, "y");
+  setCell(tiles, 60, ground - 2, "y");
+
   setCell(tiles, 11, ground - 1, "f");
   setCell(tiles, 12, ground - 1, "G");
   setCell(tiles, 20, ground - 1, "P");
@@ -241,6 +265,8 @@ function buildWorld() {
     setCell(tiles, 70, y, "p");
   }
   fillRow(tiles, ground - 4, 62, 70, "p");
+  setCell(tiles, 62, ground - 2, "j");
+  setCell(tiles, 70, ground - 2, "j");
   setCell(tiles, 63, ground - 1, "F");
   setCell(tiles, 64, ground - 1, "T");
   setCell(tiles, 65, ground - 1, "D");
@@ -370,6 +396,8 @@ function makeMob(kind, tx, ty) {
     spider: { hp: 6, speed: 130, dmg: 1, hw: 18, hh: 28, scale: 0.14, sheet: "spider-sprites", h: 400 },
     enderman: { hp: 12, speed: 100, dmg: 3, hw: 10, hh: 70, scale: 0.16, sheet: "enderman-sprites", h: 640 },
     creeper: { hp: 10, speed: 75, dmg: 8, hw: 12, hh: 44, scale: 0.18, sheet: "creeper-sprites", h: 480 },
+    pig: { hp: 6, speed: 55, dmg: 0, hw: 14, hh: 28, scale: 0.16, sheet: "pig-sprites", h: 480, passive: true },
+    cow: { hp: 8, speed: 50, dmg: 0, hw: 16, hh: 40, scale: 0.17, sheet: "cow-sprites", h: 480, passive: true },
   };
   return {
     kind,
@@ -387,6 +415,7 @@ function makeMob(kind, tx, ty) {
     inWater: false,
     inLava: false,
     fuse: 0,
+    hurtFlee: 0,
   };
 }
 
@@ -398,10 +427,14 @@ function resetGame() {
   world = buildWorld();
   player = makePlayer();
   mobs = [
+    makeMob("pig", 7, 10),
+    makeMob("pig", 10, 10),
     makeMob("zombie", 18, 10),
     makeMob("skeleton", 27, 10),
     makeMob("creeper", 33, 10),
     makeMob("spider", 43, 10),
+    makeMob("cow", 51, 10),
+    makeMob("cow", 54, 10),
     makeMob("enderman", 56, 10),
     makeMob("zombie", 50, 10),
   ];
@@ -475,6 +508,7 @@ function hurt(who, amount, dir) {
   who.hitT = 0.18;
   who.vx = dir * 260;
   who.vy = -160;
+  if (who.passive) who.hurtFlee = 1.6;
   if (who.health <= 0) {
     who.dead = true;
     const loot = {
@@ -483,6 +517,8 @@ function hurt(who, amount, dir) {
       spider: "string",
       creeper: "gunpowder",
       enderman: "ender-pearl",
+      pig: "cooked-porkchop",
+      cow: "steak",
     };
     drops.push(makeDrop(loot[who.kind] ?? "apple", who.x, who.y - 20));
     if (who.kind === "enderman" || Math.random() < 0.25) drops.push(makeDrop("diamond", who.x + 8, who.y - 24));
@@ -601,6 +637,21 @@ function updateMobs(dt) {
     if (mob.hitT > 0) mob.hitT -= dt;
     const dx = player.x - mob.x;
     const close = !player.dead && Math.abs(dx) < 420;
+    if (mob.passive) {
+      if (mob.hurtFlee > 0) {
+        mob.hurtFlee -= dt;
+        mob.face = Math.sign(mob.x - player.x) || mob.face;
+        mob.vx = mob.face * mob.speed * 1.6;
+      } else if (mob.grounded && Math.random() < 0.012) {
+        mob.face = Math.random() < 0.5 ? -1 : 1;
+        mob.vx = mob.face * mob.speed * (0.35 + Math.random() * 0.45);
+      } else if (Math.random() < 0.01) {
+        mob.vx = 0;
+      }
+      moveBody(mob, dt);
+      if (mob.inLava) hurt(mob, 4, -mob.face);
+      continue;
+    }
     if (mob.kind === "creeper" && close && Math.abs(dx) < 72 && Math.abs(mob.y - player.y) < 56) {
       mob.face = Math.sign(dx) || mob.face;
       mob.vx = 0;

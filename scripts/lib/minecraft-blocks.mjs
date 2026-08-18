@@ -26,7 +26,7 @@ export const FOLIAGE_BIRCH = "#80a755";
 export const FOLIAGE_SPRUCE = "#619961";
 export const FOLIAGE_LILY = "#2d8a3a";
 
-// Official Bedrock faces. Pages: terrain, wood/nether, interactives, nature.
+// Official Bedrock faces. Pages: terrain, wood/nether, interactives, nature, farm/mineral.
 export const BLOCKS = [
   { id: "grass", file: "grass_carried.png", label: "Grass", title: "草地" },
   { id: "dirt", file: "dirt.png", label: "Dirt", title: "土壤" },
@@ -92,6 +92,22 @@ export const BLOCKS = [
   { id: "torch", file: "torch_on.png", label: "Torch", title: "火把" },
   { id: "ladder", file: "ladder.png", label: "Ladder", title: "梯子" },
   { id: "lily-pad", file: "waterlily.png", label: "Lily pad", title: "睡莲", tint: FOLIAGE_LILY },
+  { id: "glass", file: "glass.png", label: "Glass", title: "玻璃" },
+  { id: "ice", file: "ice.png", label: "Ice", title: "冰" },
+  { id: "pumpkin", file: "pumpkin_side.png", label: "Pumpkin", title: "南瓜" },
+  { id: "hay", file: "hay_block_side.png", label: "Hay bale", title: "干草块" },
+  { id: "farmland", file: "farmland_wet.png", label: "Farmland", title: "耕地" },
+  { id: "melon", file: "melon_side.png", label: "Melon", title: "西瓜" },
+  { id: "clay", file: "clay.png", label: "Clay", title: "粘土块" },
+  { id: "blue-ice", file: "blue_ice.png", label: "Blue ice", title: "蓝冰" },
+  { id: "iron-block", file: "iron_block.png", label: "Iron block", title: "铁块" },
+  { id: "gold-block", file: "gold_block.png", label: "Gold block", title: "金块" },
+  { id: "diamond-block", file: "diamond_block.png", label: "Diamond block", title: "钻石块" },
+  { id: "emerald-block", file: "emerald_block.png", label: "Emerald block", title: "绿宝石块" },
+  { id: "white-wool", file: "wool_colored_white.png", label: "White wool", title: "白色羊毛" },
+  { id: "sandstone", file: "sandstone_normal.png", label: "Sandstone", title: "砂岩" },
+  { id: "stone-bricks", file: "stonebrick.png", label: "Stone bricks", title: "石砖" },
+  { id: "sponge", file: "sponge.png", label: "Sponge", title: "海绵" },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {

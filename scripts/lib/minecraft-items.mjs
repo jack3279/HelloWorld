@@ -80,6 +80,22 @@ export const MORE_ITEMS = [
   { id: "cookie", file: "cookie.png", label: "Cookie", title: "曲奇" },
   { id: "pumpkin-pie", file: "pumpkin_pie.png", label: "Pumpkin pie", title: "南瓜派" },
   { id: "melon-slice", file: "melon.png", label: "Melon slice", title: "西瓜片" },
+  { id: "chainmail-helmet", file: "chainmail_helmet.png", label: "Chainmail helmet", title: "锁链头盔" },
+  { id: "chainmail-chestplate", file: "chainmail_chestplate.png", label: "Chainmail chestplate", title: "锁链胸甲" },
+  { id: "chainmail-leggings", file: "chainmail_leggings.png", label: "Chainmail leggings", title: "锁链护腿" },
+  { id: "chainmail-boots", file: "chainmail_boots.png", label: "Chainmail boots", title: "锁链靴子" },
+  { id: "gold-ingot", file: "gold_ingot.png", label: "Gold ingot", title: "金锭" },
+  { id: "emerald", file: "emerald.png", label: "Emerald", title: "绿宝石" },
+  { id: "redstone-dust", file: "redstone_dust.png", label: "Redstone dust", title: "红石粉" },
+  { id: "saddle", file: "saddle.png", label: "Saddle", title: "鞍" },
+  { id: "potato", file: "potato.png", label: "Potato", title: "马铃薯" },
+  { id: "sugar", file: "sugar.png", label: "Sugar", title: "糖" },
+  { id: "snowball", file: "snowball.png", label: "Snowball", title: "雪球" },
+  { id: "egg", file: "egg.png", label: "Egg", title: "鸡蛋" },
+  { id: "leather", file: "leather.png", label: "Leather", title: "皮革" },
+  { id: "slimeball", file: "slimeball.png", label: "Slimeball", title: "粘液球" },
+  { id: "bucket", file: "bucket_empty.png", label: "Bucket", title: "桶" },
+  { id: "sugar-cane", file: "reeds.png", label: "Sugar cane", title: "甘蔗" },
 ];
 
 export const HOTBAR_LOADOUT = [

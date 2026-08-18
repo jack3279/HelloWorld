@@ -50,9 +50,9 @@ describe("hotbar item catalog", () => {
     }
   });
 
-  it("adds armor, mob drops, and extra food on two more pages", () => {
-    assert.equal(MORE_ITEMS.length, PAGE_SIZE * 2);
-    assert.equal(moreItemPages().length, 2);
+  it("adds armor, mob drops, extra food, and materials on three more pages", () => {
+    assert.equal(MORE_ITEMS.length, PAGE_SIZE * 3);
+    assert.equal(moreItemPages().length, 3);
     const ids = MORE_ITEMS.map((it) => it.id);
     for (const id of [
       "iron-chestplate",
@@ -63,6 +63,10 @@ describe("hotbar item catalog", () => {
       "gunpowder",
       "ender-pearl",
       "cooked-porkchop",
+      "chainmail-helmet",
+      "gold-ingot",
+      "emerald",
+      "bucket",
     ]) {
       assert.ok(ids.includes(id), id);
     }
@@ -277,13 +281,14 @@ describe("generated item assets", () => {
     }
   });
 
-  it("ships atlas, drop, pickup, armor, and drop-food Skottie scenes", async () => {
+  it("ships atlas, drop, pickup, armor, drop-food, and materials Skottie scenes", async () => {
     const pages = [
       ["scene-1", "Items — Hotbar", 1],
       ["scene-2", "Items — Drop", DROP.op],
       ["scene-3", "Items — Pickup", PICKUP.op],
       ["scene-4", "Items — Armor", 1],
       ["scene-5", "Items — Drops & food", 1],
+      ["scene-6", "Items — Materials", 1],
     ];
     for (const [slug, name, op] of pages) {
       const lottie = JSON.parse(

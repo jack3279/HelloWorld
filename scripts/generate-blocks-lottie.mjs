@@ -3,6 +3,7 @@
 //   public/projects/blocks/scene-2  wood, nether, stone
 //   public/projects/blocks/scene-3  interactives: table, furnace, chest, door, TNT
 //   public/projects/blocks/scene-4  nature: leaves, water, torch, ladder
+//   public/projects/blocks/scene-5  farm, ice, glass, mineral blocks
 //
 // Usage:
 //   node scripts/generate-blocks-lottie.mjs
@@ -21,7 +22,7 @@ import {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
-const TITLES = ["Blocks — Faces", "Blocks — More", "Blocks — Interact", "Blocks — Nature"];
+const TITLES = ["Blocks — Faces", "Blocks — More", "Blocks — Interact", "Blocks — Nature", "Blocks — Farm"];
 
 function atlasScene(name, shapes) {
   return {

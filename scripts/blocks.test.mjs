@@ -29,10 +29,10 @@ function rgbOf(hex) {
 }
 
 describe("minecraft block catalog", () => {
-  it("has four pages including terrain, interactives, and nature", () => {
+  it("has five pages including terrain, interactives, nature, and farm", () => {
     const ids = BLOCKS.map((b) => b.id);
-    assert.equal(BLOCKS.length, PAGE_SIZE * 4);
-    assert.equal(blockPages().length, 4);
+    assert.equal(BLOCKS.length, PAGE_SIZE * 5);
+    assert.equal(blockPages().length, 5);
     for (const id of [
       "grass",
       "dirt",
@@ -50,6 +50,10 @@ describe("minecraft block catalog", () => {
       "torch",
       "ladder",
       "cactus",
+      "glass",
+      "pumpkin",
+      "hay",
+      "diamond-block",
     ]) {
       assert.ok(ids.includes(id), id);
     }
@@ -280,6 +284,7 @@ describe("generated block assets", () => {
       ["scene-2", "Blocks — More"],
       ["scene-3", "Blocks — Interact"],
       ["scene-4", "Blocks — Nature"],
+      ["scene-5", "Blocks — Farm"],
     ];
     for (const [slug, name] of pages) {
       const lottie = JSON.parse(

@@ -4,6 +4,7 @@
 //   assets/blocks-sheet-2.svg
 //   assets/blocks-sheet-3.svg
 //   assets/blocks-sheet-4.svg
+//   assets/blocks-sheet-5.svg
 //
 // Usage:
 //   node scripts/generate-blocks-svg.mjs

@@ -8,7 +8,8 @@
 // features land exactly where the skin puts them.
 //
 // Consumers: generate-steve-*.mjs, generate-zombie-*.mjs, generate-skeleton.mjs,
-// generate-spider.mjs, generate-enderman.mjs, generate-creeper.mjs.
+// generate-spider.mjs, generate-enderman.mjs, generate-creeper.mjs,
+// generate-pig.mjs, generate-cow.mjs.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -26,6 +27,10 @@ export const ENDERMAN_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/enderman/enderman.tga";
 export const CREEPER_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/creeper/creeper.png";
+export const PIG_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/pig/pig.png";
+export const COW_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/cow/cow.png";
 const SKIN_URL = STEVE_SKIN_URL;
 const CACHE = resolve(__dirname, "../../node_modules/.cache/steve-skin.png");
 const ZOMBIE_CACHE = resolve(__dirname, "../../node_modules/.cache/zombie-skin.png");
@@ -33,6 +38,8 @@ const SKELETON_CACHE = resolve(__dirname, "../../node_modules/.cache/skeleton-sk
 const SPIDER_CACHE = resolve(__dirname, "../../node_modules/.cache/spider-skin.tga");
 const ENDERMAN_CACHE = resolve(__dirname, "../../node_modules/.cache/enderman-skin.tga");
 const CREEPER_CACHE = resolve(__dirname, "../../node_modules/.cache/creeper-skin.png");
+const PIG_CACHE = resolve(__dirname, "../../node_modules/.cache/pig-skin.png");
+const COW_CACHE = resolve(__dirname, "../../node_modules/.cache/cow-skin.png");
 
 // ---------------------------------------------------------------- png decoding
 
@@ -267,6 +274,14 @@ export async function loadEndermanSkin(explicitPath) {
 
 export async function loadCreeperSkin(explicitPath) {
   return loadSkin(explicitPath, { url: CREEPER_SKIN_URL, cache: CREEPER_CACHE, normalize: false });
+}
+
+export async function loadPigSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: PIG_SKIN_URL, cache: PIG_CACHE, normalize: false });
+}
+
+export async function loadCowSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: COW_SKIN_URL, cache: COW_CACHE, normalize: false });
 }
 
 // ------------------------------------------------------------------- 3d helpers

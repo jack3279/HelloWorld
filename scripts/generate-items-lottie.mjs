@@ -4,6 +4,7 @@
 //   public/projects/items/scene-3  diamond sword drops, then flies into the hotbar
 //   public/projects/items/scene-4  armor
 //   public/projects/items/scene-5  mob drops and extra food
+//   public/projects/items/scene-6  materials: chainmail, ingots, bucket
 //
 // Transparent background — icons and overlays, not a full-frame card.
 //
@@ -187,7 +188,7 @@ await writeScene(resolve(ROOT, "public/projects/items/scene-3"), {
   meta: { loop: true, g: GEN },
 });
 
-const extraTitles = ["Items — Armor", "Items — Drops & food"];
+const extraTitles = ["Items — Armor", "Items — Drops & food", "Items — Materials"];
 for (const [index, page] of moreItemPages().entries()) {
   const atlas = layoutAtlas(page);
   const shapes = [];
