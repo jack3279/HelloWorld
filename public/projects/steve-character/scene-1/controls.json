@@ -3,6 +3,7 @@
     { "sid": "skinColor", "label": "Skin" },
     { "sid": "skinShadow", "label": "Skin shadow" },
     { "sid": "hairColor", "label": "Hair" },
+    { "sid": "beardColor", "label": "U-shaped beard" },
     { "sid": "shirtColor", "label": "Shirt" },
     { "sid": "shirtDark", "label": "Shirt shade" },
     { "sid": "vneckColor", "label": "Neck / V-opening" },

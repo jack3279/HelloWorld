@@ -8,6 +8,7 @@
     "dev": "vite",
     "game": "vite --open /game/",
     "build": "tsc -b && vite build",
+    "build:steve": "node scripts/build-steve-lottie.mjs",
     "check:text-slots": "node --experimental-strip-types --test scripts/text-slot-unicode.test.mjs",
     "check:combat": "node --test scripts/combat.test.mjs",
     "check:steve-sprites": "node --test scripts/steve-platformer.test.mjs",
