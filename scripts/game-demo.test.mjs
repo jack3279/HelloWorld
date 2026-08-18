@@ -53,7 +53,9 @@ describe("html game demo", () => {
     const src = await readFile(resolve(ROOT, "public/game/game.js"), "utf8");
     assert.match(src, /FACE_PAD = 56/);
     assert.match(src, /function drawTile/);
-    assert.match(src, /TILE \+ 1/);
+    assert.match(src, /function loadFace/);
+    assert.match(src, /viewBox="\$\{FACE_PAD\}/);
+    assert.match(src, /TILE \+ 2/);
     assert.match(src, /drawTile\(lavaFrame/);
     assert.match(src, /drawTile\(BLOCKS\[t\]/);
     assert.doesNotMatch(src, /drawImage\(lavaFrame/);

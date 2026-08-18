@@ -128,13 +128,43 @@ export function listGameAssets() {
   return MANIFEST.map(asset);
 }
 
+function isFaceAsset(rel) {
+  return rel.startsWith("blocks/") || rel.startsWith("lava-sprites/");
+}
+
 function loadImage(src) {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`failed to load ${src}`));
-    img.src = src;
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error(`failed to load ${src}`));
+    image.src = src;
   });
+}
+
+function bakeFace(image) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 16;
+  canvas.height = 16;
+  const face = canvas.getContext("2d");
+  face.imageSmoothingEnabled = false;
+  face.drawImage(image, 0, 0, 16, 16);
+  return canvas;
+}
+
+async function loadFace(src) {
+  const svg = await fetch(src).then((res) => {
+    if (!res.ok) throw new Error(`failed to load ${src}`);
+    return res.text();
+  });
+  const inner = FACE_SIZE - FACE_PAD * 2;
+  const cropped = svg.replace(/viewBox="0 0 512 512"/, `viewBox="${FACE_PAD} ${FACE_PAD} ${inner} ${inner}"`);
+  const url = URL.createObjectURL(new Blob([cropped], { type: "image/svg+xml" }));
+  try {
+    const image = await loadImage(url);
+    return bakeFace(image);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 async function loadAll() {
@@ -142,8 +172,8 @@ async function loadAll() {
   await Promise.all(
     MANIFEST.map(async (rel) => {
       const src = asset(rel);
-      const img = await loadImage(src);
-      images.set(rel, img);
+      const pic = isFaceAsset(rel) ? await loadFace(src) : await loadImage(src);
+      images.set(rel, pic);
       done += 1;
       loadStatus.textContent = `正在载入素材… ${done}/${MANIFEST.length}`;
     }),
@@ -619,14 +649,11 @@ function drawImage(rel, x, y, w, h) {
 function drawTile(rel, dx, dy) {
   const pic = img(rel);
   if (!pic) return;
-  const src = pic.naturalWidth || FACE_SIZE;
-  const pad = src * (FACE_PAD / FACE_SIZE);
-  const inner = src - pad * 2;
   const x = Math.floor(dx);
   const y = Math.floor(dy);
   const prev = ctx.imageSmoothingEnabled;
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(pic, pad, pad, inner, inner, x, y, TILE + 1, TILE + 1);
+  ctx.drawImage(pic, x, y, TILE + 2, TILE + 2);
   ctx.imageSmoothingEnabled = prev;
 }
 
@@ -661,18 +688,20 @@ function drawSky() {
 }
 
 function drawWorld() {
-  const x0 = Math.max(0, Math.floor(cam.x / TILE) - 1);
-  const x1 = Math.min(world.w - 1, Math.ceil((cam.x + viewW) / TILE) + 1);
-  const y0 = Math.max(0, Math.floor(cam.y / TILE) - 1);
-  const y1 = Math.min(world.h - 1, Math.ceil((cam.y + viewH) / TILE) + 1);
+  const camX = Math.round(cam.x);
+  const camY = Math.round(cam.y);
+  const x0 = Math.max(0, Math.floor(camX / TILE) - 1);
+  const x1 = Math.min(world.w - 1, Math.ceil((camX + viewW) / TILE) + 1);
+  const y0 = Math.max(0, Math.floor(camY / TILE) - 1);
+  const y1 = Math.min(world.h - 1, Math.ceil((camY + viewH) / TILE) + 1);
   const lavaFrame = `lava-sprites/boil-${Math.floor(time * 8) % 8 * 4}.svg`;
 
   for (let y = y0; y <= y1; y++) {
     for (let x = x0; x <= x1; x++) {
       const t = world.tiles[y][x];
       if (t === ".") continue;
-      const dx = x * TILE - cam.x;
-      const dy = y * TILE - cam.y;
+      const dx = x * TILE - camX;
+      const dy = y * TILE - camY;
       if (t === "v") drawTile(lavaFrame, dx, dy);
       else if (BLOCKS[t]) drawTile(BLOCKS[t], dx, dy);
     }
