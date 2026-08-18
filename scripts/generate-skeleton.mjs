@@ -14,6 +14,7 @@ import {
   TOLERANCE,
   WALK_FRAMES,
   catalog,
+  aimFrame,
   drawFrame,
   idleA,
   sampleDeath,
@@ -22,7 +23,7 @@ import {
   walkFrame,
 } from "./lib/skeleton-poses.mjs";
 import { skeletonDrawExtras } from "./lib/held-item.mjs";
-import { ROOT, bake, flipbook, writeHeroSvg, writeSampledClips, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
+import { ROOT, bake, flipbook, writeFrames, writeHeroSvg, writeSampledClips, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const model = SKELETON_MODEL;
@@ -75,6 +76,22 @@ await writeSampledClips({
   ],
 });
 console.log(`Wrote 8 idle, ${HURT_FRAMES} hurt, and ${DEATH_FRAMES} death frames`);
+
+const drawSprites = [];
+for (let i = 0; i < DRAW_FRAMES; i++) {
+  const pose = aimFrame(i / Math.max(1, DRAW_FRAMES - 1));
+  const extras = await skeletonDrawExtras(pose.bowPull ?? 0);
+  const baked = bake({ skin, pose, canvas: SPRITE, tolerance: TOLERANCE, model, extras });
+  drawSprites.push({ id: `draw-${i}`, label: `Draw ${i + 1}/${DRAW_FRAMES}`, ...baked });
+}
+await writeFrames({
+  generator: "scripts/generate-skeleton.mjs",
+  groupId: "skeleton",
+  sprite: SPRITE,
+  frames: drawSprites,
+  outDir: resolve(__dirname, "../assets/skeleton-sprites"),
+});
+console.log(`Wrote ${DRAW_FRAMES} draw frames`);
 
 const idle = Array.from({ length: 8 }, (_, i) => {
   const baked = bake({ skin, pose: sampleIdle(i / 8), canvas: SPRITE, tolerance: TOLERANCE, model });

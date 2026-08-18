@@ -1,5 +1,5 @@
-// Creeper: side-view SVG, walk + swell sprites, and three Skottie loops
-// (idle, walk, fuse swell).
+// Creeper: side-view SVG, walk + swell + hurt + death sprites, and Skottie
+// loops (idle, walk, fuse swell, hurt, death).
 //
 // Usage: node scripts/generate-creeper.mjs [--skin=<png>]
 import { writeFile } from "node:fs/promises";
@@ -8,12 +8,16 @@ import { fileURLToPath } from "node:url";
 import { loadCreeperSkin, parseArgs } from "./lib/steve-model.mjs";
 import { CREEPER_MODEL } from "./lib/creeper-model.mjs";
 import {
+  DEATH_FRAMES,
+  HURT_FRAMES,
   SPRITE,
   SWELL_FRAMES,
   TOLERANCE,
   WALK_FRAMES,
   catalog,
   idleA,
+  sampleDeath,
+  sampleHurt,
   sampleIdle,
   swellCanvas,
   swellFrame,
@@ -65,9 +69,13 @@ await writeSampledClips({
   skin,
   tolerance: TOLERANCE,
   model,
-  sequences: [{ prefix: "idle", label: "Idle", count: 8, sample: sampleIdle, loop: true }],
+  sequences: [
+    { prefix: "idle", label: "Idle", count: 8, sample: sampleIdle, loop: true },
+    { prefix: "hurt", label: "Hurt", count: HURT_FRAMES, sample: sampleHurt },
+    { prefix: "death", label: "Death", count: DEATH_FRAMES, sample: sampleDeath },
+  ],
 });
-console.log("Wrote 8 idle frames");
+console.log(`Wrote 8 idle, ${HURT_FRAMES} hurt, and ${DEATH_FRAMES} death frames`);
 
 const swellDir = resolve(__dirname, "../assets/creeper-sprites");
 for (let i = 0; i < SWELL_FRAMES; i++) {
@@ -138,6 +146,54 @@ await writeScene(
     fps: 12,
     hold: 1,
     loop: true,
+    generator: "scripts/generate-creeper.mjs",
+  }),
+);
+
+const hurt = Array.from({ length: HURT_FRAMES }, (_, i) => {
+  const baked = bake({
+    skin,
+    pose: sampleHurt(i / (HURT_FRAMES - 1)),
+    canvas: SPRITE,
+    tolerance: TOLERANCE,
+    model,
+  });
+  return { id: `hurt-${i}`, shapes: baked.shapes };
+});
+await writeScene(
+  resolve(ROOT, "public/projects/creeper/scene-4"),
+  flipbook({
+    name: "Creeper — Hurt",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: hurt,
+    fps: 12,
+    hold: 1,
+    loop: true,
+    generator: "scripts/generate-creeper.mjs",
+  }),
+);
+
+const death = Array.from({ length: DEATH_FRAMES }, (_, i) => {
+  const baked = bake({
+    skin,
+    pose: sampleDeath(i / (DEATH_FRAMES - 1)),
+    canvas: SPRITE,
+    tolerance: TOLERANCE,
+    model,
+  });
+  return { id: `death-${i}`, shapes: baked.shapes };
+});
+await writeScene(
+  resolve(ROOT, "public/projects/creeper/scene-5"),
+  flipbook({
+    name: "Creeper — Death",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: death,
+    fps: 10,
+    hold: 1,
+    loop: false,
     generator: "scripts/generate-creeper.mjs",
   }),
 );

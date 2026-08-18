@@ -42,12 +42,14 @@ describe("html game demo", () => {
     for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/idle-${i}.svg`);
     }
-    for (const mob of ["zombie", "skeleton", "spider", "enderman", "pig", "cow"]) {
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/hurt-${i}.svg`);
     }
-    for (const mob of ["zombie", "skeleton", "spider", "enderman"]) {
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper"]) {
       for (let i = 0; i < 12; i++) rels.add(`${mob}-sprites/death-${i}.svg`);
     }
+    for (let i = 0; i < 12; i++) rels.add(`skeleton-sprites/draw-${i}.svg`);
+    rels.add("items/arrow.svg");
     for (const mob of ["pig", "cow"]) {
       for (let i = 0; i < 8; i++) {
         rels.add(`${mob}-sprites/rest-${i}.svg`);

@@ -5,7 +5,7 @@ import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { loadCreeperSkin } from "./lib/steve-model.mjs";
 import { CREEPER_MODEL } from "./lib/creeper-model.mjs";
-import { FACE, SWELL_FRAMES, WALK_FRAMES, idleA, sampleIdle, swellFrame, walkFrame } from "./lib/creeper-poses.mjs";
+import { DEATH_FRAMES, FACE, HURT_FRAMES, SWELL_FRAMES, WALK_FRAMES, idleA, sampleDeath, sampleHurt, sampleIdle, swellFrame, walkFrame } from "./lib/creeper-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -78,6 +78,16 @@ describe("creeper pose", () => {
     assert.equal(swellFrame(0).swell, swellFrame(1).swell);
     assert.ok(swellFrame((SWELL_FRAMES - 1) / SWELL_FRAMES).swell < 0.35);
   });
+
+  it("flashes on hurt and tips over on a sword death", () => {
+    const flashes = Array.from({ length: HURT_FRAMES }, (_, i) => sampleHurt(i / 7).flash);
+    assert.ok(flashes.some((f) => f > 0.5));
+    assert.ok(flashes.some((f) => f === 0));
+    const dead = sampleDeath(1);
+    assert.ok(dead.root.y < -1.5);
+    assert.ok(dead.parts.body.pitch > 50);
+    assert.ok(dead.roll > 10);
+  });
 });
 
 describe("generated creeper assets", () => {
@@ -101,6 +111,8 @@ describe("generated creeper assets", () => {
       ["scene-1", 8],
       ["scene-2", WALK_FRAMES],
       ["scene-3", SWELL_FRAMES],
+      ["scene-4", HURT_FRAMES],
+      ["scene-5", DEATH_FRAMES],
     ];
     for (const [scene, minLayers] of scenes) {
       const lottie = JSON.parse(
@@ -132,6 +144,14 @@ describe("generated creeper assets", () => {
     }
     for (let i = 0; i < 8; i++) {
       const svg = await readFile(resolve(ROOT, "assets/creeper-sprites", `idle-${i}.svg`), "utf8");
+      assert.match(svg, /<svg /);
+    }
+    for (let i = 0; i < HURT_FRAMES; i++) {
+      const svg = await readFile(resolve(ROOT, "assets/creeper-sprites", `hurt-${i}.svg`), "utf8");
+      assert.match(svg, /<svg /);
+    }
+    for (let i = 0; i < DEATH_FRAMES; i++) {
+      const svg = await readFile(resolve(ROOT, "assets/creeper-sprites", `death-${i}.svg`), "utf8");
       assert.match(svg, /<svg /);
     }
   });

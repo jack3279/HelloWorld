@@ -25,9 +25,18 @@ export const TOLERANCE = { default: 28, head: 18 };
 
 export const WALK_FRAMES = 16;
 export const SWELL_FRAMES = 20;
+export const HURT_FRAMES = 8;
+export const DEATH_FRAMES = 12;
 
 function pose(parts, extra = {}) {
-  return { view: SIDE_VIEW, root: extra.root ?? {}, parts, swell: extra.swell ?? 0, flash: extra.flash ?? 0 };
+  return {
+    view: SIDE_VIEW,
+    root: extra.root ?? {},
+    parts,
+    swell: extra.swell ?? 0,
+    flash: extra.flash ?? 0,
+    roll: extra.roll ?? 0,
+  };
 }
 
 function limb(base, extra = {}) {
@@ -88,6 +97,7 @@ export function lerpPose(a, b, t) {
     parts,
     swell: lerpNum(a.swell ?? 0, b.swell ?? 0, t),
     flash: lerpNum(a.flash ?? 0, b.flash ?? 0, t),
+    roll: lerpNum(a.roll ?? 0, b.roll ?? 0, t),
   };
 }
 
@@ -133,6 +143,63 @@ export function swellFrame(phase) {
     flash: Math.min(0.92, charge * 0.78 + flicker),
     root: { y: charge * 0.4 },
   };
+}
+
+export function hurtPose() {
+  return pose(
+    {
+      body: { pitch: 14, roll: -8 },
+      head: { ...FACE, pitch: 12, roll: -10 },
+      "leg-front-right": limb(NEAR, { pitch: 18 }),
+      "leg-front-left": limb(FAR, { pitch: 12 }),
+      "leg-hind-right": limb(NEAR, { pitch: -16 }),
+      "leg-hind-left": limb(FAR, { pitch: -10 }),
+    },
+    { root: { x: -1.3, y: 0.35 }, flash: 0.86 },
+  );
+}
+
+export function sampleHurt(t) {
+  const x = Math.min(1, Math.max(0, t));
+  const recoiled = lerpPose(idleA(), hurtPose(), x < 0.35 ? easeInOut(x / 0.35) : 1);
+  const recovering = x < 0.35 ? recoiled : lerpPose(hurtPose(), idleA(), easeInOut((x - 0.35) / 0.65));
+  const i = Math.round(x * (HURT_FRAMES - 1));
+  const flash = i % 2 === 0 ? 0.88 * (1 - x * 0.55) : 0;
+  return { ...recovering, flash };
+}
+
+// Sword kill: tip over onto the side. Fuse explosion stays on swell, not this.
+export function deathPose() {
+  return pose(
+    {
+      body: { pitch: 78, roll: 10 },
+      head: { ...FACE, pitch: 24, roll: 8 },
+      "leg-front-right": limb(NEAR, { pitch: 30 }),
+      "leg-front-left": limb(FAR, { pitch: 22 }),
+      "leg-hind-right": limb(NEAR, { pitch: -26 }),
+      "leg-hind-left": limb(FAR, { pitch: -18 }),
+    },
+    { root: { x: -2.0, y: -2.6 }, roll: 28 },
+  );
+}
+
+export function sampleDeath(t) {
+  const x = Math.min(1, Math.max(0, t));
+  const keys = [
+    { t: 0, pose: { ...idleA(), flash: 0.9 } },
+    { t: 0.14, pose: { ...hurtPose(), flash: 0.65 } },
+    { t: 0.4, pose: lerpPose(hurtPose(), deathPose(), 0.45) },
+    { t: 0.68, pose: lerpPose(hurtPose(), deathPose(), 0.82) },
+    { t: 0.86, pose: deathPose() },
+    { t: 1, pose: deathPose() },
+  ];
+  let i = 0;
+  while (i < keys.length - 2 && x > keys[i + 1].t) i += 1;
+  const a = keys[i];
+  const b = keys[i + 1];
+  const u = (x - a.t) / (b.t - a.t || 1);
+  const flash = x < 0.24 && Math.round(x * 10) % 2 === 0 ? 0.8 * (1 - x / 0.24) : 0;
+  return { ...lerpPose(a.pose, b.pose, easeInOut(u)), flash };
 }
 
 export function catalog() {

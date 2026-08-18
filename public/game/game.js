@@ -40,6 +40,7 @@ const ITEM_LABELS = {
   "iron-chestplate": "铁胸甲",
   "rotten-flesh": "腐肉",
   bone: "骨头",
+  arrow: "箭",
   string: "线",
   gunpowder: "火药",
   "spider-eye": "蜘蛛眼",
@@ -132,6 +133,7 @@ let world;
 let player;
 let mobs = [];
 let drops = [];
+let arrows = [];
 let particles = [];
 let cam = { x: 0, y: 0 };
 let time = 0;
@@ -167,6 +169,7 @@ const MANIFEST = [
   ...range(8, (i) => `skeleton-sprites/walk-${i * 2}.svg`),
   ...range(8, (i) => `skeleton-sprites/idle-${i}.svg`),
   ...range(8, (i) => `skeleton-sprites/hurt-${i}.svg`),
+  ...range(12, (i) => `skeleton-sprites/draw-${i}.svg`),
   ...range(12, (i) => `skeleton-sprites/death-${i}.svg`),
   ...range(8, (i) => `spider-sprites/walk-${i * 2}.svg`),
   ...range(8, (i) => `spider-sprites/idle-${i}.svg`),
@@ -178,6 +181,8 @@ const MANIFEST = [
   ...range(12, (i) => `enderman-sprites/death-${i}.svg`),
   ...range(8, (i) => `creeper-sprites/walk-${i * 2}.svg`),
   ...range(8, (i) => `creeper-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `creeper-sprites/hurt-${i}.svg`),
+  ...range(12, (i) => `creeper-sprites/death-${i}.svg`),
   ...range(10, (i) => `creeper-sprites/swell-${i * 2}.svg`),
   ...range(8, (i) => `pig-sprites/walk-${i * 2}.svg`),
   ...range(8, (i) => `pig-sprites/idle-${i}.svg`),
@@ -481,6 +486,9 @@ function makeMob(kind, tx, ty) {
     inWater: false,
     inLava: false,
     fuse: 0,
+    exploded: false,
+    drawT: 0,
+    shootCd: 0,
     hurtFlee: 0,
     stillT: Math.random() * 3,
     followT: 0,
@@ -516,6 +524,7 @@ function resetGame() {
     makeDrop("iron-chestplate", TILE * 67, TILE * 9),
   ];
   particles = [];
+  arrows = [];
   cam = { x: 0, y: 0 };
   time = 0;
   clock = 8;
@@ -737,6 +746,7 @@ function hurt(who, amount, dir) {
       cow: "steak",
     };
     drops.push(makeDrop(loot[who.kind] ?? "apple", who.x, who.y - 20));
+    if (who.kind === "skeleton") drops.push(makeDrop("arrow", who.x - 8, who.y - 18));
     if (who.kind === "enderman" || Math.random() < 0.25) drops.push(makeDrop("diamond", who.x + 8, who.y - 24));
   }
 }
@@ -931,10 +941,13 @@ function updateMobs(dt) {
         hurt(player, 10, Math.sign(player.x - mob.x) || -1);
         mob.dead = true;
         mob.deathT = 0;
+        mob.exploded = true;
         drops.push(makeDrop("gunpowder", mob.x, mob.y - 20));
         say("苦力怕爆炸了！");
         continue;
       }
+    } else if (mob.kind === "skeleton") {
+      steerSkeleton(mob, dt, dx, close);
     } else {
       if (mob.kind === "creeper") mob.fuse = Math.max(0, mob.fuse - dt * 1.8);
       if (close) {
@@ -947,10 +960,74 @@ function updateMobs(dt) {
     }
     moveBody(mob, dt);
     if (mob.inLava) hurt(mob, 4, -mob.face);
-    if (mob.kind !== "creeper" && !player.dead && Math.abs(mob.x - player.x) < mob.hw + player.hw + 4 && Math.abs(mob.y - player.y) < mob.hh) {
+    if (mob.kind !== "creeper" && mob.kind !== "skeleton" && !player.dead && Math.abs(mob.x - player.x) < mob.hw + player.hw + 4 && Math.abs(mob.y - player.y) < mob.hh) {
       hurt(player, mob.dmg, Math.sign(player.x - mob.x) || -1);
     }
   }
+}
+
+function steerSkeleton(mob, dt, dx, close) {
+  if (mob.shootCd > 0) mob.shootCd -= dt;
+  if (mob.hitT > 0) mob.drawT = 0;
+  const linedUp = close && Math.abs(mob.y - player.y) < 80;
+  if (!linedUp) {
+    mob.drawT = 0;
+    mob.vx *= 0.8;
+    return;
+  }
+  mob.face = Math.sign(dx) || mob.face;
+  const dist = Math.abs(dx);
+  if (dist < 72) {
+    mob.vx = -mob.face * mob.speed;
+    mob.drawT = 0;
+    return;
+  }
+  if (dist < 300 && mob.shootCd <= 0 && mob.hitT <= 0) {
+    mob.vx = 0;
+    mob.drawT = Math.min(1, mob.drawT + dt / 1.05);
+    if (mob.drawT >= 1) {
+      fireArrow(mob);
+      mob.drawT = 0;
+      mob.shootCd = 1.15;
+    }
+    return;
+  }
+  mob.vx = mob.face * mob.speed * 0.75;
+  mob.drawT = 0;
+}
+
+function fireArrow(from) {
+  const tx = player.x - from.x;
+  const ty = player.y - 24 - (from.y - 28);
+  const dist = Math.hypot(tx, ty) || 1;
+  const speed = 390;
+  arrows.push({
+    x: from.x + from.face * 20,
+    y: from.y - 28,
+    vx: (tx / dist) * speed,
+    vy: (ty / dist) * speed - 36,
+    life: 2.4,
+    gone: false,
+  });
+}
+
+function updateArrows(dt) {
+  for (const shot of arrows) {
+    if (shot.gone) continue;
+    shot.life -= dt;
+    shot.vy += 260 * dt;
+    shot.x += shot.vx * dt;
+    shot.y += shot.vy * dt;
+    if (shot.life <= 0 || solidAt(shot.x, shot.y)) {
+      shot.gone = true;
+      continue;
+    }
+    if (!player.dead && Math.abs(shot.x - player.x) < 14 && Math.abs(shot.y - (player.y - 22)) < 28) {
+      hurt(player, 2, Math.sign(shot.vx) || -1);
+      shot.gone = true;
+    }
+  }
+  arrows = arrows.filter((shot) => !shot.gone);
 }
 
 function updateDrops(dt) {
@@ -1052,13 +1129,13 @@ function deathFrames(kind) {
 
 function mobGone(mob) {
   const t = mob.deathT ?? 0;
-  if (mob.kind === "creeper") return t > 0.28;
+  if (mob.kind === "creeper" && mob.exploded) return t > 0.28;
   return t > deathFrames(mob.kind) / 10 + 0.08;
 }
 
 function mobSprite(mob) {
   if (mob.dead) {
-    if (mob.kind === "creeper") return "creeper-sprites/swell-18.svg";
+    if (mob.kind === "creeper" && mob.exploded) return "creeper-sprites/swell-18.svg";
     const n = deathFrames(mob.kind);
     return `${mob.sheet}/death-${Math.min(n - 1, Math.floor((mob.deathT ?? 0) * 10))}.svg`;
   }
@@ -1066,7 +1143,10 @@ function mobSprite(mob) {
     const frame = Math.min(18, Math.floor((mob.fuse / 1.35) * 10) * 2);
     return `creeper-sprites/swell-${frame}.svg`;
   }
-  if (mob.hitT > 0 && mob.kind !== "creeper") {
+  if (mob.kind === "skeleton" && mob.drawT > 0) {
+    return `skeleton-sprites/draw-${Math.min(11, Math.floor(mob.drawT * 12))}.svg`;
+  }
+  if (mob.hitT > 0) {
     const frame = Math.min(7, Math.floor((1 - mob.hitT / (8 / 12)) * 8));
     return `${mob.sheet}/hurt-${frame}.svg`;
   }
@@ -1122,6 +1202,18 @@ function drawDrops() {
     if (drop.gone) continue;
     const bob = Math.sin(drop.bob) * 4;
     drawImage(`items/${drop.id}.svg`, drop.x - 14 - cam.x, drop.y - 14 + bob - cam.y, 28, 28);
+  }
+}
+
+function drawArrows() {
+  for (const shot of arrows) {
+    const pic = img("items/arrow.svg");
+    if (!pic) continue;
+    ctx.save();
+    ctx.translate(shot.x - cam.x, shot.y - cam.y);
+    ctx.rotate(Math.atan2(shot.vy, shot.vx));
+    ctx.drawImage(pic, -16, -5, 32, 10);
+    ctx.restore();
   }
 }
 
@@ -1257,6 +1349,7 @@ function frame(ts) {
     updateClock(dt);
     updatePlayer(dt);
     updateMobs(dt);
+    updateArrows(dt);
     updateDrops(dt);
     updateCrops(dt);
     updateParticles(dt);
@@ -1266,6 +1359,7 @@ function frame(ts) {
   if (world) {
     drawWorld();
     drawDrops();
+    drawArrows();
     drawMobs();
     drawParticles();
     drawPlayer();

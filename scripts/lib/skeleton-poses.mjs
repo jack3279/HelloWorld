@@ -116,12 +116,20 @@ export function walkFrame(phase) {
 export function drawFrame(phase) {
   const t = ((phase % 1) + 1) % 1;
   const raise = t < 0.28 ? easeInOut(t / 0.28) : t > 0.82 ? 1 - easeInOut((t - 0.82) / 0.18) : 1;
-  const aim = Math.sin(t * Math.PI * 4) * 3 * raise;
-  const pull = raise;
+  return aimPose(raise, Math.sin(t * Math.PI * 4) * 3 * raise);
+}
+
+// One-shot draw for the game: t 0..1 only raises, so the last frame holds a full pull.
+export function aimFrame(t) {
+  const raise = easeInOut(Math.min(1, Math.max(0, t)));
+  return aimPose(raise, Math.sin(raise * Math.PI) * 2);
+}
+
+function aimPose(raise, aim) {
   const base = idleA();
   return {
     ...base,
-    bowPull: pull,
+    bowPull: raise,
     parts: {
       ...base.parts,
       torso: { pitch: 4 * raise, roll: 0 },

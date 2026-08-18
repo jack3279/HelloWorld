@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { loadSkeletonSkin } from "./lib/steve-model.mjs";
-import { FACE, WALK_FRAMES, drawFrame, idleA, sampleDeath, sampleHurt, sampleIdle, walkFrame } from "./lib/skeleton-poses.mjs";
+import { DRAW_FRAMES, FACE, WALK_FRAMES, aimFrame, drawFrame, idleA, sampleDeath, sampleHurt, sampleIdle, walkFrame } from "./lib/skeleton-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -51,6 +51,9 @@ describe("skeleton pose", () => {
     assert.equal(drawn.parts.head.yaw, -45);
     assert.ok(drawn.bowPull > 0.8);
     assert.ok(drawn.parts["held-bow"]);
+    const aimed = aimFrame(1);
+    assert.ok(aimed.bowPull > 0.95);
+    assert.ok(aimed.parts["arm-left"].pitch < idle.parts["arm-left"].pitch - 40);
   });
 
   it("flashes on hurt and collapses on death", () => {
@@ -90,5 +93,13 @@ describe("generated skeleton assets", () => {
     }
     const draw = await readFile(resolve(ROOT, "public/projects/skeleton/scene-3/lottie.json"), "utf8");
     assert.match(draw, /held-bow/);
+    for (let i = 0; i < DRAW_FRAMES; i++) {
+      const svg = await readFile(resolve(ROOT, "assets/skeleton-sprites", `draw-${i}.svg`), "utf8");
+      assert.match(svg, /<svg /);
+      assert.doesNotMatch(svg, /NaN|undefined/);
+    }
+    const nocked = await readFile(resolve(ROOT, "assets/skeleton-sprites/draw-11.svg"), "utf8");
+    assert.match(nocked, /held-bow/);
+    assert.match(nocked, /held-arrow/);
   });
 });
