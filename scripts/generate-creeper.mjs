@@ -19,7 +19,7 @@ import {
   swellFrame,
   walkFrame,
 } from "./lib/creeper-poses.mjs";
-import { ROOT, bake, flipbook, frameSvg, writeHeroSvg, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
+import { ROOT, bake, flipbook, frameSvg, writeHeroSvg, writeSampledClips, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const model = CREEPER_MODEL;
@@ -56,6 +56,18 @@ const sprites = await writeSpriteKit({
   stillLabel: "Creeper, walking, facing right",
 });
 console.log(`Wrote ${sprites.length} walk frames plus sheet.svg`);
+
+await writeSampledClips({
+  generator: "scripts/generate-creeper.mjs",
+  groupId: "creeper",
+  sprite: SPRITE,
+  outDir: resolve(__dirname, "../assets/creeper-sprites"),
+  skin,
+  tolerance: TOLERANCE,
+  model,
+  sequences: [{ prefix: "idle", label: "Idle", count: 8, sample: sampleIdle, loop: true }],
+});
+console.log("Wrote 8 idle frames");
 
 const swellDir = resolve(__dirname, "../assets/creeper-sprites");
 for (let i = 0; i < SWELL_FRAMES; i++) {

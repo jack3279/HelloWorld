@@ -63,6 +63,18 @@ describe("steve pose catalog", () => {
     assert.ok(dead.root.y < -2);
     assert.ok(dead.roll > 10);
   });
+
+  it("lies down to sleep and lifts the arm to eat", async () => {
+    const { eatBite, sampleEat, sampleSleep, sleepPose } = await import("./lib/steve-poses.mjs");
+    const lying = sleepPose();
+    assert.ok(lying.root.y < -3);
+    assert.ok(lying.roll > 8);
+    const midSleep = sampleSleep(0.6);
+    assert.ok(midSleep.root.y < -3);
+    const idle = catalog().find((f) => f.id === "idle-a").pose;
+    assert.ok(eatBite().parts["arm-right"].pitch < idle.parts["arm-right"].pitch - 80);
+    assert.ok(sampleEat(0.4).parts["arm-right"].pitch < 0);
+  });
 });
 
 describe("generated sprite kit", () => {
@@ -85,6 +97,8 @@ describe("generated sprite kit", () => {
       ["steve-platformer", "scene-4", 384, 336],
       ["steve-platformer", "scene-5", 384, 336],
       ["steve-platformer", "scene-6", 384, 336],
+      ["steve-platformer", "scene-7", 384, 336],
+      ["steve-platformer", "scene-8", 256, 320],
       ["steve", "scene-1", 512, 640],
       ["steve", "scene-2", 512, 640],
     ];

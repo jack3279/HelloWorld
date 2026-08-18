@@ -130,5 +130,11 @@ describe("generated pig assets", () => {
       const svg = await readFile(resolve(ROOT, "assets/pig-sprites", `rest-${i}.svg`), "utf8");
       assert.match(svg, /<svg /);
     }
+    for (const clip of ["hurt", "death"]) {
+      for (let i = 0; i < 8; i++) {
+        const svg = await readFile(resolve(ROOT, "assets/pig-sprites", `${clip}-${i}.svg`), "utf8");
+        assert.match(svg, /<svg /);
+      }
+    }
   });
 });

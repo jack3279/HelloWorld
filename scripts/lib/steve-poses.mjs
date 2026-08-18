@@ -189,6 +189,8 @@ export function lerpPose(a, b, t) {
 export const SWING_FRAMES = 10;
 export const HURT_FRAMES = 8;
 export const DEATH_FRAMES = 12;
+export const SLEEP_FRAMES = 8;
+export const EAT_FRAMES = 8;
 
 function withSword(base, sword = {}) {
   return {
@@ -333,6 +335,95 @@ export function sampleDeath(t) {
   return { ...pose, flash };
 }
 
+// Lie on the side — calmer than death, knees tucked, head on the pillow.
+export function sleepPose() {
+  return {
+    ...pose(
+      {
+        torso: { pitch: 80, roll: 2 },
+        head: { ...FACE, pitch: 10, roll: 4 },
+        "arm-right": limb(NEAR, { pitch: 16, roll: 8 }),
+        "arm-left": limb(FAR, { pitch: 10, roll: -6 }),
+        "leg-right": limb(NEAR, { pitch: 18, roll: 4 }),
+        "leg-left": limb(FAR, { pitch: 12, roll: -2 }),
+      },
+      { x: -1.6, y: -5.1 },
+    ),
+    roll: 16,
+  };
+}
+
+export function sleepBreathe() {
+  return {
+    ...pose(
+      {
+        torso: { pitch: 78, roll: 1 },
+        head: { ...FACE, pitch: 6, roll: 2 },
+        "arm-right": limb(NEAR, { pitch: 12, roll: 6 }),
+        "arm-left": limb(FAR, { pitch: 8, roll: -4 }),
+        "leg-right": limb(NEAR, { pitch: 14, roll: 3 }),
+        "leg-left": limb(FAR, { pitch: 10, roll: -2 }),
+      },
+      { x: -1.5, y: -4.85 },
+    ),
+    roll: 15,
+  };
+}
+
+export function sampleSleep(t) {
+  const x = Math.min(1, Math.max(0, t));
+  if (x < 0.32) return lerpPose(idleA(), sleepPose(), easeInOut(x / 0.32));
+  const wave = (Math.sin(((x - 0.32) / 0.68) * Math.PI * 2) + 1) / 2;
+  return lerpPose(sleepPose(), sleepBreathe(), easeInOut(wave));
+}
+
+export function eatBite() {
+  return pose(
+    {
+      torso: { pitch: 6, roll: 2 },
+      head: { ...FACE, pitch: 14 },
+      "arm-right": limb(NEAR, { pitch: -102, roll: 18 }),
+      "arm-left": limb(FAR, { pitch: 8, roll: 0 }),
+      "leg-right": limb(NEAR, { pitch: 6, roll: 0 }),
+      "leg-left": limb(FAR, { pitch: -2, roll: 0 }),
+    },
+    { x: 0.15, y: 0.1 },
+  );
+}
+
+export function eatChew() {
+  return pose(
+    {
+      torso: { pitch: 4, roll: 1 },
+      head: { ...FACE, pitch: 6 },
+      "arm-right": limb(NEAR, { pitch: -88, roll: 14 }),
+      "arm-left": limb(FAR, { pitch: 6, roll: 0 }),
+      "leg-right": limb(NEAR, { pitch: 4, roll: 0 }),
+      "leg-left": limb(FAR, { pitch: -2, roll: 0 }),
+    },
+    { y: 0.05 },
+  );
+}
+
+export function sampleEat(t) {
+  const keys = [
+    { t: 0, pose: idleA() },
+    { t: 0.2, pose: eatBite() },
+    { t: 0.38, pose: eatChew() },
+    { t: 0.54, pose: eatBite() },
+    { t: 0.7, pose: eatChew() },
+    { t: 0.88, pose: lerpPose(eatBite(), idleA(), 0.5) },
+    { t: 1, pose: idleA() },
+  ];
+  const x = Math.min(1, Math.max(0, t));
+  let i = 0;
+  while (i < keys.length - 2 && x > keys[i + 1].t) i += 1;
+  const a = keys[i];
+  const b = keys[i + 1];
+  const u = (x - a.t) / (b.t - a.t || 1);
+  return lerpPose(a.pose, b.pose, easeInOut(u));
+}
+
 // Every named frame a game or the Lottie flipbook can ask for.
 export function catalog() {
   const run = Array.from({ length: 8 }, (_, i) => ({
@@ -359,6 +450,18 @@ export function catalog() {
     pose: sampleDeath(i / (DEATH_FRAMES - 1)),
     tags: ["death", "combat"],
   }));
+  const sleep = Array.from({ length: SLEEP_FRAMES }, (_, i) => ({
+    id: `sleep-${i}`,
+    label: `Sleep ${i + 1}/${SLEEP_FRAMES}`,
+    pose: sampleSleep(i / (SLEEP_FRAMES - 1)),
+    tags: ["sleep", "combat"],
+  }));
+  const eat = Array.from({ length: EAT_FRAMES }, (_, i) => ({
+    id: `eat-${i}`,
+    label: `Eat ${i + 1}/${EAT_FRAMES}`,
+    pose: sampleEat(i / (EAT_FRAMES - 1)),
+    tags: ["eat"],
+  }));
   return [
     { id: "idle-a", label: "Idle A", pose: idleA(), tags: ["idle"] },
     { id: "idle-b", label: "Idle B", pose: idleB(), tags: ["idle"] },
@@ -371,6 +474,8 @@ export function catalog() {
     ...swing,
     ...hurt,
     ...death,
+    ...sleep,
+    ...eat,
   ];
 }
 
@@ -398,6 +503,16 @@ export const ANIMATIONS = {
   },
   death: {
     frames: Array.from({ length: DEATH_FRAMES }, (_, i) => `death-${i}`),
+    fps: 10,
+    loop: false,
+  },
+  sleep: {
+    frames: Array.from({ length: SLEEP_FRAMES }, (_, i) => `sleep-${i}`),
+    fps: 6,
+    loop: false,
+  },
+  eat: {
+    frames: Array.from({ length: EAT_FRAMES }, (_, i) => `eat-${i}`),
     fps: 10,
     loop: false,
   },

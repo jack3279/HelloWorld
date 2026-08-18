@@ -6,11 +6,11 @@
     "combatImage": "combat-sheet.svg",
     "size": {
       "w": 2048,
-      "h": 640
+      "h": 960
     },
     "combatSize": {
       "w": 3840,
-      "h": 1008
+      "h": 1344
     },
     "tile": {
       "w": 256,
@@ -271,6 +271,142 @@
       "frame": {
         "x": 1536,
         "y": 320,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "eat-0": {
+      "file": "eat-0.svg",
+      "label": "Eat 1/8",
+      "tags": [
+        "eat"
+      ],
+      "frame": {
+        "x": 1792,
+        "y": 320,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "eat-1": {
+      "file": "eat-1.svg",
+      "label": "Eat 2/8",
+      "tags": [
+        "eat"
+      ],
+      "frame": {
+        "x": 0,
+        "y": 640,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "eat-2": {
+      "file": "eat-2.svg",
+      "label": "Eat 3/8",
+      "tags": [
+        "eat"
+      ],
+      "frame": {
+        "x": 256,
+        "y": 640,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "eat-3": {
+      "file": "eat-3.svg",
+      "label": "Eat 4/8",
+      "tags": [
+        "eat"
+      ],
+      "frame": {
+        "x": 512,
+        "y": 640,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "eat-4": {
+      "file": "eat-4.svg",
+      "label": "Eat 5/8",
+      "tags": [
+        "eat"
+      ],
+      "frame": {
+        "x": 768,
+        "y": 640,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "eat-5": {
+      "file": "eat-5.svg",
+      "label": "Eat 6/8",
+      "tags": [
+        "eat"
+      ],
+      "frame": {
+        "x": 1024,
+        "y": 640,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "eat-6": {
+      "file": "eat-6.svg",
+      "label": "Eat 7/8",
+      "tags": [
+        "eat"
+      ],
+      "frame": {
+        "x": 1280,
+        "y": 640,
+        "w": 256,
+        "h": 320
+      },
+      "anchor": {
+        "x": 128,
+        "y": 300
+      }
+    },
+    "eat-7": {
+      "file": "eat-7.svg",
+      "label": "Eat 8/8",
+      "tags": [
+        "eat"
+      ],
+      "frame": {
+        "x": 1536,
+        "y": 640,
         "w": 256,
         "h": 320
       },
@@ -818,6 +954,150 @@
         "x": 168,
         "y": 308
       }
+    },
+    "sleep-0": {
+      "file": "sleep-0.svg",
+      "label": "Sleep 1/8",
+      "tags": [
+        "sleep",
+        "combat"
+      ],
+      "frame": {
+        "x": 0,
+        "y": 1008,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "sleep-1": {
+      "file": "sleep-1.svg",
+      "label": "Sleep 2/8",
+      "tags": [
+        "sleep",
+        "combat"
+      ],
+      "frame": {
+        "x": 384,
+        "y": 1008,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "sleep-2": {
+      "file": "sleep-2.svg",
+      "label": "Sleep 3/8",
+      "tags": [
+        "sleep",
+        "combat"
+      ],
+      "frame": {
+        "x": 768,
+        "y": 1008,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "sleep-3": {
+      "file": "sleep-3.svg",
+      "label": "Sleep 4/8",
+      "tags": [
+        "sleep",
+        "combat"
+      ],
+      "frame": {
+        "x": 1152,
+        "y": 1008,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "sleep-4": {
+      "file": "sleep-4.svg",
+      "label": "Sleep 5/8",
+      "tags": [
+        "sleep",
+        "combat"
+      ],
+      "frame": {
+        "x": 1536,
+        "y": 1008,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "sleep-5": {
+      "file": "sleep-5.svg",
+      "label": "Sleep 6/8",
+      "tags": [
+        "sleep",
+        "combat"
+      ],
+      "frame": {
+        "x": 1920,
+        "y": 1008,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "sleep-6": {
+      "file": "sleep-6.svg",
+      "label": "Sleep 7/8",
+      "tags": [
+        "sleep",
+        "combat"
+      ],
+      "frame": {
+        "x": 2304,
+        "y": 1008,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
+    },
+    "sleep-7": {
+      "file": "sleep-7.svg",
+      "label": "Sleep 8/8",
+      "tags": [
+        "sleep",
+        "combat"
+      ],
+      "frame": {
+        "x": 2688,
+        "y": 1008,
+        "w": 384,
+        "h": 336
+      },
+      "anchor": {
+        "x": 168,
+        "y": 308
+      }
     }
   },
   "animations": {
@@ -898,6 +1178,34 @@
         "death-9",
         "death-10",
         "death-11"
+      ],
+      "fps": 10,
+      "loop": false
+    },
+    "sleep": {
+      "frames": [
+        "sleep-0",
+        "sleep-1",
+        "sleep-2",
+        "sleep-3",
+        "sleep-4",
+        "sleep-5",
+        "sleep-6",
+        "sleep-7"
+      ],
+      "fps": 6,
+      "loop": false
+    },
+    "eat": {
+      "frames": [
+        "eat-0",
+        "eat-1",
+        "eat-2",
+        "eat-3",
+        "eat-4",
+        "eat-5",
+        "eat-6",
+        "eat-7"
       ],
       "fps": 10,
       "loop": false

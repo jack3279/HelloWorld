@@ -9,6 +9,8 @@
 //   public/projects/steve-platformer/scene-4   sword swing
 //   public/projects/steve-platformer/scene-5   hurt flash
 //   public/projects/steve-platformer/scene-6   death
+//   public/projects/steve-platformer/scene-7   sleep
+//   public/projects/steve-platformer/scene-8   eat
 //
 // Every scene uses the same right-facing side camera.
 //
@@ -24,16 +26,20 @@ import { swordExtra } from "./lib/held-item.mjs";
 import {
   COMBAT_SPRITE,
   DEATH_FRAMES,
+  EAT_FRAMES,
   HURT_FRAMES,
+  SLEEP_FRAMES,
   SPRITE,
   SWING_FRAMES,
   TOLERANCE,
   catalog,
   demoReel,
   sampleDeath,
+  sampleEat,
   sampleHurt,
   sampleIdle,
   sampleJump,
+  sampleSleep,
   sampleSwing,
   runFrame,
 } from "./lib/steve-poses.mjs";
@@ -267,5 +273,38 @@ await writeScene(
     fps: 10,
     hold: 1,
     loop: false,
+  }),
+);
+
+const sleepFrames = Array.from({ length: SLEEP_FRAMES }, (_, i) => ({
+  id: `sleep-${i}`,
+  shapes: bake(skin, sampleSleep(i / (SLEEP_FRAMES - 1)), COMBAT_SPRITE),
+}));
+const eatFrames = Array.from({ length: EAT_FRAMES }, (_, i) => ({
+  id: `eat-${i}`,
+  shapes: bake(skin, sampleEat(i / (EAT_FRAMES - 1)), SPRITE),
+}));
+await writeScene(
+  resolve(platformer, "scene-7"),
+  flipbook({
+    name: "Steve — Sleep",
+    w: COMBAT_SPRITE.w,
+    h: COMBAT_SPRITE.h,
+    frames: sleepFrames,
+    fps: 6,
+    hold: 1,
+    loop: true,
+  }),
+);
+await writeScene(
+  resolve(platformer, "scene-8"),
+  flipbook({
+    name: "Steve — Eat",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: eatFrames,
+    fps: 10,
+    hold: 1,
+    loop: true,
   }),
 );

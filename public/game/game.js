@@ -158,18 +158,37 @@ const MANIFEST = [
   ...range(10, (i) => `steve-sprites/swing-${i}.svg`),
   ...range(8, (i) => `steve-sprites/hurt-${i}.svg`),
   ...range(12, (i) => `steve-sprites/death-${i}.svg`),
+  ...range(8, (i) => `steve-sprites/sleep-${i}.svg`),
+  ...range(8, (i) => `steve-sprites/eat-${i}.svg`),
   ...range(8, (i) => `zombie-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `zombie-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `zombie-sprites/hurt-${i}.svg`),
+  ...range(12, (i) => `zombie-sprites/death-${i}.svg`),
   ...range(8, (i) => `skeleton-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `skeleton-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `skeleton-sprites/hurt-${i}.svg`),
+  ...range(12, (i) => `skeleton-sprites/death-${i}.svg`),
   ...range(8, (i) => `spider-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `spider-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `spider-sprites/hurt-${i}.svg`),
+  ...range(12, (i) => `spider-sprites/death-${i}.svg`),
   ...range(8, (i) => `enderman-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `enderman-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `enderman-sprites/hurt-${i}.svg`),
+  ...range(12, (i) => `enderman-sprites/death-${i}.svg`),
   ...range(8, (i) => `creeper-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `creeper-sprites/idle-${i}.svg`),
   ...range(10, (i) => `creeper-sprites/swell-${i * 2}.svg`),
   ...range(8, (i) => `pig-sprites/walk-${i * 2}.svg`),
   ...range(8, (i) => `pig-sprites/idle-${i}.svg`),
   ...range(8, (i) => `pig-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `pig-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `pig-sprites/death-${i}.svg`),
   ...range(8, (i) => `cow-sprites/walk-${i * 2}.svg`),
   ...range(8, (i) => `cow-sprites/idle-${i}.svg`),
   ...range(8, (i) => `cow-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `cow-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `cow-sprites/death-${i}.svg`),
   ...Object.keys(ITEM_LABELS).map((id) => `items/${id}.svg`),
   "hud/heart.svg",
   "hud/heart-half.svg",
@@ -412,6 +431,7 @@ function makePlayer() {
     age: 0,
     swingT: 0,
     hurtT: 0,
+    eatT: 0,
     dead: false,
     inWater: false,
     inLava: false,
@@ -456,6 +476,7 @@ function makeMob(kind, tx, ty) {
     health: specs[kind].hp,
     age: Math.random(),
     hitT: 0,
+    deathT: 0,
     dead: false,
     inWater: false,
     inLava: false,
@@ -699,12 +720,13 @@ function hurt(who, amount, dir) {
     return;
   }
   who.health -= amount;
-  who.hitT = 0.18;
+  who.hitT = 8 / 12;
   who.vx = dir * 260;
   who.vy = -160;
   if (who.passive) who.hurtFlee = 1.6;
   if (who.health <= 0) {
     who.dead = true;
+    who.deathT = 0;
     const loot = {
       zombie: "rotten-flesh",
       skeleton: "bone",
@@ -721,7 +743,7 @@ function hurt(who, amount, dir) {
 
 function useSelected() {
   if (player.dead || win) return;
-  if (player.sleeping > 0) return;
+  if (player.sleeping > 0 || player.eatT > 0) return;
   if (trySleep()) return;
   if (tryFeed()) return;
   if (tryFarm()) return;
@@ -745,6 +767,9 @@ function useSelected() {
     player.health = Math.min(20, Math.max(0, player.health + food.health));
     player.hunger = Math.min(20, player.hunger + food.hunger);
     item.count -= 1;
+    player.eatT = 8 / 10;
+    player.anim = "eat";
+    player.frame = 0;
     say(`使用了${ITEM_LABELS[item.id]}`);
   }
 }
@@ -773,8 +798,8 @@ function updatePlayer(dt) {
     player.sleeping -= dt;
     player.vx = 0;
     player.vy = 0;
-    player.anim = "idle";
-    player.frame = 0;
+    player.anim = "sleep";
+    player.frame = Math.min(7, Math.floor((1 - player.sleeping / 1.7) * 8));
     if (player.sleeping <= 0) {
       clock = 6.2;
       player.health = Math.min(20, player.health + 8);
@@ -790,7 +815,7 @@ function updatePlayer(dt) {
   const jump = keys.has(" ") || keys.has("w") || keys.has("arrowup") || hold.jump;
   const speed = player.inWater ? MOVE * 0.55 : MOVE;
 
-  if (player.swingT <= 0) {
+  if (player.swingT <= 0 && player.eatT <= 0) {
     player.vx = (right ? speed : 0) - (left ? speed : 0);
     if (left) player.face = -1;
     if (right) player.face = 1;
@@ -799,7 +824,7 @@ function updatePlayer(dt) {
   }
 
   const onLadder = tileAt(player.x, player.y - 8) === "h" || tileAt(player.x, player.y - 24) === "h";
-  if (jump && (player.grounded || player.inWater || onLadder)) {
+  if (jump && player.eatT <= 0 && (player.grounded || player.inWater || onLadder)) {
     player.vy = player.inWater || onLadder ? -420 : -JUMP;
     player.grounded = false;
   }
@@ -825,12 +850,17 @@ function updatePlayer(dt) {
   }
 
   player.age += dt;
+  if (player.eatT > 0) player.eatT -= dt;
+
   if (player.swingT > 0) {
     player.anim = "swing";
     player.frame = Math.min(9, Math.floor((1 - player.swingT / (10 / 12)) * 10));
   } else if (player.hurtT > 0) {
     player.anim = "hurt";
     player.frame = Math.min(7, Math.floor((1 - player.hurtT / (8 / 12)) * 8));
+  } else if (player.eatT > 0) {
+    player.anim = "eat";
+    player.frame = Math.min(7, Math.floor((1 - player.eatT / (8 / 10)) * 8));
   } else if (!player.grounded) {
     player.anim = "jump";
     player.frame = player.vy < -80 ? 1 : player.vy > 120 ? 3 : 2;
@@ -854,7 +884,10 @@ function updatePlayer(dt) {
 
 function updateMobs(dt) {
   for (const mob of mobs) {
-    if (mob.dead) continue;
+    if (mob.dead) {
+      mob.deathT = (mob.deathT ?? 0) + dt;
+      continue;
+    }
     mob.age += dt;
     if (mob.hitT > 0) mob.hitT -= dt;
     const dx = player.x - mob.x;
@@ -897,6 +930,7 @@ function updateMobs(dt) {
       if (mob.fuse >= 1.35) {
         hurt(player, 10, Math.sign(player.x - mob.x) || -1);
         mob.dead = true;
+        mob.deathT = 0;
         drops.push(makeDrop("gunpowder", mob.x, mob.y - 20));
         say("苦力怕爆炸了！");
         continue;
@@ -1007,7 +1041,43 @@ function steveFrame() {
   if (player.anim === "jump") return `steve-sprites/${["jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"][player.frame]}.svg`;
   if (player.anim === "swing") return `steve-sprites/swing-${player.frame}.svg`;
   if (player.anim === "hurt") return `steve-sprites/hurt-${player.frame}.svg`;
+  if (player.anim === "sleep") return `steve-sprites/sleep-${player.frame}.svg`;
+  if (player.anim === "eat") return `steve-sprites/eat-${player.frame}.svg`;
   return `steve-sprites/death-${player.frame}.svg`;
+}
+
+function deathFrames(kind) {
+  return kind === "pig" || kind === "cow" ? 8 : 12;
+}
+
+function mobGone(mob) {
+  const t = mob.deathT ?? 0;
+  if (mob.kind === "creeper") return t > 0.28;
+  return t > deathFrames(mob.kind) / 10 + 0.08;
+}
+
+function mobSprite(mob) {
+  if (mob.dead) {
+    if (mob.kind === "creeper") return "creeper-sprites/swell-18.svg";
+    const n = deathFrames(mob.kind);
+    return `${mob.sheet}/death-${Math.min(n - 1, Math.floor((mob.deathT ?? 0) * 10))}.svg`;
+  }
+  if (mob.kind === "creeper" && mob.fuse > 0.12) {
+    const frame = Math.min(18, Math.floor((mob.fuse / 1.35) * 10) * 2);
+    return `creeper-sprites/swell-${frame}.svg`;
+  }
+  if (mob.hitT > 0 && mob.kind !== "creeper") {
+    const frame = Math.min(7, Math.floor((1 - mob.hitT / (8 / 12)) * 8));
+    return `${mob.sheet}/hurt-${frame}.svg`;
+  }
+  if (mob.passive && Math.abs(mob.vx) < 14 && mob.hurtFlee <= 0) {
+    const frame = Math.floor(mob.age * (mob.stillT > 4 ? 4 : 6)) % 8;
+    return `${mob.sheet}/${mob.stillT > 4 ? "rest" : "idle"}-${frame}.svg`;
+  }
+  if (Math.abs(mob.vx) < 14 && (mob.fuse ?? 0) <= 0.12) {
+    return `${mob.sheet}/idle-${Math.floor(mob.age * 6) % 8}.svg`;
+  }
+  return `${mob.sheet}/walk-${(Math.floor(mob.age * 10) % 8) * 2}.svg`;
 }
 
 function drawSky() {
@@ -1057,21 +1127,10 @@ function drawDrops() {
 
 function drawMobs() {
   for (const mob of mobs) {
-    if (mob.dead) continue;
-    let rel;
-    if (mob.kind === "creeper" && mob.fuse > 0.12) {
-      const frame = Math.min(18, Math.floor((mob.fuse / 1.35) * 10) * 2);
-      rel = `creeper-sprites/swell-${frame}.svg`;
-    } else if (mob.passive && Math.abs(mob.vx) < 14 && mob.hurtFlee <= 0) {
-      const frame = Math.floor(mob.age * (mob.stillT > 4 ? 4 : 6)) % 8;
-      rel = `${mob.sheet}/${mob.stillT > 4 ? "rest" : "idle"}-${frame}.svg`;
-    } else {
-      const frame = Math.floor(mob.age * 10) % 8;
-      rel = `${mob.sheet}/walk-${frame * 2}.svg`;
-    }
+    if (mob.dead && mobGone(mob)) continue;
     const spec = { w: 512, h: mob.h, ax: 256, ay: mob.h - 16, scale: mob.scale };
     if (mob.hitT > 0 || (mob.kind === "creeper" && mob.fuse > 0.4 && Math.floor(time * 16) % 2 === 0)) ctx.filter = "brightness(2)";
-    drawAnchored(rel, spec, mob.x - cam.x, mob.y - cam.y, mob.face);
+    drawAnchored(mobSprite(mob), spec, mob.x - cam.x, mob.y - cam.y, mob.face);
     ctx.filter = "none";
   }
 }
@@ -1091,7 +1150,7 @@ function drawParticles() {
 
 function drawPlayer() {
   if (player.invuln > 0 && Math.floor(time * 16) % 2 === 0 && !player.dead) ctx.globalAlpha = 0.45;
-  const combat = player.anim === "swing" || player.anim === "hurt" || player.anim === "death";
+  const combat = player.anim === "swing" || player.anim === "hurt" || player.anim === "death" || player.anim === "sleep";
   drawAnchored(steveFrame(), combat ? STEVE.combat : STEVE.loco, player.x - cam.x, player.y - cam.y, player.face);
   ctx.globalAlpha = 1;
 }

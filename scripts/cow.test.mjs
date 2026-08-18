@@ -134,5 +134,11 @@ describe("generated cow assets", () => {
       const svg = await readFile(resolve(ROOT, "assets/cow-sprites", `rest-${i}.svg`), "utf8");
       assert.match(svg, /<svg /);
     }
+    for (const clip of ["hurt", "death"]) {
+      for (let i = 0; i < 8; i++) {
+        const svg = await readFile(resolve(ROOT, "assets/cow-sprites", `${clip}-${i}.svg`), "utf8");
+        assert.match(svg, /<svg /);
+      }
+    }
   });
 });

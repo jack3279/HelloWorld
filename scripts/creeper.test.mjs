@@ -130,5 +130,9 @@ describe("generated creeper assets", () => {
       const svg = await readFile(resolve(ROOT, "assets/creeper-sprites", `swell-${i}.svg`), "utf8");
       assert.match(svg, /<svg /);
     }
+    for (let i = 0; i < 8; i++) {
+      const svg = await readFile(resolve(ROOT, "assets/creeper-sprites", `idle-${i}.svg`), "utf8");
+      assert.match(svg, /<svg /);
+    }
   });
 });

@@ -22,7 +22,7 @@ import {
   walkFrame,
 } from "./lib/skeleton-poses.mjs";
 import { skeletonDrawExtras } from "./lib/held-item.mjs";
-import { ROOT, bake, flipbook, writeHeroSvg, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
+import { ROOT, bake, flipbook, writeHeroSvg, writeSampledClips, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const model = SKELETON_MODEL;
@@ -59,6 +59,22 @@ const sprites = await writeSpriteKit({
   stillLabel: "Skeleton, walking, facing right",
 });
 console.log(`Wrote ${sprites.length} walk frames plus sheet.svg`);
+
+await writeSampledClips({
+  generator: "scripts/generate-skeleton.mjs",
+  groupId: "skeleton",
+  sprite: SPRITE,
+  outDir: resolve(__dirname, "../assets/skeleton-sprites"),
+  skin,
+  tolerance: TOLERANCE,
+  model,
+  sequences: [
+    { prefix: "idle", label: "Idle", count: 8, sample: sampleIdle, loop: true },
+    { prefix: "hurt", label: "Hurt", count: HURT_FRAMES, sample: sampleHurt },
+    { prefix: "death", label: "Death", count: DEATH_FRAMES, sample: sampleDeath },
+  ],
+});
+console.log(`Wrote 8 idle, ${HURT_FRAMES} hurt, and ${DEATH_FRAMES} death frames`);
 
 const idle = Array.from({ length: 8 }, (_, i) => {
   const baked = bake({ skin, pose: sampleIdle(i / 8), canvas: SPRITE, tolerance: TOLERANCE, model });

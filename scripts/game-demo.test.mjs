@@ -34,13 +34,24 @@ describe("html game demo", () => {
     for (let i = 0; i < 10; i++) rels.add(`steve-sprites/swing-${i}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`steve-sprites/hurt-${i}.svg`);
     for (let i = 0; i < 12; i++) rels.add(`steve-sprites/death-${i}.svg`);
+    for (let i = 0; i < 8; i++) rels.add(`steve-sprites/sleep-${i}.svg`);
+    for (let i = 0; i < 8; i++) rels.add(`steve-sprites/eat-${i}.svg`);
     for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/walk-${i * 2}.svg`);
     }
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow"]) {
+      for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/idle-${i}.svg`);
+    }
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "pig", "cow"]) {
+      for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/hurt-${i}.svg`);
+    }
+    for (const mob of ["zombie", "skeleton", "spider", "enderman"]) {
+      for (let i = 0; i < 12; i++) rels.add(`${mob}-sprites/death-${i}.svg`);
+    }
     for (const mob of ["pig", "cow"]) {
       for (let i = 0; i < 8; i++) {
-        rels.add(`${mob}-sprites/idle-${i}.svg`);
         rels.add(`${mob}-sprites/rest-${i}.svg`);
+        rels.add(`${mob}-sprites/death-${i}.svg`);
       }
     }
     for (let i = 0; i < 10; i++) rels.add(`creeper-sprites/swell-${i * 2}.svg`);

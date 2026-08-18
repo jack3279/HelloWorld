@@ -125,5 +125,15 @@ describe("generated zombie assets", () => {
       assert.match(svg, /<svg /);
       assert.doesNotMatch(svg, /NaN|undefined/);
     }
+    for (const clip of ["idle", "hurt"]) {
+      for (let i = 0; i < 8; i++) {
+        const svg = await readFile(resolve(ROOT, "assets/zombie-sprites", `${clip}-${i}.svg`), "utf8");
+        assert.match(svg, /<svg /);
+      }
+    }
+    for (let i = 0; i < 12; i++) {
+      const svg = await readFile(resolve(ROOT, "assets/zombie-sprites", `death-${i}.svg`), "utf8");
+      assert.match(svg, /<svg /);
+    }
   });
 });

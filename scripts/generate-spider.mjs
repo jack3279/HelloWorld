@@ -21,7 +21,7 @@ import {
   sampleIdle,
   walkFrame,
 } from "./lib/spider-poses.mjs";
-import { ROOT, bake, flipbook, writeHeroSvg, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
+import { ROOT, bake, flipbook, writeHeroSvg, writeSampledClips, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const model = SPIDER_MODEL;
@@ -58,6 +58,22 @@ const sprites = await writeSpriteKit({
   stillLabel: "Spider, walking, facing right",
 });
 console.log(`Wrote ${sprites.length} walk frames plus sheet.svg`);
+
+await writeSampledClips({
+  generator: "scripts/generate-spider.mjs",
+  groupId: "spider",
+  sprite: SPRITE,
+  outDir: resolve(__dirname, "../assets/spider-sprites"),
+  skin,
+  tolerance: TOLERANCE,
+  model,
+  sequences: [
+    { prefix: "idle", label: "Idle", count: 8, sample: sampleIdle, loop: true },
+    { prefix: "hurt", label: "Hurt", count: HURT_FRAMES, sample: sampleHurt },
+    { prefix: "death", label: "Death", count: DEATH_FRAMES, sample: sampleDeath },
+  ],
+});
+console.log(`Wrote 8 idle, ${HURT_FRAMES} hurt, and ${DEATH_FRAMES} death frames`);
 
 const idle = Array.from({ length: 8 }, (_, i) => {
   const baked = bake({ skin, pose: sampleIdle(i / 8), canvas: SPRITE, tolerance: TOLERANCE, model });

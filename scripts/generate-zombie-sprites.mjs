@@ -9,7 +9,8 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildFigure, loadZombieSkin, makeProjector, parseArgs, svgFigureBody } from "./lib/steve-model.mjs";
-import { SPRITE, TOLERANCE, catalog } from "./lib/zombie-poses.mjs";
+import { DEATH_FRAMES, HURT_FRAMES, SPRITE, TOLERANCE, catalog, sampleDeath, sampleHurt, sampleIdle } from "./lib/zombie-poses.mjs";
+import { writeSampledClips } from "./lib/mob-pipeline.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -74,8 +75,23 @@ ${cells.join("\n")}
 `,
 );
 
+await writeSampledClips({
+  generator: "scripts/generate-zombie-sprites.mjs",
+  groupId: "zombie",
+  sprite: SPRITE,
+  outDir,
+  skin,
+  tolerance: TOLERANCE,
+  sequences: [
+    { prefix: "idle", label: "Idle", count: 8, sample: sampleIdle, loop: true },
+    { prefix: "hurt", label: "Hurt", count: HURT_FRAMES, sample: sampleHurt },
+    { prefix: "death", label: "Death", count: DEATH_FRAMES, sample: sampleDeath },
+  ],
+});
+
 const kb = (n) => (n / 1024).toFixed(1);
 console.log(
   `Wrote ${frames.length} walk frames in ${outDir} (${kb(frames.reduce((n, f) => n + f.bytes, 0))} kB) plus sheet.svg`,
 );
 console.log(`Wrote ${walkStill}`);
+console.log(`Wrote 8 idle, ${HURT_FRAMES} hurt, and ${DEATH_FRAMES} death frames`);

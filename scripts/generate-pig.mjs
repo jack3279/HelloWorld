@@ -5,8 +5,23 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadPigSkin, parseArgs } from "./lib/steve-model.mjs";
 import { PIG_MODEL } from "./lib/pig-model.mjs";
-import { SPRITE, IDLE_FRAMES, REST_FRAMES, TOLERANCE, WALK_FRAMES, catalog, idleA, sampleIdle, sampleRest, walkFrame } from "./lib/pig-poses.mjs";
-import { ROOT, bake, flipbook, writeFrames, writeHeroSvg, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
+import {
+  DEATH_FRAMES,
+  HURT_FRAMES,
+  IDLE_FRAMES,
+  REST_FRAMES,
+  SPRITE,
+  TOLERANCE,
+  WALK_FRAMES,
+  catalog,
+  idleA,
+  sampleDeath,
+  sampleHurt,
+  sampleIdle,
+  sampleRest,
+  walkFrame,
+} from "./lib/pig-poses.mjs";
+import { ROOT, bake, flipbook, writeFrames, writeHeroSvg, writeSampledClips, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const model = PIG_MODEL;
@@ -66,7 +81,20 @@ await writeFrames({
   frames: restSprites,
   outDir: resolve(__dirname, "../assets/pig-sprites"),
 });
-console.log(`Wrote ${IDLE_FRAMES} idle frames and ${REST_FRAMES} rest frames`);
+await writeSampledClips({
+  generator: "scripts/generate-pig.mjs",
+  groupId: "pig",
+  sprite: SPRITE,
+  outDir: resolve(__dirname, "../assets/pig-sprites"),
+  skin,
+  tolerance: TOLERANCE,
+  model,
+  sequences: [
+    { prefix: "hurt", label: "Hurt", count: HURT_FRAMES, sample: sampleHurt },
+    { prefix: "death", label: "Death", count: DEATH_FRAMES, sample: sampleDeath },
+  ],
+});
+console.log(`Wrote ${IDLE_FRAMES} idle frames, ${REST_FRAMES} rest frames, ${HURT_FRAMES} hurt, and ${DEATH_FRAMES} death`);
 
 const idle = idleSprites.map((frame) => ({ id: frame.id, shapes: frame.shapes }));
 await writeScene(

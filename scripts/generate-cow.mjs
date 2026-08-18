@@ -5,8 +5,23 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadCowSkin, parseArgs } from "./lib/steve-model.mjs";
 import { COW_MODEL } from "./lib/cow-model.mjs";
-import { SPRITE, IDLE_FRAMES, REST_FRAMES, TOLERANCE, WALK_FRAMES, catalog, idleA, sampleIdle, sampleRest, walkFrame } from "./lib/cow-poses.mjs";
-import { ROOT, bake, flipbook, writeFrames, writeHeroSvg, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
+import {
+  DEATH_FRAMES,
+  HURT_FRAMES,
+  IDLE_FRAMES,
+  REST_FRAMES,
+  SPRITE,
+  TOLERANCE,
+  WALK_FRAMES,
+  catalog,
+  idleA,
+  sampleDeath,
+  sampleHurt,
+  sampleIdle,
+  sampleRest,
+  walkFrame,
+} from "./lib/cow-poses.mjs";
+import { ROOT, bake, flipbook, writeFrames, writeHeroSvg, writeSampledClips, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const model = COW_MODEL;
@@ -66,7 +81,20 @@ await writeFrames({
   frames: restSprites,
   outDir: resolve(__dirname, "../assets/cow-sprites"),
 });
-console.log(`Wrote ${IDLE_FRAMES} idle frames and ${REST_FRAMES} rest frames`);
+await writeSampledClips({
+  generator: "scripts/generate-cow.mjs",
+  groupId: "cow",
+  sprite: SPRITE,
+  outDir: resolve(__dirname, "../assets/cow-sprites"),
+  skin,
+  tolerance: TOLERANCE,
+  model,
+  sequences: [
+    { prefix: "hurt", label: "Hurt", count: HURT_FRAMES, sample: sampleHurt },
+    { prefix: "death", label: "Death", count: DEATH_FRAMES, sample: sampleDeath },
+  ],
+});
+console.log(`Wrote ${IDLE_FRAMES} idle frames, ${REST_FRAMES} rest frames, ${HURT_FRAMES} hurt, and ${DEATH_FRAMES} death`);
 
 const idle = idleSprites.map((frame) => ({ id: frame.id, shapes: frame.shapes }));
 await writeScene(
