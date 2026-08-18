@@ -20,7 +20,13 @@ const MIME: Record<string, string> = {
 
 function serveGameIndex(req: IncomingMessage, res: ServerResponse, next: () => void) {
   const url = req.url?.split("?")[0] ?? "";
-  if (url !== "/game" && url !== "/game/") return next();
+  if (url === "/game") {
+    res.statusCode = 302;
+    res.setHeader("Location", "/game/");
+    res.end();
+    return;
+  }
+  if (url !== "/game/") return next();
   res.statusCode = 200;
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.setHeader("Cache-Control", "no-store");

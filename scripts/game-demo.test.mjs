@@ -18,7 +18,8 @@ describe("html game demo", () => {
     assert.match(html, /id="game"/);
     assert.match(html, /id="start"/);
     assert.match(html, /id="demo"/);
-    assert.match(html, /src="\.\/game\.js"/);
+    assert.match(html, /src="\/game\/game\.js"/);
+    assert.match(html, /href="\/game\/style\.css"/);
     assert.match(html, /type="module"/);
   });
 
@@ -52,6 +53,7 @@ describe("html game demo", () => {
     const plugin = await readFile(resolve(ROOT, "vite-plugins/repo-assets.ts"), "utf8");
     const vite = await readFile(resolve(ROOT, "vite.config.ts"), "utf8");
     assert.match(plugin, /\/repo-assets\//);
+    assert.match(plugin, /Location.*\/game\//);
     assert.match(vite, /repoAssetsPlugin/);
   });
 });

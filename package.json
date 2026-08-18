@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "game": "vite --open /game/",
     "build": "tsc -b && vite build",
     "check:text-slots": "node --experimental-strip-types --test scripts/text-slot-unicode.test.mjs",
     "check:combat": "node --test scripts/combat.test.mjs",
