@@ -1,7 +1,9 @@
 // Skottie scenes for hotbar item icons and world drops.
-//   public/projects/items/scene-1  4×4 icon atlas
+//   public/projects/items/scene-1  4×4 hotbar icon atlas
 //   public/projects/items/scene-2  four items drop, bounce, bob
 //   public/projects/items/scene-3  diamond sword drops, then flies into the hotbar
+//   public/projects/items/scene-4  armor
+//   public/projects/items/scene-5  mob drops and extra food
 //
 // Transparent background — icons and overlays, not a full-frame card.
 //
@@ -21,6 +23,7 @@ import {
   dropScaleKeys,
   itemLayer,
   itemPages,
+  moreItemPages,
   layoutAtlas,
   loadItem,
   loadItemPixels,
@@ -183,3 +186,16 @@ await writeScene(resolve(ROOT, "public/projects/items/scene-3"), {
   ],
   meta: { loop: true, g: GEN },
 });
+
+const extraTitles = ["Items — Armor", "Items — Drops & food"];
+for (const [index, page] of moreItemPages().entries()) {
+  const atlas = layoutAtlas(page);
+  const shapes = [];
+  for (const cell of atlas.cells) {
+    shapes.push(...lottieShapesFromRuns(runsOf(await loadItem(cell.item.id)), cell));
+  }
+  await writeScene(
+    resolve(ROOT, `public/projects/items/scene-${index + 4}`),
+    atlasScene(extraTitles[index] ?? `Items — Page ${index + 4}`, shapes),
+  );
+}

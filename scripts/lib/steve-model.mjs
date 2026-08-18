@@ -8,7 +8,7 @@
 // features land exactly where the skin puts them.
 //
 // Consumers: generate-steve-*.mjs, generate-zombie-*.mjs, generate-skeleton.mjs,
-// generate-spider.mjs, generate-enderman.mjs.
+// generate-spider.mjs, generate-enderman.mjs, generate-creeper.mjs.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -24,12 +24,15 @@ export const SPIDER_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/spider/spider.tga";
 export const ENDERMAN_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/enderman/enderman.tga";
+export const CREEPER_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/creeper/creeper.png";
 const SKIN_URL = STEVE_SKIN_URL;
 const CACHE = resolve(__dirname, "../../node_modules/.cache/steve-skin.png");
 const ZOMBIE_CACHE = resolve(__dirname, "../../node_modules/.cache/zombie-skin.png");
 const SKELETON_CACHE = resolve(__dirname, "../../node_modules/.cache/skeleton-skin.png");
 const SPIDER_CACHE = resolve(__dirname, "../../node_modules/.cache/spider-skin.tga");
 const ENDERMAN_CACHE = resolve(__dirname, "../../node_modules/.cache/enderman-skin.tga");
+const CREEPER_CACHE = resolve(__dirname, "../../node_modules/.cache/creeper-skin.png");
 
 // ---------------------------------------------------------------- png decoding
 
@@ -260,6 +263,10 @@ export async function loadSpiderSkin(explicitPath) {
 
 export async function loadEndermanSkin(explicitPath) {
   return loadSkin(explicitPath, { url: ENDERMAN_SKIN_URL, cache: ENDERMAN_CACHE, normalize: false });
+}
+
+export async function loadCreeperSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: CREEPER_SKIN_URL, cache: CREEPER_CACHE, normalize: false });
 }
 
 // ------------------------------------------------------------------- 3d helpers
@@ -566,6 +573,22 @@ function flattenRegion(skin, rect, tolerance) {
   return lookup;
 }
 
+// The base quad hides hairlines. It must be the real field color, not a
+// feature (eyes, frown) that only wins because the field split into many
+// near-greens. Skip a near-black winner unless it actually owns the face.
+function pickBaseColor(counts) {
+  const ranked = [...counts].sort((a, b) => b[1] - a[1]);
+  const total = ranked.reduce((n, [, c]) => n + c, 0) || 1;
+  for (const [hex, n] of ranked) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    if (r + g + b < 48 && n / total < 0.4) continue;
+    return hex;
+  }
+  return ranked[0]?.[0];
+}
+
 // --------------------------------------------------------------------- pipeline
 
 // Local rotation order: the part is first turned to pick which texture face
@@ -705,7 +728,7 @@ export function buildFigure({ skin, pose, shading = DEFAULT_SHADING, tolerance, 
           run = hex ? { hex, y: ty, x0: tx, x1: tx + 1 } : null;
         }
       }
-      const base = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
+      const base = pickBaseColor(counts);
       if (!base) continue;
       faces.push({ faceName, points, depth, rect, runs, base, sparse: Boolean(part.sparse) });
     }

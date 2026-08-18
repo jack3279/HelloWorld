@@ -44,6 +44,44 @@ export const ITEMS = [
   { id: "coal", file: "coal.png", label: "Coal", title: "煤炭" },
 ];
 
+// Armor, mob drops, and more food — the survival kit that was missing from
+// the first hotbar page. Leather helmet/leggings/boots are not in this
+// Bedrock items pack, so the armor page uses the four complete metal sets.
+export const MORE_ITEMS = [
+  { id: "iron-helmet", file: "iron_helmet.png", label: "Iron helmet", title: "铁头盔" },
+  { id: "iron-chestplate", file: "iron_chestplate.png", label: "Iron chestplate", title: "铁胸甲" },
+  { id: "iron-leggings", file: "iron_leggings.png", label: "Iron leggings", title: "铁护腿" },
+  { id: "iron-boots", file: "iron_boots.png", label: "Iron boots", title: "铁靴子" },
+  { id: "diamond-helmet", file: "diamond_helmet.png", label: "Diamond helmet", title: "钻石头盔" },
+  { id: "diamond-chestplate", file: "diamond_chestplate.png", label: "Diamond chestplate", title: "钻石胸甲" },
+  { id: "diamond-leggings", file: "diamond_leggings.png", label: "Diamond leggings", title: "钻石护腿" },
+  { id: "diamond-boots", file: "diamond_boots.png", label: "Diamond boots", title: "钻石靴子" },
+  { id: "gold-helmet", file: "gold_helmet.png", label: "Golden helmet", title: "金头盔" },
+  { id: "gold-chestplate", file: "gold_chestplate.png", label: "Golden chestplate", title: "金胸甲" },
+  { id: "gold-leggings", file: "gold_leggings.png", label: "Golden leggings", title: "金护腿" },
+  { id: "gold-boots", file: "gold_boots.png", label: "Golden boots", title: "金靴子" },
+  { id: "netherite-helmet", file: "netherite_helmet.png", label: "Netherite helmet", title: "下界合金头盔" },
+  { id: "netherite-chestplate", file: "netherite_chestplate.png", label: "Netherite chestplate", title: "下界合金胸甲" },
+  { id: "netherite-leggings", file: "netherite_leggings.png", label: "Netherite leggings", title: "下界合金护腿" },
+  { id: "netherite-boots", file: "netherite_boots.png", label: "Netherite boots", title: "下界合金靴子" },
+  { id: "rotten-flesh", file: "rotten_flesh.png", label: "Rotten flesh", title: "腐肉" },
+  { id: "bone", file: "bone.png", label: "Bone", title: "骨头" },
+  { id: "string", file: "string.png", label: "String", title: "线" },
+  { id: "gunpowder", file: "gunpowder.png", label: "Gunpowder", title: "火药" },
+  { id: "spider-eye", file: "spider_eye.png", label: "Spider eye", title: "蜘蛛眼" },
+  { id: "ender-pearl", file: "ender_pearl.png", label: "Ender pearl", title: "末影珍珠" },
+  { id: "feather", file: "feather.png", label: "Feather", title: "羽毛" },
+  { id: "wheat", file: "wheat.png", label: "Wheat", title: "小麦" },
+  { id: "cooked-porkchop", file: "porkchop_cooked.png", label: "Cooked porkchop", title: "熟猪排" },
+  { id: "cooked-chicken", file: "chicken_cooked.png", label: "Cooked chicken", title: "熟鸡肉" },
+  { id: "cooked-mutton", file: "mutton_cooked.png", label: "Cooked mutton", title: "熟羊肉" },
+  { id: "carrot", file: "carrot.png", label: "Carrot", title: "胡萝卜" },
+  { id: "baked-potato", file: "potato_baked.png", label: "Baked potato", title: "烤马铃薯" },
+  { id: "cookie", file: "cookie.png", label: "Cookie", title: "曲奇" },
+  { id: "pumpkin-pie", file: "pumpkin_pie.png", label: "Pumpkin pie", title: "南瓜派" },
+  { id: "melon-slice", file: "melon.png", label: "Melon slice", title: "西瓜片" },
+];
+
 export const HOTBAR_LOADOUT = [
   "diamond-sword",
   "bow",
@@ -89,8 +127,14 @@ export function itemPages(pageSize = PAGE_SIZE) {
   return pages;
 }
 
+export function moreItemPages(pageSize = PAGE_SIZE) {
+  const pages = [];
+  for (let i = 0; i < MORE_ITEMS.length; i += pageSize) pages.push(MORE_ITEMS.slice(i, i + pageSize));
+  return pages;
+}
+
 export function itemById(id) {
-  const item = ITEMS.find((it) => it.id === id) ?? BLOCK_ITEMS.find((it) => it.id === id);
+  const item = ITEMS.find((it) => it.id === id) ?? MORE_ITEMS.find((it) => it.id === id) ?? BLOCK_ITEMS.find((it) => it.id === id);
   if (!item) throw new Error(`unknown item ${id}`);
   return item;
 }

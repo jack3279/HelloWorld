@@ -11,8 +11,10 @@ import {
   ATLAS,
   BLOCK_ITEMS,
   ITEMS,
+  MORE_ITEMS,
   SINGLE,
   itemPages,
+  moreItemPages,
   layoutAtlas,
   layoutSingle,
   loadItem,
@@ -29,7 +31,7 @@ await mkdir(outDir, { recursive: true });
 
 const singleBox = layoutSingle();
 
-for (const item of [...ITEMS, ...BLOCK_ITEMS]) {
+for (const item of [...ITEMS, ...MORE_ITEMS, ...BLOCK_ITEMS]) {
   const png = await loadItem(item.id);
   const svg = wrapSvg(
     item.id,
@@ -40,7 +42,7 @@ for (const item of [...ITEMS, ...BLOCK_ITEMS]) {
   await writeFile(resolve(outDir, `${item.id}.svg`), svg);
 }
 
-for (const [index, page] of itemPages().entries()) {
+for (const [index, page] of [...itemPages(), ...moreItemPages()].entries()) {
   const atlas = layoutAtlas(page);
   const parts = [];
   for (const cell of atlas.cells) {
@@ -53,4 +55,4 @@ for (const [index, page] of itemPages().entries()) {
   console.log(`Wrote ${path}`);
 }
 
-console.log(`Wrote ${ITEMS.length + BLOCK_ITEMS.length} squares in ${outDir}`);
+console.log(`Wrote ${ITEMS.length + MORE_ITEMS.length + BLOCK_ITEMS.length} squares in ${outDir}`);

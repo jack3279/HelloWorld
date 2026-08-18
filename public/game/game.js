@@ -21,6 +21,16 @@ const ITEM_LABELS = {
   "golden-apple": "金苹果",
   "potion-heal": "治疗药水",
   diamond: "钻石",
+  "iron-chestplate": "铁胸甲",
+  "rotten-flesh": "腐肉",
+  bone: "骨头",
+  string: "线",
+  gunpowder: "火药",
+  "spider-eye": "蜘蛛眼",
+  "ender-pearl": "末影珍珠",
+  "cooked-porkchop": "熟猪排",
+  "cooked-chicken": "熟鸡肉",
+  carrot: "胡萝卜",
 };
 
 const FOOD = {
@@ -29,6 +39,10 @@ const FOOD = {
   apple: { hunger: 4, health: 2 },
   "golden-apple": { hunger: 10, health: 10 },
   "potion-heal": { hunger: 0, health: 8 },
+  "cooked-porkchop": { hunger: 8, health: 4 },
+  "cooked-chicken": { hunger: 6, health: 3 },
+  carrot: { hunger: 3, health: 1 },
+  "rotten-flesh": { hunger: 4, health: -2 },
 };
 
 const BLOCKS = {
@@ -108,6 +122,8 @@ const MANIFEST = [
   ...range(8, (i) => `skeleton-sprites/walk-${i * 2}.svg`),
   ...range(8, (i) => `spider-sprites/walk-${i * 2}.svg`),
   ...range(8, (i) => `enderman-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `creeper-sprites/walk-${i * 2}.svg`),
+  ...range(10, (i) => `creeper-sprites/swell-${i * 2}.svg`),
   ...Object.keys(ITEM_LABELS).map((id) => `items/${id}.svg`),
   "hud/heart.svg",
   "hud/heart-half.svg",
@@ -115,6 +131,9 @@ const MANIFEST = [
   "hud/hunger-full.svg",
   "hud/hunger-half.svg",
   "hud/hunger-empty.svg",
+  "hud/armor-full.svg",
+  "hud/armor-half.svg",
+  "hud/armor-empty.svg",
   "hud/hotbar.svg",
   "hud/selected-slot.svg",
   "hud/hotbar-slot.svg",
@@ -328,6 +347,7 @@ function makePlayer() {
     dead: false,
     inWater: false,
     inLava: false,
+    armor: 0,
     selected: 0,
     items: [
       { id: "diamond-sword", count: 1 },
@@ -349,6 +369,7 @@ function makeMob(kind, tx, ty) {
     skeleton: { hp: 6, speed: 90, dmg: 1, hw: 11, hh: 50, scale: 0.17, sheet: "skeleton-sprites", h: 520 },
     spider: { hp: 6, speed: 130, dmg: 1, hw: 18, hh: 28, scale: 0.14, sheet: "spider-sprites", h: 400 },
     enderman: { hp: 12, speed: 100, dmg: 3, hw: 10, hh: 70, scale: 0.16, sheet: "enderman-sprites", h: 640 },
+    creeper: { hp: 10, speed: 75, dmg: 8, hw: 12, hh: 44, scale: 0.18, sheet: "creeper-sprites", h: 480 },
   };
   return {
     kind,
@@ -365,6 +386,7 @@ function makeMob(kind, tx, ty) {
     dead: false,
     inWater: false,
     inLava: false,
+    fuse: 0,
   };
 }
 
@@ -378,6 +400,7 @@ function resetGame() {
   mobs = [
     makeMob("zombie", 18, 10),
     makeMob("skeleton", 27, 10),
+    makeMob("creeper", 33, 10),
     makeMob("spider", 43, 10),
     makeMob("enderman", 56, 10),
     makeMob("zombie", 50, 10),
@@ -388,6 +411,7 @@ function resetGame() {
     makeDrop("diamond", TILE * 42, TILE * 5.5),
     makeDrop("apple", TILE * 21, TILE * 9),
     makeDrop("bread", TILE * 39, TILE * 9),
+    makeDrop("iron-chestplate", TILE * 67, TILE * 9),
   ];
   particles = [];
   cam = { x: 0, y: 0 };
@@ -404,6 +428,9 @@ function selectedItem() {
 }
 
 function addItem(id, count) {
+  if (id === "iron-chestplate") {
+    player.armor = Math.min(20, player.armor + 8);
+  }
   const stack = player.items.find((it) => it.id === id);
   if (stack) stack.count += count;
   else {
@@ -428,7 +455,9 @@ function hurt(who, amount, dir) {
   if (who.dead) return;
   if (who === player) {
     if (player.invuln > 0) return;
-    player.health = Math.max(0, player.health - amount);
+    const soaked = Math.min(amount - 1, Math.floor(player.armor / 4));
+    const taken = Math.max(1, amount - soaked);
+    player.health = Math.max(0, player.health - taken);
     player.invuln = 0.9;
     player.hurtT = 8 / 12;
     player.vx = dir * 220;
@@ -448,8 +477,15 @@ function hurt(who, amount, dir) {
   who.vy = -160;
   if (who.health <= 0) {
     who.dead = true;
-    if (who.kind === "enderman" || Math.random() < 0.7) drops.push(makeDrop("diamond", who.x, who.y - 20));
-    else drops.push(makeDrop("apple", who.x, who.y - 20));
+    const loot = {
+      zombie: "rotten-flesh",
+      skeleton: "bone",
+      spider: "string",
+      creeper: "gunpowder",
+      enderman: "ender-pearl",
+    };
+    drops.push(makeDrop(loot[who.kind] ?? "apple", who.x, who.y - 20));
+    if (who.kind === "enderman" || Math.random() < 0.25) drops.push(makeDrop("diamond", who.x + 8, who.y - 24));
   }
 }
 
@@ -471,7 +507,7 @@ function useSelected() {
       say("已经吃饱了。");
       return;
     }
-    player.health = Math.min(20, player.health + food.health);
+    player.health = Math.min(20, Math.max(0, player.health + food.health));
     player.hunger = Math.min(20, player.hunger + food.hunger);
     item.count -= 1;
     say(`使用了${ITEM_LABELS[item.id]}`);
@@ -564,16 +600,31 @@ function updateMobs(dt) {
     mob.age += dt;
     if (mob.hitT > 0) mob.hitT -= dt;
     const dx = player.x - mob.x;
-    if (!player.dead && Math.abs(dx) < 420) {
+    const close = !player.dead && Math.abs(dx) < 420;
+    if (mob.kind === "creeper" && close && Math.abs(dx) < 72 && Math.abs(mob.y - player.y) < 56) {
       mob.face = Math.sign(dx) || mob.face;
-      mob.vx = mob.face * mob.speed;
-      if (mob.kind === "spider" && mob.grounded && Math.abs(dx) < 90 && Math.random() < 0.02) mob.vy = -520;
+      mob.vx = 0;
+      mob.fuse += dt;
+      if (mob.fuse >= 1.35) {
+        hurt(player, 10, Math.sign(player.x - mob.x) || -1);
+        mob.dead = true;
+        drops.push(makeDrop("gunpowder", mob.x, mob.y - 20));
+        say("苦力怕爆炸了！");
+        continue;
+      }
     } else {
-      mob.vx *= 0.8;
+      if (mob.kind === "creeper") mob.fuse = Math.max(0, mob.fuse - dt * 1.8);
+      if (close) {
+        mob.face = Math.sign(dx) || mob.face;
+        mob.vx = mob.face * mob.speed;
+        if (mob.kind === "spider" && mob.grounded && Math.abs(dx) < 90 && Math.random() < 0.02) mob.vy = -520;
+      } else {
+        mob.vx *= 0.8;
+      }
     }
     moveBody(mob, dt);
     if (mob.inLava) hurt(mob, 4, -mob.face);
-    if (!player.dead && Math.abs(mob.x - player.x) < mob.hw + player.hw + 4 && Math.abs(mob.y - player.y) < mob.hh) {
+    if (mob.kind !== "creeper" && !player.dead && Math.abs(mob.x - player.x) < mob.hw + player.hw + 4 && Math.abs(mob.y - player.y) < mob.hh) {
       hurt(player, mob.dmg, Math.sign(player.x - mob.x) || -1);
     }
   }
@@ -674,10 +725,16 @@ function drawDrops() {
 function drawMobs() {
   for (const mob of mobs) {
     if (mob.dead) continue;
-    const frame = Math.floor(mob.age * 10) % 8;
-    const rel = `${mob.sheet}/walk-${frame * 2}.svg`;
+    let rel;
+    if (mob.kind === "creeper" && mob.fuse > 0.12) {
+      const frame = Math.min(18, Math.floor((mob.fuse / 1.35) * 10) * 2);
+      rel = `creeper-sprites/swell-${frame}.svg`;
+    } else {
+      const frame = Math.floor(mob.age * 10) % 8;
+      rel = `${mob.sheet}/walk-${frame * 2}.svg`;
+    }
     const spec = { w: 512, h: mob.h, ax: 256, ay: mob.h - 16, scale: mob.scale };
-    if (mob.hitT > 0) ctx.filter = "brightness(2)";
+    if (mob.hitT > 0 || (mob.kind === "creeper" && mob.fuse > 0.4 && Math.floor(time * 16) % 2 === 0)) ctx.filter = "brightness(2)";
     drawAnchored(rel, spec, mob.x - cam.x, mob.y - cam.y, mob.face);
     ctx.filter = "none";
   }
@@ -704,6 +761,9 @@ function drawHud() {
   const barY = viewH - 86;
   drawHearts(barX + 8, barY - 28, player.health, "hud/heart.svg", "hud/heart-half.svg", "hud/heart-empty.svg");
   drawHearts(barX + barW - 8 - 180, barY - 28, player.hunger, "hud/hunger-full.svg", "hud/hunger-half.svg", "hud/hunger-empty.svg");
+  if (player.armor > 0) {
+    drawHearts(barX + 8, barY - 48, player.armor, "hud/armor-full.svg", "hud/armor-half.svg", "hud/armor-empty.svg");
+  }
 
   drawImage("hud/xp-bar.svg", barX, barY - 8, barW, 28);
   const progress = Math.min(1, diamonds() / GOAL_DIAMONDS);

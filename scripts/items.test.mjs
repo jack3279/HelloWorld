@@ -11,6 +11,7 @@ import {
   HOTBAR_LOADOUT,
   BLOCK_ITEMS,
   ITEMS,
+  MORE_ITEMS,
   PAGE_SIZE,
   WORLD_LOADOUT,
   PICKUP,
@@ -18,6 +19,7 @@ import {
   TILE,
   dropPositionKeys,
   itemPages,
+  moreItemPages,
   layoutAtlas,
   layoutSingle,
   loadItem,
@@ -48,8 +50,27 @@ describe("hotbar item catalog", () => {
     }
   });
 
+  it("adds armor, mob drops, and extra food on two more pages", () => {
+    assert.equal(MORE_ITEMS.length, PAGE_SIZE * 2);
+    assert.equal(moreItemPages().length, 2);
+    const ids = MORE_ITEMS.map((it) => it.id);
+    for (const id of [
+      "iron-chestplate",
+      "diamond-helmet",
+      "netherite-boots",
+      "rotten-flesh",
+      "bone",
+      "gunpowder",
+      "ender-pearl",
+      "cooked-porkchop",
+    ]) {
+      assert.ok(ids.includes(id), id);
+    }
+    assert.ok(!ids.includes("leather-helmet"), "leather helmet is missing from Bedrock items");
+  });
+
   it("loads official 16×16 sprites", async () => {
-    for (const item of ITEMS) {
+    for (const item of [...ITEMS, ...MORE_ITEMS]) {
       const png = await loadItem(item.id);
       assert.ok(png.width >= TILE, item.id);
       assert.ok(png.height >= TILE, item.id);
@@ -142,6 +163,41 @@ describe("item icons", () => {
       "diamond gem is cyan",
     );
   });
+
+  it("paints bone pale, gunpowder dark, and rotten flesh pink", async () => {
+    const bone = runsOf(await loadItem("bone"));
+    const powder = runsOf(await loadItem("gunpowder"));
+    const flesh = runsOf(await loadItem("rotten-flesh"));
+    const helm = runsOf(await loadItem("diamond-helmet"));
+    assert.ok(
+      runCoverage(bone, (hex) => {
+        const [r, g, b] = rgbOf(hex);
+        return r > 180 && g > 170 && b > 150;
+      }) > 8,
+      "bone is pale",
+    );
+    assert.ok(
+      runCoverage(powder, (hex) => {
+        const [r, g, b] = rgbOf(hex);
+        return r < 90 && g < 90 && b < 90;
+      }) > 8,
+      "gunpowder is dark",
+    );
+    assert.ok(
+      runCoverage(flesh, (hex) => {
+        const [r, g, b] = rgbOf(hex);
+        return r > 140 && g < 110;
+      }) > 6,
+      "rotten flesh is pink",
+    );
+    assert.ok(
+      runCoverage(helm, (hex) => {
+        const [r, g, b] = rgbOf(hex);
+        return b > 80 && g > 80 && r < 90;
+      }) > 8,
+      "diamond helmet is cyan",
+    );
+  });
 });
 
 describe("drop motion", () => {
@@ -212,7 +268,7 @@ describe("hotbar loadout", () => {
 
 describe("generated item assets", () => {
   it("writes a square SVG for every catalog icon", async () => {
-    for (const item of ITEMS) {
+    for (const item of [...ITEMS, ...MORE_ITEMS]) {
       const svg = await readFile(resolve(ROOT, `assets/items/${item.id}.svg`), "utf8");
       assert.match(svg, /<svg /);
       assert.match(svg, new RegExp(`id="${item.id}"`));
@@ -221,11 +277,13 @@ describe("generated item assets", () => {
     }
   });
 
-  it("ships atlas, drop, and pickup Skottie scenes", async () => {
+  it("ships atlas, drop, pickup, armor, and drop-food Skottie scenes", async () => {
     const pages = [
       ["scene-1", "Items — Hotbar", 1],
       ["scene-2", "Items — Drop", DROP.op],
       ["scene-3", "Items — Pickup", PICKUP.op],
+      ["scene-4", "Items — Armor", 1],
+      ["scene-5", "Items — Drops & food", 1],
     ];
     for (const [slug, name, op] of pages) {
       const lottie = JSON.parse(
