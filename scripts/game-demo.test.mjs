@@ -15,12 +15,15 @@ function repoPath(url) {
 describe("html game demo", () => {
   it("ships a standalone page that loads vanilla JS", async () => {
     const html = await readFile(resolve(ROOT, "public/game/index.html"), "utf8");
+    const game = await readFile(resolve(ROOT, "public/game/game.js"), "utf8");
     assert.match(html, /id="game"/);
     assert.match(html, /id="start"/);
     assert.match(html, /id="demo"/);
     assert.match(html, /src="\/game\/game\.js"/);
     assert.match(html, /href="\/game\/style\.css"/);
     assert.match(html, /type="module"/);
+    assert.match(game, /from "\.\/recipes\.js"/);
+    assert.match(game, /tryOpenTable|craftingOpen/);
   });
 
   it("preloads existing repo art instead of inventing new sprites", async () => {

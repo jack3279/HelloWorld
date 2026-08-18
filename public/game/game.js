@@ -1,3 +1,5 @@
+import { RECIPES, canCraft, craftOnce, itemAsset } from "./recipes.js";
+
 const ROOT = "/repo-assets";
 const TILE = 48;
 const GOAL_DIAMONDS = 5;
@@ -20,7 +22,7 @@ const MINEABLE = {
   e: { drop: "melon-slice" },
   y: { drop: "wheat" },
 };
-const PLACEABLE = { torch: "t", dirt: "d", cobblestone: "c", "oak-planks": "p" };
+const PLACEABLE = { torch: "t", dirt: "d", cobblestone: "c", "oak-planks": "p", "crafting-table": "T" };
 
 const STEVE = {
   loco: { w: 256, h: 320, ax: 128, ay: 300, scale: 0.3 },
@@ -59,6 +61,19 @@ const ITEM_LABELS = {
   pumpkin: "南瓜",
   "melon-slice": "西瓜片",
   "oak-log": "橡木原木",
+  "oak-planks": "橡木木板",
+  stick: "木棍",
+  "crafting-table": "工作台",
+  bow: "弓",
+  "diamond-axe": "钻石斧",
+  shears: "剪刀",
+  bucket: "桶",
+  "iron-ingot": "铁锭",
+  "gold-ingot": "金锭",
+  sugar: "糖",
+  egg: "鸡蛋",
+  "pumpkin-pie": "南瓜派",
+  "diamond-chestplate": "钻石胸甲",
 };
 
 const FOOD = {
@@ -71,6 +86,7 @@ const FOOD = {
   "cooked-chicken": { hunger: 6, health: 3 },
   carrot: { hunger: 3, health: 1 },
   "rotten-flesh": { hunger: 4, health: -2 },
+  "pumpkin-pie": { hunger: 8, health: 3 },
 };
 
 const BLOCKS = {
@@ -135,6 +151,9 @@ let mobs = [];
 let drops = [];
 let arrows = [];
 let particles = [];
+let craftingOpen = false;
+let craftScroll = 0;
+const CRAFT_VISIBLE = 6;
 let cam = { x: 0, y: 0 };
 let time = 0;
 let clock = 8;
@@ -194,7 +213,7 @@ const MANIFEST = [
   ...range(8, (i) => `cow-sprites/rest-${i}.svg`),
   ...range(8, (i) => `cow-sprites/hurt-${i}.svg`),
   ...range(8, (i) => `cow-sprites/death-${i}.svg`),
-  ...Object.keys(ITEM_LABELS).map((id) => `items/${id}.svg`),
+  ...Object.keys(ITEM_LABELS).map((id) => itemAsset(id)),
   "hud/heart.svg",
   "hud/heart-half.svg",
   "hud/heart-empty.svg",
@@ -410,6 +429,7 @@ function moveBody(body, dt) {
   body.inWater = mid === "w" || tileAt(body.x, body.y - 16) === "w";
   body.inLava = mid === "v" || tileAt(body.x, body.y - 16) === "v";
   body.atChest = chest === "C" || tileAt(body.x + 16, body.y - 8) === "C" || tileAt(body.x - 16, body.y - 8) === "C";
+  body.atTable = chest === "T" || tileAt(body.x + 16, body.y - 8) === "T" || tileAt(body.x - 16, body.y - 8) === "T";
   const bed = tileAt(body.x, body.y - 8);
   body.atBed = bed === "z" || bed === "Z" || tileAt(body.x + 16, body.y - 8) === "z" || tileAt(body.x - 16, body.y - 8) === "Z";
   if (body.inWater) {
@@ -441,6 +461,7 @@ function makePlayer() {
     inWater: false,
     inLava: false,
     atBed: false,
+    atTable: false,
     armor: 0,
     selected: 0,
     sleeping: 0,
@@ -452,9 +473,8 @@ function makePlayer() {
       { id: "wheat-seeds", count: 8 },
       { id: "carrot", count: 4 },
       { id: "wheat", count: 4 },
-      { id: "bread", count: 4 },
-      { id: "steak", count: 2 },
-      { id: "diamond", count: 0 },
+      { id: "bread", count: 2 },
+      { id: "oak-log", count: 8 },
     ],
   };
 }
@@ -522,16 +542,21 @@ function resetGame() {
     makeDrop("golden-apple", TILE * 21, TILE * 9),
     makeDrop("potion-heal", TILE * 39, TILE * 9),
     makeDrop("iron-chestplate", TILE * 67, TILE * 9),
+    makeDrop("coal", TILE * 63.5, TILE * 9, 6),
+    makeDrop("iron-ingot", TILE * 64.2, TILE * 9, 4),
+    makeDrop("apple", TILE * 69, TILE * 9, 2),
   ];
   particles = [];
   arrows = [];
+  craftingOpen = false;
+  craftScroll = 0;
   cam = { x: 0, y: 0 };
   time = 0;
   clock = 8;
   win = false;
   demo = null;
   hold.left = hold.right = hold.jump = hold.use = false;
-  message = "向东走。白天种田喂猪，晚上回屋睡觉。箱子要 5 颗钻石。";
+  message = "向东走。房子里有工作台可以合成。箱子要 5 颗钻石。";
   messageT = 5;
 }
 
@@ -540,18 +565,26 @@ function selectedItem() {
 }
 
 function addItem(id, count) {
-  if (id === "iron-chestplate") {
-    player.armor = Math.min(20, player.armor + 8);
+  if (id === "iron-chestplate" || id === "diamond-chestplate") {
+    player.armor = Math.min(20, player.armor + (id.startsWith("diamond") ? 16 : 8));
   }
   const stack = player.items.find((it) => it.id === id);
-  if (stack) stack.count += count;
-  else {
-    const empty = player.items.find((it) => it.count <= 0);
-    if (empty) {
-      empty.id = id;
-      empty.count = count;
-    }
+  if (stack) {
+    stack.count += count;
+    return;
   }
+  const empty = player.items.find((it) => it.count <= 0);
+  if (empty) {
+    empty.id = id;
+    empty.count = count;
+    return;
+  }
+  if (player.items.length < 9) {
+    player.items.push({ id, count });
+    return;
+  }
+  drops.push(makeDrop(id, player.x, player.y - 20, count));
+  say(`背包满了，${ITEM_LABELS[id] ?? id}掉在地上。`);
 }
 
 function diamonds() {
@@ -611,6 +644,33 @@ function frontCell() {
     { x: Math.floor(player.x / TILE), y: Math.floor((player.y - 12) / TILE) },
   ];
   return cells;
+}
+
+function tryOpenTable() {
+  if (!player.atTable) return false;
+  craftingOpen = !craftingOpen;
+  craftScroll = 0;
+  say(craftingOpen ? "打开了工作台。点击配方合成。" : "关上了工作台。", 3);
+  return true;
+}
+
+function visibleRecipes() {
+  const max = Math.max(0, RECIPES.length - CRAFT_VISIBLE);
+  craftScroll = Math.max(0, Math.min(max, craftScroll));
+  return RECIPES.slice(craftScroll, craftScroll + CRAFT_VISIBLE);
+}
+
+function doCraft(recipe) {
+  if (!recipe) return;
+  if (!canCraft(player.items, recipe)) {
+    say(`还缺材料，做不了${ITEM_LABELS[recipe.id] ?? recipe.id}。`);
+    return;
+  }
+  const made = craftOnce(player.items, recipe);
+  if (!made) return;
+  addItem(made.id, made.count);
+  burstBits(player.x, player.y - 20, "#c6a15b");
+  say(`合成了${ITEM_LABELS[made.id] ?? made.id} ×${made.count}。`);
 }
 
 function trySleep() {
@@ -754,6 +814,12 @@ function hurt(who, amount, dir) {
 function useSelected() {
   if (player.dead || win) return;
   if (player.sleeping > 0 || player.eatT > 0) return;
+  if (craftingOpen) {
+    craftingOpen = false;
+    say("关上了工作台。");
+    return;
+  }
+  if (tryOpenTable()) return;
   if (trySleep()) return;
   if (tryFeed()) return;
   if (tryFarm()) return;
@@ -801,6 +867,16 @@ function updatePlayer(dt) {
   if (player.dead) {
     player.age += dt;
     player.frame = Math.min(11, Math.floor(player.age * 10));
+    return;
+  }
+
+  if (craftingOpen) {
+    player.vx = 0;
+    player.vy = 0;
+    player.anim = "idle";
+    player.frame = Math.floor(player.age * 6) % 2;
+    player.age += dt;
+    if (!player.atTable) craftingOpen = false;
     return;
   }
 
@@ -1201,7 +1277,7 @@ function drawDrops() {
   for (const drop of drops) {
     if (drop.gone) continue;
     const bob = Math.sin(drop.bob) * 4;
-    drawImage(`items/${drop.id}.svg`, drop.x - 14 - cam.x, drop.y - 14 + bob - cam.y, 28, 28);
+    drawImage(itemAsset(drop.id), drop.x - 14 - cam.x, drop.y - 14 + bob - cam.y, 28, 28);
   }
 }
 
@@ -1255,6 +1331,75 @@ function drawHearts(x, y, value, full, half, empty) {
   }
 }
 
+function craftPanelBox() {
+  const w = Math.min(560, viewW - 32);
+  const h = Math.min(392, viewH - 120);
+  return { x: (viewW - w) / 2, y: 48, w, h };
+}
+
+function drawCraftPanel() {
+  const box = craftPanelBox();
+  ctx.fillStyle = "rgba(8, 10, 16, 0.78)";
+  ctx.fillRect(0, 0, viewW, viewH);
+  ctx.fillStyle = "rgba(22, 18, 14, 0.96)";
+  ctx.fillRect(box.x, box.y, box.w, box.h);
+  ctx.strokeStyle = "#c6a15b";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(box.x + 1.5, box.y + 1.5, box.w - 3, box.h - 3);
+
+  ctx.textAlign = "left";
+  ctx.font = "bold 22px sans-serif";
+  ctx.fillStyle = "#ffe566";
+  ctx.fillText("工作台", box.x + 18, box.y + 32);
+  ctx.font = "14px sans-serif";
+  ctx.fillStyle = "#ddd";
+  ctx.fillText("点击配方合成  ·  1–6 快捷  ·  W/S 翻页  ·  Esc 关闭", box.x + 18, box.y + 54);
+
+  const rows = visibleRecipes();
+  const rowH = 48;
+  const top = box.y + 70;
+  rows.forEach((recipe, i) => {
+    const y = top + i * rowH;
+    const ready = canCraft(player.items, recipe);
+    ctx.fillStyle = ready ? "rgba(70, 90, 48, 0.85)" : "rgba(28, 24, 20, 0.9)";
+    ctx.fillRect(box.x + 12, y, box.w - 24, rowH - 6);
+    let x = box.x + 20;
+    for (const [id, n] of Object.entries(recipe.need)) {
+      drawImage(itemAsset(id), x, y + 6, 28, 28);
+      ctx.fillStyle = countOwnedSafe(id) >= n ? "#fff" : "#ff8a8a";
+      ctx.font = "bold 12px sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(`×${n}`, x + 30, y + 36);
+      x += 44;
+    }
+    ctx.fillStyle = "#ffe566";
+    ctx.font = "bold 20px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("→", x + 4, y + 28);
+    drawImage(itemAsset(recipe.id), x + 32, y + 6, 28, 28);
+    ctx.fillStyle = "#fff";
+    ctx.font = "13px sans-serif";
+    ctx.fillText(`×${recipe.count}`, x + 62, y + 36);
+    ctx.fillStyle = ready ? "#ffe566" : "#aaa";
+    ctx.font = "16px sans-serif";
+    ctx.fillText(`${i + 1}  ${ITEM_LABELS[recipe.id] ?? recipe.id}`, x + 96, y + 28);
+  });
+}
+
+function countOwnedSafe(id) {
+  return player.items.reduce((sum, it) => sum + (it.id === id && it.count > 0 ? it.count : 0), 0);
+}
+
+function craftRowAt(mx, my) {
+  const box = craftPanelBox();
+  const top = box.y + 70;
+  const rowH = 48;
+  if (mx < box.x + 12 || mx > box.x + box.w - 12) return -1;
+  const i = Math.floor((my - top) / rowH);
+  if (i < 0 || i >= visibleRecipes().length) return -1;
+  return i;
+}
+
 function drawHud() {
   const barW = 364;
   const barX = (viewW - barW) / 2;
@@ -1277,7 +1422,7 @@ function drawHud() {
     const it = player.items[i];
     const sx = origin + i * 38;
     const sy = barY + 26;
-    if (it && it.count > 0) drawImage(`items/${it.id}.svg`, sx, sy, 28, 28);
+    if (it && it.count > 0) drawImage(itemAsset(it.id), sx, sy, 28, 28);
     if (it && it.count > 1) {
       ctx.fillStyle = "#111";
       ctx.font = "bold 12px sans-serif";
@@ -1306,6 +1451,7 @@ function drawHud() {
   ctx.font = "14px sans-serif";
   ctx.fillStyle = "#fff";
   ctx.fillText(`钻石 ${diamonds()} / ${GOAL_DIAMONDS}   ${hourLabel()}`, 16, 28);
+  if (craftingOpen) drawCraftPanel();
   if (player.sleeping > 0) {
     ctx.fillStyle = `rgba(8,10,24,${1 - player.sleeping / 1.7})`;
     ctx.fillRect(0, 0, viewW, viewH);
@@ -1379,6 +1525,9 @@ const CODE_KEYS = {
   ArrowLeft: "arrowleft",
   ArrowRight: "arrowright",
   ArrowUp: "arrowup",
+  ArrowDown: "arrowdown",
+  Escape: "escape",
+  KeyQ: "q",
 };
 
 function bindKey(e) {
@@ -1386,7 +1535,41 @@ function bindKey(e) {
   const key = e.key.toLowerCase();
   if (key === "right") return "arrowright";
   if (key === "left") return "arrowleft";
+  if (key === "down") return "arrowdown";
+  if (key === "escape") return "escape";
   return key;
+}
+
+function handleCraftKey(key) {
+  if (!craftingOpen || mode !== "play") return false;
+  if (key === "escape" || key === "q") {
+    craftingOpen = false;
+    say("关上了工作台。");
+    return true;
+  }
+  if (key === "w" || key === "arrowup") {
+    craftScroll -= 1;
+    visibleRecipes();
+    return true;
+  }
+  if (key === "s" || key === "arrowdown") {
+    craftScroll += 1;
+    visibleRecipes();
+    return true;
+  }
+  if (key >= "1" && key <= "6") {
+    doCraft(visibleRecipes()[Number(key) - 1]);
+    return true;
+  }
+  return false;
+}
+
+function canvasPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: ((e.clientX - rect.left) / rect.width) * viewW,
+    y: ((e.clientY - rect.top) / rect.height) * viewH,
+  };
 }
 
 function pulse(t, a, b) {
@@ -1428,6 +1611,10 @@ window.addEventListener("keydown", (e) => {
   const key = bindKey(e);
   keys.add(key);
   if ([" ", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) e.preventDefault();
+  if (handleCraftKey(key)) {
+    e.preventDefault();
+    return;
+  }
   if (e.code.startsWith("Digit")) {
     const n = Number(e.code.slice(5));
     if (n >= 1 && n <= 9 && player) player.selected = n - 1;
@@ -1446,7 +1633,21 @@ window.addEventListener("blur", () => keys.clear());
 
 canvas.addEventListener("mousedown", (e) => {
   if (mode !== "play") return;
-  if (e.button === 0) useSelected();
+  if (e.button !== 0) return;
+  if (craftingOpen) {
+    const pos = canvasPos(e);
+    const row = craftRowAt(pos.x, pos.y);
+    if (row >= 0) doCraft(visibleRecipes()[row]);
+    else {
+      const box = craftPanelBox();
+      if (pos.x < box.x || pos.x > box.x + box.w || pos.y < box.y || pos.y > box.y + box.h) {
+        craftingOpen = false;
+        say("关上了工作台。");
+      }
+    }
+    return;
+  }
+  useSelected();
 });
 
 window.addEventListener("resize", resize);
