@@ -141,17 +141,21 @@ function loadImage(src) {
   });
 }
 
-function bakeFace(image) {
+const faceFill = new Map();
+
+function bakeFace(image, rel) {
   const canvas = document.createElement("canvas");
   canvas.width = 16;
   canvas.height = 16;
   const face = canvas.getContext("2d");
   face.imageSmoothingEnabled = false;
   face.drawImage(image, 0, 0, 16, 16);
+  const sample = face.getImageData(8, 8, 1, 1).data;
+  if (sample[3] > 200) faceFill.set(rel, `rgb(${sample[0]},${sample[1]},${sample[2]})`);
   return canvas;
 }
 
-async function loadFace(src) {
+async function loadFace(src, rel) {
   const svg = await fetch(src).then((res) => {
     if (!res.ok) throw new Error(`failed to load ${src}`);
     return res.text();
@@ -161,7 +165,7 @@ async function loadFace(src) {
   const url = URL.createObjectURL(new Blob([cropped], { type: "image/svg+xml" }));
   try {
     const image = await loadImage(url);
-    return bakeFace(image);
+    return bakeFace(image, rel);
   } finally {
     URL.revokeObjectURL(url);
   }
@@ -172,7 +176,7 @@ async function loadAll() {
   await Promise.all(
     MANIFEST.map(async (rel) => {
       const src = asset(rel);
-      const pic = isFaceAsset(rel) ? await loadFace(src) : await loadImage(src);
+      const pic = isFaceAsset(rel) ? await loadFace(src, rel) : await loadImage(src);
       images.set(rel, pic);
       done += 1;
       loadStatus.textContent = `正在载入素材… ${done}/${MANIFEST.length}`;
@@ -651,9 +655,16 @@ function drawTile(rel, dx, dy) {
   if (!pic) return;
   const x = Math.floor(dx);
   const y = Math.floor(dy);
+  const w = TILE + 2;
+  const h = TILE + 2;
+  const fill = faceFill.get(rel);
+  if (fill) {
+    ctx.fillStyle = fill;
+    ctx.fillRect(x, y, w, h);
+  }
   const prev = ctx.imageSmoothingEnabled;
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(pic, x, y, TILE + 2, TILE + 2);
+  ctx.drawImage(pic, x, y, w, h);
   ctx.imageSmoothingEnabled = prev;
 }
 

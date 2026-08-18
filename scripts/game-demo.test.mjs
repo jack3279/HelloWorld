@@ -54,6 +54,7 @@ describe("html game demo", () => {
     assert.match(src, /FACE_PAD = 56/);
     assert.match(src, /function drawTile/);
     assert.match(src, /function loadFace/);
+    assert.match(src, /faceFill/);
     assert.match(src, /viewBox="\$\{FACE_PAD\}/);
     assert.match(src, /TILE \+ 2/);
     assert.match(src, /drawTile\(lavaFrame/);
