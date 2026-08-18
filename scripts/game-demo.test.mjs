@@ -49,6 +49,17 @@ describe("html game demo", () => {
     assert.ok(rels.has("items/diamond-sword.svg"));
   });
 
+  it("crops the 56px SVG pad so terrain tiles share edges", async () => {
+    const src = await readFile(resolve(ROOT, "public/game/game.js"), "utf8");
+    assert.match(src, /FACE_PAD = 56/);
+    assert.match(src, /function drawTile/);
+    assert.match(src, /TILE \+ 1/);
+    assert.match(src, /drawTile\(lavaFrame/);
+    assert.match(src, /drawTile\(BLOCKS\[t\]/);
+    assert.doesNotMatch(src, /drawImage\(lavaFrame/);
+    assert.doesNotMatch(src, /drawImage\(BLOCKS\[t\]/);
+  });
+
   it("serves those files from /repo-assets/", async () => {
     const plugin = await readFile(resolve(ROOT, "vite-plugins/repo-assets.ts"), "utf8");
     const vite = await readFile(resolve(ROOT, "vite.config.ts"), "utf8");

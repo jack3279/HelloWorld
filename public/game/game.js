@@ -1,5 +1,7 @@
 const ROOT = "/repo-assets";
 const TILE = 48;
+const FACE_PAD = 56;
+const FACE_SIZE = 512;
 const GOAL_DIAMONDS = 5;
 const GRAVITY = 2100;
 const MOVE = 210;
@@ -614,6 +616,20 @@ function drawImage(rel, x, y, w, h) {
   ctx.drawImage(pic, x, y, w, h);
 }
 
+function drawTile(rel, dx, dy) {
+  const pic = img(rel);
+  if (!pic) return;
+  const src = pic.naturalWidth || FACE_SIZE;
+  const pad = src * (FACE_PAD / FACE_SIZE);
+  const inner = src - pad * 2;
+  const x = Math.floor(dx);
+  const y = Math.floor(dy);
+  const prev = ctx.imageSmoothingEnabled;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(pic, pad, pad, inner, inner, x, y, TILE + 1, TILE + 1);
+  ctx.imageSmoothingEnabled = prev;
+}
+
 function drawAnchored(rel, spec, x, y, face) {
   const pic = img(rel);
   if (!pic) return;
@@ -657,8 +673,8 @@ function drawWorld() {
       if (t === ".") continue;
       const dx = x * TILE - cam.x;
       const dy = y * TILE - cam.y;
-      if (t === "v") drawImage(lavaFrame, dx, dy, TILE, TILE);
-      else if (BLOCKS[t]) drawImage(BLOCKS[t], dx, dy, TILE, TILE);
+      if (t === "v") drawTile(lavaFrame, dx, dy);
+      else if (BLOCKS[t]) drawTile(BLOCKS[t], dx, dy);
     }
   }
 }
