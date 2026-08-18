@@ -110,6 +110,15 @@ export const BLOCKS = [
   { id: "sponge", file: "sponge.png", label: "Sponge", title: "海绵" },
 ];
 
+// Extra faces the overworld demo needs that don't fill a 4×4 atlas page.
+export const PLAY_BLOCKS = [
+  { id: "bed", file: "bed_feet_side.png", label: "Bed", title: "床" },
+  { id: "bed-head", file: "bed_head_side.png", label: "Bed head", title: "床头" },
+  { id: "wheat-0", file: "wheat_stage_0.png", label: "Wheat sprout", title: "麦苗" },
+  { id: "wheat-3", file: "wheat_stage_3.png", label: "Wheat growing", title: "小麦生长" },
+  { id: "wheat-7", file: "wheat_stage_7.png", label: "Wheat ripe", title: "成熟小麦" },
+];
+
 export function blockPages(pageSize = PAGE_SIZE) {
   const pages = [];
   for (let i = 0; i < BLOCKS.length; i += pageSize) pages.push(BLOCKS.slice(i, i + pageSize));
@@ -117,7 +126,7 @@ export function blockPages(pageSize = PAGE_SIZE) {
 }
 
 export function blockById(id) {
-  const block = BLOCKS.find((b) => b.id === id);
+  const block = BLOCKS.find((b) => b.id === id) ?? PLAY_BLOCKS.find((b) => b.id === id);
   if (!block) throw new Error(`unknown block ${id}`);
   return block;
 }

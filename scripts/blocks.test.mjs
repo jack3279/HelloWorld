@@ -7,6 +7,7 @@ import {
   ATLAS,
   BLOCKS,
   PAGE_SIZE,
+  PLAY_BLOCKS,
   SINGLE,
   TILE,
   blockPages,
@@ -269,7 +270,7 @@ describe("square layout", () => {
 
 describe("generated block assets", () => {
   it("writes a square SVG for every catalog face", async () => {
-    for (const block of BLOCKS) {
+    for (const block of [...BLOCKS, ...PLAY_BLOCKS]) {
       const svg = await readFile(resolve(ROOT, `assets/blocks/${block.id}.svg`), "utf8");
       assert.match(svg, /<svg /);
       assert.match(svg, new RegExp(`id="${block.id}"`));

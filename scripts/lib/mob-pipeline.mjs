@@ -111,6 +111,23 @@ ${svgFigureBody(parts, project).join("\n")}
   return svg;
 }
 
+export async function writeFrames({ generator, groupId, sprite, frames, outDir }) {
+  await mkdir(outDir, { recursive: true });
+  for (const frame of frames) {
+    const svg = frameSvg({
+      generator,
+      id: frame.id,
+      label: frame.label,
+      groupId,
+      w: sprite.w,
+      h: sprite.h,
+      parts: frame.parts,
+      project: frame.project,
+    });
+    await writeFile(resolve(outDir, `${frame.id}.svg`), svg);
+  }
+}
+
 export async function writeSpriteKit({
   generator,
   groupId,

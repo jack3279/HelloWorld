@@ -124,6 +124,12 @@ export const BLOCK_ITEMS = [
   { id: "bricks", file: "brick.png", label: "Bricks", title: "砖块", base: BLOCKS_BASE },
 ];
 
+export const PLAY_ITEMS = [
+  { id: "wheat-seeds", file: "seeds_wheat.png", label: "Wheat seeds", title: "小麦种子" },
+  { id: "bed", file: "bed_red.png", label: "Bed", title: "床" },
+  { id: "pumpkin", file: "pumpkin_side.png", label: "Pumpkin", title: "南瓜", base: BLOCKS_BASE },
+];
+
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.
 export const WORLD_LOADOUT = [
   { id: "diamond-sword", count: 1 },
@@ -150,7 +156,7 @@ export function moreItemPages(pageSize = PAGE_SIZE) {
 }
 
 export function itemById(id) {
-  const item = ITEMS.find((it) => it.id === id) ?? MORE_ITEMS.find((it) => it.id === id) ?? BLOCK_ITEMS.find((it) => it.id === id);
+  const item = ITEMS.find((it) => it.id === id) ?? MORE_ITEMS.find((it) => it.id === id) ?? BLOCK_ITEMS.find((it) => it.id === id) ?? PLAY_ITEMS.find((it) => it.id === id);
   if (!item) throw new Error(`unknown item ${id}`);
   return item;
 }

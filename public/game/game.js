@@ -5,6 +5,22 @@ const GRAVITY = 2100;
 const MOVE = 210;
 const JUMP = 680;
 const MAX_FALL = 980;
+const DAY_LENGTH = 90;
+const FEED = { pig: "carrot", cow: "wheat" };
+const WHEAT_STAGE = { 0: { next: "1", wait: 9 }, 1: { next: "2", wait: 11 } };
+const MINEABLE = {
+  s: { drop: "cobblestone", tool: "diamond-pickaxe" },
+  c: { drop: "cobblestone", tool: "diamond-pickaxe" },
+  x: { drop: "coal", tool: "diamond-pickaxe" },
+  i: { drop: "diamond", tool: "diamond-pickaxe" },
+  d: { drop: "dirt" },
+  a: { drop: "dirt" },
+  o: { drop: "oak-log" },
+  u: { drop: "pumpkin" },
+  e: { drop: "melon-slice" },
+  y: { drop: "wheat" },
+};
+const PLACEABLE = { torch: "t", dirt: "d", cobblestone: "c", "oak-planks": "p" };
 
 const STEVE = {
   loco: { w: 256, h: 320, ax: 128, ay: 300, scale: 0.3 },
@@ -31,9 +47,17 @@ const ITEM_LABELS = {
   "cooked-porkchop": "熟猪排",
   "cooked-chicken": "熟鸡肉",
   carrot: "胡萝卜",
+  wheat: "小麦",
+  "wheat-seeds": "小麦种子",
   leather: "皮革",
   emerald: "绿宝石",
   saddle: "鞍",
+  coal: "煤炭",
+  cobblestone: "圆石",
+  dirt: "泥土",
+  pumpkin: "南瓜",
+  "melon-slice": "西瓜片",
+  "oak-log": "橡木原木",
 };
 
 const FOOD = {
@@ -80,6 +104,11 @@ const BLOCKS = {
   e: "blocks/melon.svg",
   n: "blocks/farmland.svg",
   q: "blocks/clay.svg",
+  z: "blocks/bed.svg",
+  Z: "blocks/bed-head.svg",
+  0: "blocks/wheat-0.svg",
+  1: "blocks/wheat-3.svg",
+  2: "blocks/wheat-7.svg",
 };
 
 const SOLID = new Set("gdscpLabBTFimxIjuyenq".split(""));
@@ -106,6 +135,7 @@ let drops = [];
 let particles = [];
 let cam = { x: 0, y: 0 };
 let time = 0;
+let clock = 8;
 let message = "";
 let messageT = 0;
 let win = false;
@@ -135,7 +165,11 @@ const MANIFEST = [
   ...range(8, (i) => `creeper-sprites/walk-${i * 2}.svg`),
   ...range(10, (i) => `creeper-sprites/swell-${i * 2}.svg`),
   ...range(8, (i) => `pig-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `pig-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `pig-sprites/rest-${i}.svg`),
   ...range(8, (i) => `cow-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `cow-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `cow-sprites/rest-${i}.svg`),
   ...Object.keys(ITEM_LABELS).map((id) => `items/${id}.svg`),
   "hud/heart.svg",
   "hud/heart-half.svg",
@@ -249,6 +283,10 @@ function buildWorld() {
   setCell(tiles, 61, ground - 1, "y");
   setCell(tiles, 60, ground - 2, "y");
 
+  setCell(tiles, 2, ground - 1, "0");
+  setCell(tiles, 3, ground - 1, "1");
+  setCell(tiles, 4, ground - 1, "2");
+
   setCell(tiles, 11, ground - 1, "f");
   setCell(tiles, 12, ground - 1, "G");
   setCell(tiles, 20, ground - 1, "P");
@@ -271,6 +309,8 @@ function buildWorld() {
   setCell(tiles, 64, ground - 1, "T");
   setCell(tiles, 65, ground - 1, "D");
   setCell(tiles, 68, ground - 1, "C");
+  setCell(tiles, 66, ground - 1, "z");
+  setCell(tiles, 67, ground - 1, "Z");
   setCell(tiles, 66, ground - 2, "t");
   setCell(tiles, 69, ground - 5, "t");
 
@@ -278,7 +318,7 @@ function buildWorld() {
   setCell(tiles, 0, ground, "B");
   setCell(tiles, W - 1, ground, "B");
 
-  return { w: W, h: H, tiles, ground };
+  return { w: W, h: H, tiles, ground, nightSpawned: false, cropT: 0 };
 }
 
 function tileAt(px, py) {
@@ -346,6 +386,8 @@ function moveBody(body, dt) {
   body.inWater = mid === "w" || tileAt(body.x, body.y - 16) === "w";
   body.inLava = mid === "v" || tileAt(body.x, body.y - 16) === "v";
   body.atChest = chest === "C" || tileAt(body.x + 16, body.y - 8) === "C" || tileAt(body.x - 16, body.y - 8) === "C";
+  const bed = tileAt(body.x, body.y - 8);
+  body.atBed = bed === "z" || bed === "Z" || tileAt(body.x + 16, body.y - 8) === "z" || tileAt(body.x - 16, body.y - 8) === "Z";
   if (body.inWater) {
     body.vy = Math.min(body.vy, 160);
     body.vx *= 0.88;
@@ -373,17 +415,20 @@ function makePlayer() {
     dead: false,
     inWater: false,
     inLava: false,
+    atBed: false,
     armor: 0,
     selected: 0,
+    sleeping: 0,
+    hungerT: 0,
     items: [
       { id: "diamond-sword", count: 1 },
       { id: "diamond-pickaxe", count: 1 },
       { id: "torch", count: 8 },
-      { id: "bread", count: 6 },
+      { id: "wheat-seeds", count: 8 },
+      { id: "carrot", count: 4 },
+      { id: "wheat", count: 4 },
+      { id: "bread", count: 4 },
       { id: "steak", count: 2 },
-      { id: "apple", count: 3 },
-      { id: "golden-apple", count: 1 },
-      { id: "potion-heal", count: 1 },
       { id: "diamond", count: 0 },
     ],
   };
@@ -416,6 +461,9 @@ function makeMob(kind, tx, ty) {
     inLava: false,
     fuse: 0,
     hurtFlee: 0,
+    stillT: Math.random() * 3,
+    followT: 0,
+    loveT: 0,
   };
 }
 
@@ -442,18 +490,19 @@ function resetGame() {
     makeDrop("diamond", TILE * 13.5, TILE * 9),
     makeDrop("diamond", TILE * 24, TILE * 7.5),
     makeDrop("diamond", TILE * 42, TILE * 5.5),
-    makeDrop("apple", TILE * 21, TILE * 9),
-    makeDrop("bread", TILE * 39, TILE * 9),
+    makeDrop("golden-apple", TILE * 21, TILE * 9),
+    makeDrop("potion-heal", TILE * 39, TILE * 9),
     makeDrop("iron-chestplate", TILE * 67, TILE * 9),
   ];
   particles = [];
   cam = { x: 0, y: 0 };
   time = 0;
+  clock = 8;
   win = false;
   demo = null;
   hold.left = hold.right = hold.jump = hold.use = false;
-  message = "向东走。挥剑清怪，捡齐 5 颗钻石。";
-  messageT = 4;
+  message = "向东走。白天种田喂猪，晚上回屋睡觉。箱子要 5 颗钻石。";
+  messageT = 5;
 }
 
 function selectedItem() {
@@ -482,6 +531,151 @@ function diamonds() {
 function say(text, secs = 2.4) {
   message = text;
   messageT = secs;
+}
+
+function isNight() {
+  return clock >= 19 || clock < 6;
+}
+
+function hourLabel() {
+  const h = Math.floor(clock) % 24;
+  return `${String(h).padStart(2, "0")}:00`;
+}
+
+function hostilesNear(who, range) {
+  return mobs.some((mob) => !mob.dead && !mob.passive && Math.hypot(mob.x - who.x, mob.y - who.y) < range);
+}
+
+function burstHearts(x, y) {
+  for (let i = 0; i < 6; i++) {
+    particles.push({
+      kind: "heart",
+      x: x + (Math.random() - 0.5) * 18,
+      y: y - 24,
+      vx: (Math.random() - 0.5) * 36,
+      vy: -70 - Math.random() * 50,
+      life: 0.7 + Math.random() * 0.4,
+    });
+  }
+}
+
+function burstBits(x, y, color) {
+  for (let i = 0; i < 8; i++) {
+    particles.push({
+      kind: "bit",
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 120,
+      vy: -80 - Math.random() * 80,
+      life: 0.35 + Math.random() * 0.25,
+      color,
+    });
+  }
+}
+
+function frontCell() {
+  const tx = Math.floor((player.x + player.face * 28) / TILE);
+  const cells = [
+    { x: tx, y: Math.floor((player.y - 12) / TILE) },
+    { x: tx, y: Math.floor((player.y - 36) / TILE) },
+    { x: Math.floor(player.x / TILE), y: Math.floor((player.y - 12) / TILE) },
+  ];
+  return cells;
+}
+
+function trySleep() {
+  if (!player.atBed) return false;
+  if (!isNight()) return false;
+  if (hostilesNear(player, 220)) {
+    say("附近有怪物，睡不着。");
+    return true;
+  }
+  player.sleeping = 1.7;
+  player.vx = 0;
+  say("你躺下休息了。");
+  return true;
+}
+
+function tryFeed() {
+  const item = selectedItem();
+  if (!item || item.count <= 0) return false;
+  for (const mob of mobs) {
+    if (mob.dead || !mob.passive) continue;
+    if (FEED[mob.kind] !== item.id) continue;
+    if (Math.hypot(mob.x - player.x, mob.y - player.y) > 52) continue;
+    item.count -= 1;
+    mob.followT = 8;
+    mob.loveT = 1.2;
+    mob.stillT = 0;
+    mob.hurtFlee = 0;
+    burstHearts(mob.x, mob.y);
+    say(`喂了${mob.kind === "pig" ? "猪" : "牛"}。它跟着你。`);
+    return true;
+  }
+  return false;
+}
+
+function tryFarm() {
+  const item = selectedItem();
+  const tx = Math.floor((player.x + player.face * 22) / TILE);
+  const groundY = Math.floor((player.y + 4) / TILE);
+  const cropY = groundY - 1;
+  const soil = world.tiles[groundY]?.[tx];
+  const above = world.tiles[cropY]?.[tx];
+  if (item?.id === "wheat-seeds" && item.count > 0 && soil === "n" && (above === "." || above === "G" || above === "f" || above === "P")) {
+    setCell(world.tiles, tx, cropY, "0");
+    item.count -= 1;
+    say("种下了小麦。");
+    return true;
+  }
+  if (above === "2") {
+    setCell(world.tiles, tx, cropY, ".");
+    addItem("wheat", 1);
+    if (Math.random() < 0.7) addItem("wheat-seeds", 1);
+    burstBits(tx * TILE + 24, cropY * TILE + 24, "#c6b34a");
+    say("收割了小麦。");
+    return true;
+  }
+  return false;
+}
+
+function tryMineOrPlace() {
+  const item = selectedItem();
+  for (const cell of frontCell()) {
+    const t = world.tiles[cell.y]?.[cell.x];
+    if (!t || t === ".") continue;
+    const spec = MINEABLE[t];
+    if (spec) {
+      if (spec.tool && item?.id !== spec.tool) {
+        say("需要镐才能挖这个。");
+        return true;
+      }
+      if (spec.tool) {
+        if (player.swingT > 0) return true;
+        player.swingT = 10 / 12;
+        player.anim = "swing";
+        player.frame = 0;
+      }
+      setCell(world.tiles, cell.x, cell.y, t === "x" || t === "i" ? "s" : ".");
+      drops.push(makeDrop(spec.drop, cell.x * TILE + 24, cell.y * TILE + 8));
+      burstBits(cell.x * TILE + 24, cell.y * TILE + 24, "#bbb");
+      return true;
+    }
+  }
+  if (item && PLACEABLE[item.id] && item.count > 0) {
+    const tx = Math.floor((player.x + player.face * 28) / TILE);
+    const ty = Math.floor((player.y - 12) / TILE);
+    if (world.tiles[ty]?.[tx] === ".") {
+      const below = world.tiles[ty + 1]?.[tx];
+      if (below && (SOLID.has(below) || below === "n")) {
+        setCell(world.tiles, tx, ty, PLACEABLE[item.id]);
+        item.count -= 1;
+        say(`放下了${ITEM_LABELS[item.id] ?? item.id}`);
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 function hurt(who, amount, dir) {
@@ -527,6 +721,11 @@ function hurt(who, amount, dir) {
 
 function useSelected() {
   if (player.dead || win) return;
+  if (player.sleeping > 0) return;
+  if (trySleep()) return;
+  if (tryFeed()) return;
+  if (tryFarm()) return;
+  if (tryMineOrPlace()) return;
   const item = selectedItem();
   if (!item || item.count <= 0) return;
   if (item.id === "diamond-sword") {
@@ -570,6 +769,22 @@ function updatePlayer(dt) {
     return;
   }
 
+  if (player.sleeping > 0) {
+    player.sleeping -= dt;
+    player.vx = 0;
+    player.vy = 0;
+    player.anim = "idle";
+    player.frame = 0;
+    if (player.sleeping <= 0) {
+      clock = 6.2;
+      player.health = Math.min(20, player.health + 8);
+      player.hunger = Math.min(20, player.hunger + 6);
+      say("早上好。你休息好了。", 3);
+    }
+    moveBody(player, dt);
+    return;
+  }
+
   const left = keys.has("a") || keys.has("arrowleft") || hold.left;
   const right = keys.has("d") || keys.has("arrowright") || hold.right;
   const jump = keys.has(" ") || keys.has("w") || keys.has("arrowup") || hold.jump;
@@ -601,6 +816,13 @@ function updatePlayer(dt) {
   }
   if (player.hurtT > 0) player.hurtT -= dt;
   if (player.invuln > 0) player.invuln -= dt;
+
+  player.hungerT += dt;
+  if (player.hungerT > 9) {
+    player.hungerT = 0;
+    if (Math.abs(player.vx) > 20 || !player.grounded) player.hunger = Math.max(0, player.hunger - 1);
+    if (player.hunger <= 0) hurt(player, 1, -player.face);
+  }
 
   player.age += dt;
   if (player.swingT > 0) {
@@ -638,16 +860,32 @@ function updateMobs(dt) {
     const dx = player.x - mob.x;
     const close = !player.dead && Math.abs(dx) < 420;
     if (mob.passive) {
+      if (mob.loveT > 0) mob.loveT -= dt;
       if (mob.hurtFlee > 0) {
         mob.hurtFlee -= dt;
+        mob.stillT = 0;
         mob.face = Math.sign(mob.x - player.x) || mob.face;
         mob.vx = mob.face * mob.speed * 1.6;
+      } else if (mob.followT > 0 && !player.dead) {
+        mob.followT -= dt;
+        const gap = player.x - mob.x;
+        if (Math.abs(gap) > 36) {
+          mob.face = Math.sign(gap) || mob.face;
+          mob.vx = mob.face * mob.speed * 0.95;
+          mob.stillT = 0;
+        } else {
+          mob.vx = 0;
+          mob.stillT += dt;
+        }
       } else if (mob.grounded && Math.random() < 0.012) {
         mob.face = Math.random() < 0.5 ? -1 : 1;
         mob.vx = mob.face * mob.speed * (0.35 + Math.random() * 0.45);
+        mob.stillT = 0;
       } else if (Math.random() < 0.01) {
         mob.vx = 0;
       }
+      if (Math.abs(mob.vx) < 12) mob.stillT += dt;
+      else mob.stillT = 0;
       moveBody(mob, dt);
       if (mob.inLava) hurt(mob, 4, -mob.face);
       continue;
@@ -699,6 +937,41 @@ function updateDrops(dt) {
   }
 }
 
+function updateClock(dt) {
+  const wasNight = isNight();
+  clock = (clock + dt * (24 / DAY_LENGTH)) % 24;
+  if (!wasNight && isNight()) {
+    say("天黑了。回房子里的床上睡觉。", 4);
+    if (world && !world.nightSpawned) {
+      world.nightSpawned = true;
+      mobs.push(makeMob("zombie", 22, 10));
+      mobs.push(makeMob("spider", 38, 10));
+    }
+  }
+}
+
+function updateCrops(dt) {
+  world.cropT = (world.cropT ?? 0) + dt;
+  if (world.cropT < 1) return;
+  world.cropT = 0;
+  for (let y = 0; y < world.h; y++) {
+    for (let x = 0; x < world.w; x++) {
+      const spec = WHEAT_STAGE[world.tiles[y][x]];
+      if (spec && Math.random() < 1 / spec.wait) setCell(world.tiles, x, y, spec.next);
+    }
+  }
+}
+
+function updateParticles(dt) {
+  for (const p of particles) {
+    p.life -= dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += p.kind === "heart" ? -24 : 480 * dt;
+  }
+  particles = particles.filter((p) => p.life > 0);
+}
+
 function updateCamera() {
   const targetX = player.x - viewW * 0.38;
   const targetY = player.y - viewH * 0.68;
@@ -738,12 +1011,21 @@ function steveFrame() {
 }
 
 function drawSky() {
+  const night = isNight();
+  const dusk = clock >= 17 && clock < 19 ? (clock - 17) / 2 : clock >= 5 && clock < 7 ? 1 - (clock - 5) / 2 : night ? 1 : 0;
   const g = ctx.createLinearGradient(0, 0, 0, viewH);
-  g.addColorStop(0, "#8ec5ff");
-  g.addColorStop(0.55, "#c7e4ff");
-  g.addColorStop(1, "#e7f4c8");
+  g.addColorStop(0, mixHex("#8ec5ff", "#0b1630", dusk));
+  g.addColorStop(0.55, mixHex("#c7e4ff", "#1a2744", dusk));
+  g.addColorStop(1, mixHex("#e7f4c8", "#1c2a18", dusk));
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, viewW, viewH);
+}
+
+function mixHex(a, b, t) {
+  const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16));
+  const pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16));
+  const mix = pa.map((v, i) => Math.round(v + (pb[i] - v) * t));
+  return `rgb(${mix.join(",")})`;
 }
 
 function drawWorld() {
@@ -780,6 +1062,9 @@ function drawMobs() {
     if (mob.kind === "creeper" && mob.fuse > 0.12) {
       const frame = Math.min(18, Math.floor((mob.fuse / 1.35) * 10) * 2);
       rel = `creeper-sprites/swell-${frame}.svg`;
+    } else if (mob.passive && Math.abs(mob.vx) < 14 && mob.hurtFlee <= 0) {
+      const frame = Math.floor(mob.age * (mob.stillT > 4 ? 4 : 6)) % 8;
+      rel = `${mob.sheet}/${mob.stillT > 4 ? "rest" : "idle"}-${frame}.svg`;
     } else {
       const frame = Math.floor(mob.age * 10) % 8;
       rel = `${mob.sheet}/walk-${frame * 2}.svg`;
@@ -788,6 +1073,19 @@ function drawMobs() {
     if (mob.hitT > 0 || (mob.kind === "creeper" && mob.fuse > 0.4 && Math.floor(time * 16) % 2 === 0)) ctx.filter = "brightness(2)";
     drawAnchored(rel, spec, mob.x - cam.x, mob.y - cam.y, mob.face);
     ctx.filter = "none";
+  }
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    const alpha = Math.max(0, Math.min(1, p.life * 1.6));
+    ctx.globalAlpha = alpha;
+    if (p.kind === "heart") drawImage("hud/heart.svg", p.x - 6 - cam.x, p.y - 6 - cam.y, 12, 12);
+    else {
+      ctx.fillStyle = p.color ?? "#ccc";
+      ctx.fillRect(p.x - cam.x, p.y - cam.y, 4, 4);
+    }
+    ctx.globalAlpha = 1;
   }
 }
 
@@ -856,7 +1154,11 @@ function drawHud() {
   ctx.textAlign = "left";
   ctx.font = "14px sans-serif";
   ctx.fillStyle = "#fff";
-  ctx.fillText(`钻石 ${diamonds()} / ${GOAL_DIAMONDS}`, 16, 28);
+  ctx.fillText(`钻石 ${diamonds()} / ${GOAL_DIAMONDS}   ${hourLabel()}`, 16, 28);
+  if (player.sleeping > 0) {
+    ctx.fillStyle = `rgba(8,10,24,${1 - player.sleeping / 1.7})`;
+    ctx.fillRect(0, 0, viewW, viewH);
+  }
   if (messageT > 0) {
     ctx.textAlign = "center";
     ctx.fillStyle = "rgba(0,0,0,0.55)";
@@ -893,9 +1195,12 @@ function frame(ts) {
     time += dt;
     if (messageT > 0) messageT -= dt;
     updateDemo(dt);
+    updateClock(dt);
     updatePlayer(dt);
     updateMobs(dt);
     updateDrops(dt);
+    updateCrops(dt);
+    updateParticles(dt);
     updateCamera();
   }
   drawSky();
@@ -903,6 +1208,7 @@ function frame(ts) {
     drawWorld();
     drawDrops();
     drawMobs();
+    drawParticles();
     drawPlayer();
     drawHud();
   }

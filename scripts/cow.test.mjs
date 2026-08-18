@@ -5,7 +5,7 @@ import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { loadCowSkin } from "./lib/steve-model.mjs";
 import { COW_MODEL } from "./lib/cow-model.mjs";
-import { BODY_REST_PITCH, FACE, WALK_FRAMES, idleA, sampleIdle, walkFrame } from "./lib/cow-poses.mjs";
+import { BODY_REST_PITCH, FACE, IDLE_FRAMES, REST_FRAMES, WALK_FRAMES, idleA, sampleIdle, sampleRest, walkFrame } from "./lib/cow-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -75,6 +75,13 @@ describe("cow pose", () => {
     assert.ok(passing.parts["leg-front-left"].pitch > 0, "front-left goes back");
     assert.ok(passing.parts["leg-hind-right"].pitch > 0, "hind-right matches front-left");
   });
+
+  it("droops the head and tucks the legs when resting", () => {
+    const rest = sampleRest(0);
+    const idle = idleA();
+    assert.ok(rest.parts.head.pitch > idle.parts.head.pitch);
+    assert.ok(rest.root.y < (idle.root?.y ?? 0));
+  });
 });
 
 describe("generated cow assets", () => {
@@ -89,10 +96,11 @@ describe("generated cow assets", () => {
     assert.doesNotMatch(svg, /NaN|undefined/);
   });
 
-  it("ships idle and walk flipbooks", async () => {
+  it("ships idle, walk, and rest flipbooks", async () => {
     const scenes = [
-      ["scene-1", 8],
+      ["scene-1", IDLE_FRAMES],
       ["scene-2", WALK_FRAMES],
+      ["scene-3", REST_FRAMES],
     ];
     for (const [scene, minLayers] of scenes) {
       const lottie = JSON.parse(
@@ -110,12 +118,20 @@ describe("generated cow assets", () => {
     }
   });
 
-  it("writes walk SVG frames", async () => {
+  it("writes walk, idle, and rest SVG frames", async () => {
     const walk = await readFile(resolve(ROOT, "assets/cow-walk.svg"), "utf8");
     assert.match(walk, /<svg /);
     assert.doesNotMatch(walk, /NaN|undefined/);
     for (let i = 0; i < WALK_FRAMES; i++) {
       const svg = await readFile(resolve(ROOT, "assets/cow-sprites", `walk-${i}.svg`), "utf8");
+      assert.match(svg, /<svg /);
+    }
+    for (let i = 0; i < IDLE_FRAMES; i++) {
+      const svg = await readFile(resolve(ROOT, "assets/cow-sprites", `idle-${i}.svg`), "utf8");
+      assert.match(svg, /<svg /);
+    }
+    for (let i = 0; i < REST_FRAMES; i++) {
+      const svg = await readFile(resolve(ROOT, "assets/cow-sprites", `rest-${i}.svg`), "utf8");
       assert.match(svg, /<svg /);
     }
   });

@@ -1,10 +1,13 @@
-import { FACE, TOLERANCE, WALK_FRAMES, createQuadrupedPoses } from "./quadruped-poses.mjs";
+import { FACE, IDLE_FRAMES, REST_FRAMES, TOLERANCE, WALK_FRAMES, createQuadrupedPoses } from "./quadruped-poses.mjs";
 
 export const {
   SPRITE,
   idleA,
   idleB,
   sampleIdle,
+  restA,
+  restB,
+  sampleRest,
   walkFrame,
   catalog,
   easeInOut,
@@ -12,4 +15,4 @@ export const {
   BODY_REST_PITCH,
 } = createQuadrupedPoses({ scale: 12.5, h: 480, originY: 452 });
 
-export { FACE, TOLERANCE, WALK_FRAMES };
+export { FACE, IDLE_FRAMES, REST_FRAMES, TOLERANCE, WALK_FRAMES };

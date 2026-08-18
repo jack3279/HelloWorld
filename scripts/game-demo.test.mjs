@@ -37,9 +37,15 @@ describe("html game demo", () => {
     for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/walk-${i * 2}.svg`);
     }
+    for (const mob of ["pig", "cow"]) {
+      for (let i = 0; i < 8; i++) {
+        rels.add(`${mob}-sprites/idle-${i}.svg`);
+        rels.add(`${mob}-sprites/rest-${i}.svg`);
+      }
+    }
     for (let i = 0; i < 10; i++) rels.add(`creeper-sprites/swell-${i * 2}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`lava-sprites/boil-${i * 4}.svg`);
-    const itemIds = [...src.matchAll(/["'](diamond-sword|diamond-pickaxe|torch|bread|steak|apple|golden-apple|potion-heal|diamond|cooked-porkchop)["']/g)].map((m) => m[1]);
+    const itemIds = [...src.matchAll(/["'](diamond-sword|diamond-pickaxe|torch|bread|steak|apple|golden-apple|potion-heal|diamond|cooked-porkchop|wheat-seeds|carrot|wheat)["']/g)].map((m) => m[1]);
     for (const id of new Set(itemIds)) rels.add(`items/${id}.svg`);
     assert.ok(rels.size >= 40, `expected a full loadout, got ${rels.size}`);
     for (const rel of rels) {

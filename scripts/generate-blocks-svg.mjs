@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 import {
   ATLAS,
   BLOCKS,
+  PLAY_BLOCKS,
   SINGLE,
   blockPages,
   layoutAtlas,
@@ -33,7 +34,7 @@ await mkdir(outDir, { recursive: true });
 const singleBox = layoutSingle();
 const pages = blockPages();
 
-for (const block of BLOCKS) {
+for (const block of [...BLOCKS, ...PLAY_BLOCKS]) {
   const png = await loadBlock(block.id);
   const runs = runsOf(png);
   const svg = wrapSvg(
@@ -58,4 +59,4 @@ for (const [index, page] of pages.entries()) {
   console.log(`Wrote ${path}`);
 }
 
-console.log(`Wrote ${BLOCKS.length} squares in ${outDir}`);
+console.log(`Wrote ${BLOCKS.length + PLAY_BLOCKS.length} squares in ${outDir}`);

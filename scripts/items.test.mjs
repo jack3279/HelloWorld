@@ -13,6 +13,7 @@ import {
   ITEMS,
   MORE_ITEMS,
   PAGE_SIZE,
+  PLAY_ITEMS,
   WORLD_LOADOUT,
   PICKUP,
   SINGLE,
@@ -272,7 +273,7 @@ describe("hotbar loadout", () => {
 
 describe("generated item assets", () => {
   it("writes a square SVG for every catalog icon", async () => {
-    for (const item of [...ITEMS, ...MORE_ITEMS]) {
+    for (const item of [...ITEMS, ...MORE_ITEMS, ...PLAY_ITEMS]) {
       const svg = await readFile(resolve(ROOT, `assets/items/${item.id}.svg`), "utf8");
       assert.match(svg, /<svg /);
       assert.match(svg, new RegExp(`id="${item.id}"`));

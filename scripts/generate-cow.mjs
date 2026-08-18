@@ -1,12 +1,12 @@
-// Cow: side-view SVG, walk sprites, and two Skottie loops (idle, walk).
+// Cow: side-view SVG, walk / idle / rest sprites, and three Skottie loops.
 //
 // Usage: node scripts/generate-cow.mjs [--skin=<png>]
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadCowSkin, parseArgs } from "./lib/steve-model.mjs";
 import { COW_MODEL } from "./lib/cow-model.mjs";
-import { SPRITE, TOLERANCE, WALK_FRAMES, catalog, idleA, sampleIdle, walkFrame } from "./lib/cow-poses.mjs";
-import { ROOT, bake, flipbook, writeHeroSvg, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
+import { SPRITE, IDLE_FRAMES, REST_FRAMES, TOLERANCE, WALK_FRAMES, catalog, idleA, sampleIdle, sampleRest, walkFrame } from "./lib/cow-poses.mjs";
+import { ROOT, bake, flipbook, writeFrames, writeHeroSvg, writeScene, writeSpriteKit } from "./lib/mob-pipeline.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const model = COW_MODEL;
@@ -44,10 +44,31 @@ const sprites = await writeSpriteKit({
 });
 console.log(`Wrote ${sprites.length} walk frames plus sheet.svg`);
 
-const idle = Array.from({ length: 8 }, (_, i) => {
-  const baked = bake({ skin, pose: sampleIdle(i / 8), canvas: SPRITE, tolerance: TOLERANCE, model });
-  return { id: `idle-${i}`, shapes: baked.shapes };
+const idleSprites = Array.from({ length: IDLE_FRAMES }, (_, i) => {
+  const baked = bake({ skin, pose: sampleIdle(i / IDLE_FRAMES), canvas: SPRITE, tolerance: TOLERANCE, model });
+  return { id: `idle-${i}`, label: `Idle ${i + 1}/${IDLE_FRAMES}`, ...baked };
 });
+await writeFrames({
+  generator: "scripts/generate-cow.mjs",
+  groupId: "cow",
+  sprite: SPRITE,
+  frames: idleSprites,
+  outDir: resolve(__dirname, "../assets/cow-sprites"),
+});
+const restSprites = Array.from({ length: REST_FRAMES }, (_, i) => {
+  const baked = bake({ skin, pose: sampleRest(i / REST_FRAMES), canvas: SPRITE, tolerance: TOLERANCE, model });
+  return { id: `rest-${i}`, label: `Rest ${i + 1}/${REST_FRAMES}`, ...baked };
+});
+await writeFrames({
+  generator: "scripts/generate-cow.mjs",
+  groupId: "cow",
+  sprite: SPRITE,
+  frames: restSprites,
+  outDir: resolve(__dirname, "../assets/cow-sprites"),
+});
+console.log(`Wrote ${IDLE_FRAMES} idle frames and ${REST_FRAMES} rest frames`);
+
+const idle = idleSprites.map((frame) => ({ id: frame.id, shapes: frame.shapes }));
 await writeScene(
   resolve(ROOT, "public/projects/cow/scene-1"),
   flipbook({
@@ -74,6 +95,21 @@ await writeScene(
     h: SPRITE.h,
     frames: walk,
     fps: 10,
+    hold: 1,
+    loop: true,
+    generator: "scripts/generate-cow.mjs",
+  }),
+);
+
+const rest = restSprites.map((frame) => ({ id: frame.id, shapes: frame.shapes }));
+await writeScene(
+  resolve(ROOT, "public/projects/cow/scene-3"),
+  flipbook({
+    name: "Cow — Rest",
+    w: SPRITE.w,
+    h: SPRITE.h,
+    frames: rest,
+    fps: 6,
     hold: 1,
     loop: true,
     generator: "scripts/generate-cow.mjs",

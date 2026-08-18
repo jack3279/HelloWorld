@@ -12,6 +12,7 @@ import {
   BLOCK_ITEMS,
   ITEMS,
   MORE_ITEMS,
+  PLAY_ITEMS,
   SINGLE,
   itemPages,
   moreItemPages,
@@ -31,7 +32,7 @@ await mkdir(outDir, { recursive: true });
 
 const singleBox = layoutSingle();
 
-for (const item of [...ITEMS, ...MORE_ITEMS, ...BLOCK_ITEMS]) {
+for (const item of [...ITEMS, ...MORE_ITEMS, ...BLOCK_ITEMS, ...PLAY_ITEMS]) {
   const png = await loadItem(item.id);
   const svg = wrapSvg(
     item.id,
@@ -55,4 +56,4 @@ for (const [index, page] of [...itemPages(), ...moreItemPages()].entries()) {
   console.log(`Wrote ${path}`);
 }
 
-console.log(`Wrote ${ITEMS.length + MORE_ITEMS.length + BLOCK_ITEMS.length} squares in ${outDir}`);
+console.log(`Wrote ${ITEMS.length + MORE_ITEMS.length + BLOCK_ITEMS.length + PLAY_ITEMS.length} squares in ${outDir}`);

@@ -14,6 +14,8 @@ const NEAR = { shadeScale: 1 };
 
 export const BODY_REST_PITCH = 90;
 export const WALK_FRAMES = 16;
+export const IDLE_FRAMES = 8;
+export const REST_FRAMES = 8;
 export const TOLERANCE = { default: 28, head: 18 };
 
 const FAR_NEAR = { FAR, NEAR };
@@ -93,6 +95,43 @@ export function createQuadrupedPoses({ scale = 14, h = 480, originY = 452 } = {}
       : lerpPose(idleB(), idleA(), easeInOut((x - 0.5) * 2));
   }
 
+  // Drowsy rest: head droops, legs tuck, the body sinks a little onto the
+  // ground. Used when a pig or cow has been standing still for a while.
+  function restA() {
+    return pose(
+      {
+        body: { pitch: BODY_REST_PITCH + 7, roll: 3 },
+        head: { yaw: -38, pitch: 18, roll: 6 },
+        "leg-front-right": limb(NEAR, { pitch: 22 }),
+        "leg-front-left": limb(FAR, { pitch: 16 }),
+        "leg-hind-right": limb(NEAR, { pitch: -20 }),
+        "leg-hind-left": limb(FAR, { pitch: -14 }),
+      },
+      { root: { y: -1.1 } },
+    );
+  }
+
+  function restB() {
+    return pose(
+      {
+        body: { pitch: BODY_REST_PITCH + 5, roll: 1 },
+        head: { yaw: -42, pitch: 22, roll: 3 },
+        "leg-front-right": limb(NEAR, { pitch: 18 }),
+        "leg-front-left": limb(FAR, { pitch: 12 }),
+        "leg-hind-right": limb(NEAR, { pitch: -16 }),
+        "leg-hind-left": limb(FAR, { pitch: -18 }),
+      },
+      { root: { y: -0.85 } },
+    );
+  }
+
+  function sampleRest(t) {
+    const x = ((t % 1) + 1) % 1;
+    return x < 0.5
+      ? lerpPose(restA(), restB(), easeInOut(x * 2))
+      : lerpPose(restB(), restA(), easeInOut((x - 0.5) * 2));
+  }
+
   function walkFrame(phase) {
     const tau = (phase % 1) * Math.PI * 2;
     const step = Math.sin(tau);
@@ -127,6 +166,9 @@ export function createQuadrupedPoses({ scale = 14, h = 480, originY = 452 } = {}
     idleA,
     idleB,
     sampleIdle,
+    restA,
+    restB,
+    sampleRest,
     walkFrame,
     catalog,
     easeInOut,
