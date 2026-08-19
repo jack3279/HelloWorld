@@ -13,9 +13,13 @@ import {
 const base = createQuadrupedPoses({ scale: 16.5, h: 480, originY: 452 });
 
 function decorate(pose) {
-  const bodyPitch = pose.parts.body?.pitch ?? BODY_REST_PITCH;
+  // After Z-flip, vanilla +90° body pitch sends the torso toward the tail and
+  // leaves a gap at the head. Negating it lays the 9-tall cuboid toward +z.
+  const rest = pose.parts.body?.pitch ?? BODY_REST_PITCH;
+  const bodyPitch = -rest;
   const bodyRoll = pose.parts.body?.roll ?? 0;
   const wag = (pose.root?.x ?? 0) * 40 + (pose.root?.y ?? 0) * 18;
+  pose.parts.body = { ...pose.parts.body, pitch: bodyPitch };
   pose.parts.mane = { pitch: bodyPitch, roll: bodyRoll };
   pose.parts.tail = { pitch: 52 + wag, yaw: -18, roll: bodyRoll * 0.5 };
   return pose;

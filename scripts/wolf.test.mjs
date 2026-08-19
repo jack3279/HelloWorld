@@ -3,12 +3,28 @@ import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-import { loadWolfSkin } from "./lib/steve-model.mjs";
+import { apply, loadWolfSkin, rotX } from "./lib/steve-model.mjs";
 import { WOLF_MODEL } from "./lib/wolf-model.mjs";
 import { BODY_REST_PITCH, FACE, IDLE_FRAMES, WALK_FRAMES, idleA, walkFrame } from "./lib/wolf-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
+
+function pitchedZ(part, pitch) {
+  const m = rotX(pitch);
+  const zs = [];
+  for (const y of [part.min[1], part.max[1]]) {
+    for (const z of [part.min[2], part.max[2]]) {
+      const spun = apply(m, [0, y - part.pivot[1], z - part.pivot[2]]);
+      zs.push(spun[2] + part.pivot[2]);
+    }
+  }
+  return [Math.min(...zs), Math.max(...zs)];
+}
+
+function overlap(a, b) {
+  return Math.min(a[1], b[1]) - Math.max(a[0], b[0]);
+}
 
 describe("wolf model", () => {
   it("is a head with ears and muzzle, mane, body, four legs, and a tail", () => {
@@ -38,14 +54,27 @@ describe("wolf model", () => {
 });
 
 describe("wolf pose", () => {
-  it("pitches the body and mane together and wags the tail", () => {
+  it("pitches the body and mane together toward the head and wags the tail", () => {
     const pose = idleA();
+    assert.equal(pose.view.yaw, 90);
     assert.equal(pose.parts.head.yaw, FACE.yaw);
-    assert.ok(pose.parts.body.pitch >= BODY_REST_PITCH);
+    assert.ok(pose.parts.body.pitch <= -BODY_REST_PITCH + 5);
     assert.equal(pose.parts.mane.pitch, pose.parts.body.pitch);
     assert.ok(pose.parts.tail.pitch > 30);
     const passing = walkFrame(0.25);
     assert.ok(passing.parts["leg-front-right"].pitch < 0);
+  });
+
+  it("keeps the pitched torso overlapping the head and front legs", () => {
+    const pose = idleA();
+    const body = WOLF_MODEL.find((p) => p.id === "body");
+    const head = WOLF_MODEL.find((p) => p.id === "head");
+    const front = WOLF_MODEL.find((p) => p.id === "leg-front-right");
+    const bodyZ = pitchedZ(body, pose.parts.body.pitch);
+    const headZ = pitchedZ(head, pose.parts.head.pitch ?? 0);
+    const frontZ = pitchedZ(front, pose.parts["leg-front-right"].pitch ?? 0);
+    assert.ok(overlap(bodyZ, headZ) > 0, `body ${bodyZ} vs head ${headZ}`);
+    assert.ok(overlap(bodyZ, frontZ) > 0, `body ${bodyZ} vs front leg ${frontZ}`);
   });
 });
 

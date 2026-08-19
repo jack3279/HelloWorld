@@ -1,7 +1,8 @@
 // Official Minecraft wolf from Bedrock geometry.wolf: feet-origin, +Y up,
-// Z negated so the animal faces +z. Body and mane are stored unrotated;
-// poses apply the vanilla 90° rest pitch. Head, ears, and muzzle stay on the
-// root so that pitch does not flip the face. Tail hangs off the rump.
+// Z negated so the animal faces +z. Body and mane are stored unrotated
+// (body 6×9×6, mane 8×6×7); poses apply a −90° rest pitch — the sign flips
+// relative to vanilla +90° because Z was negated. Head, ears, and muzzle stay
+// on the root so that pitch does not flip the face. Tail hangs off the rump.
 import { boxUv } from "./steve-model.mjs";
 
 const LEG_UV = boxUv(0, 18, 2, 8, 2);
