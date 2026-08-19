@@ -79,9 +79,15 @@ describe("held items", () => {
       parts: { ...idleA().parts, "held-sword": { pitch: 40, roll: 0, yaw: 0 } },
     };
     const { parts } = buildFigure({ skin: await loadSkin(), pose, extras: [await swordExtra()] });
-    const project = makeProjector({ scale: 6.6, originX: 168, originY: 308 });
+    const originY = 308;
+    const project = makeProjector({ scale: 6.6, originX: 168, originY });
     const sword = boundsOf(parts.filter((p) => p.id === "held-sword"), project);
     const torso = boundsOf(parts.filter((p) => p.id === "torso"), project);
+    const arm = boundsOf(parts.filter((p) => p.id === "arm-right"), project);
+    const swordMidY = (sword.minY + sword.maxY) / 2;
+    const armMidY = (arm.minY + arm.maxY) / 2;
     assert.ok((sword.minX + sword.maxX) / 2 > (torso.minX + torso.maxX) / 2, "blade sits in front");
+    assert.ok(Math.abs(swordMidY - armMidY) < 90, "handle sits in the hand, not at the feet");
+    assert.ok(sword.maxY < originY - 20, "blade is not planted between the feet");
   });
 });

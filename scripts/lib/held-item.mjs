@@ -109,9 +109,9 @@ export function swordPart() {
     parent: "arm-right",
     size: 16,
     thickness: 0.9,
-    min: [-0.4, -0.4, 0],
-    max: [0.4, 10.6, 11],
-    pivot: [0, 0.6, 1.6],
+    min: [-6.5, 11.4, -0.5],
+    max: [-5.5, 22.4, 10.4],
+    pivot: [-6, 12.2, 0.8],
   });
 }
 

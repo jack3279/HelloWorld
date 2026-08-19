@@ -35,6 +35,10 @@ describe("html game demo", () => {
     assert.match(game, /BLOCK_SRC_FACE = 400/);
     assert.match(game, /function drawTile/);
     assert.match(game, /function supportedByFloor/);
+    assert.match(game, /function swimBody/);
+    assert.match(game, /water-sprites\/flow-/);
+    assert.match(game, /body\.air/);
+    assert.match(game, /body\.drownT/);
     assert.match(game, /TILE \+ 1/);
     assert.match(game, /player\.knockT/);
     assert.match(game, /requestAnimationFrame\(frame\)/);
@@ -45,7 +49,7 @@ describe("html game demo", () => {
   it("preloads existing repo art instead of inventing new sprites", async () => {
     const src = await readFile(resolve(ROOT, "public/game/game.js"), "utf8");
     const rels = new Set();
-    for (const match of src.matchAll(/["']((?:blocks|items|hud|steve-sprites|zombie-sprites|skeleton-sprites|spider-sprites|enderman-sprites|creeper-sprites|pig-sprites|cow-sprites|lava-sprites)\/[a-z0-9-]+\.svg)["']/g)) {
+    for (const match of src.matchAll(/["']((?:blocks|items|hud|steve-sprites|zombie-sprites|skeleton-sprites|spider-sprites|enderman-sprites|creeper-sprites|pig-sprites|cow-sprites|lava-sprites|water-sprites)\/[a-z0-9-]+\.svg)["']/g)) {
       rels.add(match[1]);
     }
     const steve = ["idle-a", "idle-b", ...Array.from({ length: 8 }, (_, i) => `run-${i}`), "jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"];
@@ -77,6 +81,7 @@ describe("html game demo", () => {
     }
     for (let i = 0; i < 10; i++) rels.add(`creeper-sprites/swell-${i * 2}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`lava-sprites/boil-${i * 4}.svg`);
+    for (let i = 0; i < 8; i++) rels.add(`water-sprites/flow-${i * 4}.svg`);
     const itemIds = [...src.matchAll(/["'](diamond-sword|diamond-pickaxe|torch|bread|steak|apple|golden-apple|potion-heal|diamond|cooked-porkchop|wheat-seeds|carrot|wheat)["']/g)].map((m) => m[1]);
     for (const id of new Set(itemIds)) rels.add(`items/${id}.svg`);
     assert.ok(rels.size >= 40, `expected a full loadout, got ${rels.size}`);

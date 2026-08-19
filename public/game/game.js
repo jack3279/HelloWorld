@@ -177,6 +177,7 @@ function range(n, map) {
 const MANIFEST = [
   ...Object.values(BLOCKS),
   ...range(8, (i) => `lava-sprites/boil-${i * 4}.svg`),
+  ...range(8, (i) => `water-sprites/flow-${i * 4}.svg`),
   ...["idle-a", "idle-b", ...range(8, (i) => `run-${i}`), "jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"].map(
     (id) => `steve-sprites/${id}.svg`,
   ),
@@ -430,10 +431,67 @@ function unstick(body) {
   }
 }
 
+function waterSurfaceY(px, py) {
+  const x = Math.floor(px / TILE);
+  if (x < 0 || x >= world.w) return null;
+  let y = Math.floor(py / TILE);
+  if (y < 0) y = 0;
+  if (y >= world.h) y = world.h - 1;
+  if (world.tiles[y][x] !== "w") {
+    let found = -1;
+    for (let dy = -4; dy <= 2; dy++) {
+      const ty = y + dy;
+      if (ty >= 0 && ty < world.h && world.tiles[ty][x] === "w") {
+        found = ty;
+        break;
+      }
+    }
+    if (found < 0) return null;
+    y = found;
+  }
+  while (y > 0 && world.tiles[y - 1][x] === "w") y -= 1;
+  return y * TILE;
+}
+
+function inWaterAt(body) {
+  return tileAt(body.x, body.y - 4) === "w" || tileAt(body.x, body.y - 16) === "w" || tileAt(body.x, body.y - body.hh + 6) === "w";
+}
+
+function swimBody(body, dt) {
+  const surface = waterSurfaceY(body.x, body.y - 4);
+  if (surface == null) return;
+  const floatY = surface + 8;
+  body.grounded = false;
+  if (body.y > floatY + 6) body.vy = Math.min(body.vy - 1600 * dt, -40);
+  else if (body.y < floatY - 10) body.vy = Math.min(MAX_FALL, body.vy + GRAVITY * 0.35 * dt);
+  else {
+    body.vy *= 0.55;
+    body.y += (floatY - body.y) * Math.min(1, dt * 8);
+  }
+  if ((body.knockT ?? 0) <= 0) body.vx *= 0.9;
+  const headWet = tileAt(body.x, body.y - body.hh + 6) === "w";
+  if (headWet) {
+    body.air = (body.air ?? 12) - dt;
+    if (body.air <= 0) {
+      body.drownT = (body.drownT ?? 0) + dt;
+      if (body.drownT >= 0.7) {
+        body.drownT = 0;
+        hurt(body, 1, 0);
+      }
+    }
+  } else {
+    body.air = 12;
+    body.drownT = 0;
+  }
+}
+
 function moveBody(body, dt) {
   unstick(body);
+  const wet = inWaterAt(body);
   const prevVy = body.vy;
-  if (body.grounded && body.vy >= 0 && supportedByFloor(body)) {
+  if (wet) {
+    body.vy = Math.min(MAX_FALL, body.vy + GRAVITY * 0.35 * dt);
+  } else if (body.grounded && body.vy >= 0 && supportedByFloor(body)) {
     body.vy = 0;
     snapToFloor(body);
   } else {
@@ -446,7 +504,19 @@ function moveBody(body, dt) {
 
   const ny = body.y + body.vy * dt;
   if (rectHitsSolid(body.x - body.hw, ny - body.hh, body.hw * 2, body.hh)) {
-    if (body.vy > 0) {
+    if (wet) {
+      const headHit = rectHitsSolid(body.x - body.hw, ny - body.hh, body.hw * 2, 6);
+      if (headHit && body.vy < 0) {
+        body.y = Math.ceil((ny - body.hh) / TILE) * TILE + body.hh + 0.05;
+        body.vy = 0;
+      } else if (body.vy > 0) {
+        body.y = Math.floor((body.y + 2) / TILE) * TILE;
+        body.vy = 0;
+      } else {
+        body.y = ny;
+      }
+      body.grounded = false;
+    } else if (body.vy > 0) {
       body.y = ny;
       snapToFloor(body);
       if (prevVy > 860 && body === player) hurt(player, 2, Math.sign(body.vx) || -1);
@@ -457,21 +527,22 @@ function moveBody(body, dt) {
     }
   } else {
     body.y = ny;
-    body.grounded = supportedByFloor(body);
+    body.grounded = !wet && supportedByFloor(body);
     if (body.grounded && body.vy >= 0) snapToFloor(body);
   }
 
   const mid = tileAt(body.x, body.y - 2);
   const chest = tileAt(body.x, body.y - 8);
-  body.inWater = mid === "w" || tileAt(body.x, body.y - 16) === "w";
+  body.inWater = inWaterAt(body);
   body.inLava = mid === "v" || tileAt(body.x, body.y - 16) === "v";
   body.atChest = chest === "C" || tileAt(body.x + 16, body.y - 8) === "C" || tileAt(body.x - 16, body.y - 8) === "C";
   body.atTable = chest === "T" || tileAt(body.x + 16, body.y - 8) === "T" || tileAt(body.x - 16, body.y - 8) === "T";
   const bed = tileAt(body.x, body.y - 8);
   body.atBed = bed === "z" || bed === "Z" || tileAt(body.x + 16, body.y - 8) === "z" || tileAt(body.x - 16, body.y - 8) === "Z";
-  if (body.inWater) {
-    body.vy = Math.min(body.vy, 160);
-    if ((body.knockT ?? 0) <= 0) body.vx *= 0.88;
+  if (body.inWater) swimBody(body, dt);
+  else {
+    body.air = 12;
+    body.drownT = 0;
   }
 }
 
@@ -497,6 +568,8 @@ function makePlayer() {
     dropCd: 0,
     eatT: 0,
     dead: false,
+    air: 12,
+    drownT: 0,
     inWater: false,
     inLava: false,
     atBed: false,
@@ -542,6 +615,8 @@ function makeMob(kind, tx, ty) {
     hitT: 0,
     deathT: 0,
     dead: false,
+    air: 12,
+    drownT: 0,
     inWater: false,
     inLava: false,
     fuse: 0,
@@ -821,9 +896,11 @@ function hurt(who, amount, dir) {
     player.health = Math.max(0, player.health - taken);
     player.invuln = 0.9;
     player.hurtT = 8 / 12;
-    player.knockT = 0.2;
-    player.vx = dir * 220;
-    player.vy = -220;
+    if (dir) {
+      player.knockT = 0.2;
+      player.vx = dir * 220;
+      player.vy = -220;
+    }
     if (player.health <= 0) {
       player.dead = true;
       player.anim = "death";
@@ -835,8 +912,10 @@ function hurt(who, amount, dir) {
   }
   who.health -= amount;
   who.hitT = 8 / 12;
-  who.vx = dir * 260;
-  who.vy = -160;
+  if (dir) {
+    who.vx = dir * 260;
+    who.vy = -160;
+  }
   if (who.passive) who.hurtFlee = 1.6;
   if (who.health <= 0) {
     who.dead = true;
@@ -1032,21 +1111,21 @@ function updateMobs(dt) {
         mob.hurtFlee -= dt;
         mob.stillT = 0;
         mob.face = Math.sign(mob.x - player.x) || mob.face;
-        mob.vx = mob.face * mob.speed * 1.6;
+        mob.vx = mob.face * mob.speed * (mob.inWater ? 0.9 : 1.6);
       } else if (mob.followT > 0 && !player.dead) {
         mob.followT -= dt;
         const gap = player.x - mob.x;
         if (Math.abs(gap) > 36) {
           mob.face = Math.sign(gap) || mob.face;
-          mob.vx = mob.face * mob.speed * 0.95;
+          mob.vx = mob.face * mob.speed * (mob.inWater ? 0.5 : 0.95);
           mob.stillT = 0;
         } else {
           mob.vx = 0;
           mob.stillT += dt;
         }
-      } else if (mob.grounded && Math.random() < 0.012) {
+      } else if ((mob.grounded || mob.inWater) && Math.random() < 0.012) {
         mob.face = Math.random() < 0.5 ? -1 : 1;
-        mob.vx = mob.face * mob.speed * (0.35 + Math.random() * 0.45);
+        mob.vx = mob.face * mob.speed * (0.35 + Math.random() * 0.45) * (mob.inWater ? 0.55 : 1);
         mob.stillT = 0;
       } else if (Math.random() < 0.01) {
         mob.vx = 0;
@@ -1076,7 +1155,7 @@ function updateMobs(dt) {
       if (mob.kind === "creeper") mob.fuse = Math.max(0, mob.fuse - dt * 1.8);
       if (close) {
         mob.face = Math.sign(dx) || mob.face;
-        mob.vx = mob.face * mob.speed;
+        mob.vx = mob.face * mob.speed * (mob.inWater ? 0.55 : 1);
         if (mob.kind === "spider" && mob.grounded && Math.abs(dx) < 90 && Math.random() < 0.02) mob.vy = -520;
       } else {
         mob.vx *= 0.8;
@@ -1102,7 +1181,7 @@ function steerSkeleton(mob, dt, dx, close) {
   mob.face = Math.sign(dx) || mob.face;
   const dist = Math.abs(dx);
   if (dist < 72) {
-    mob.vx = -mob.face * mob.speed;
+    mob.vx = -mob.face * mob.speed * (mob.inWater ? 0.55 : 1);
     mob.drawT = 0;
     return;
   }
@@ -1116,7 +1195,7 @@ function steerSkeleton(mob, dt, dx, close) {
     }
     return;
   }
-  mob.vx = mob.face * mob.speed * 0.75;
+  mob.vx = mob.face * mob.speed * (mob.inWater ? 0.4 : 0.75);
   mob.drawT = 0;
 }
 
@@ -1340,6 +1419,7 @@ function drawWorld() {
   const y0 = Math.max(0, Math.floor(cam.y / TILE) - 1);
   const y1 = Math.min(world.h - 1, Math.ceil((cam.y + viewH) / TILE) + 1);
   const lavaFrame = `lava-sprites/boil-${Math.floor(time * 8) % 8 * 4}.svg`;
+  const waterFrame = `water-sprites/flow-${(Math.floor(time * 8) % 8) * 4}.svg`;
 
   for (let y = y0; y <= y1; y++) {
     for (let x = x0; x <= x1; x++) {
@@ -1348,6 +1428,7 @@ function drawWorld() {
       const dx = viewX(x * TILE);
       const dy = viewY(y * TILE);
       if (t === "v") drawTile(lavaFrame, dx, dy);
+      else if (t === "w") drawTile(waterFrame, dx, dy);
       else if (BLOCKS[t]) drawTile(BLOCKS[t], dx, dy);
     }
   }
