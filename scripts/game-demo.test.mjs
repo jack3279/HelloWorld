@@ -16,6 +16,7 @@ describe("html game demo", () => {
   it("ships a standalone page that loads vanilla JS", async () => {
     const html = await readFile(resolve(ROOT, "public/game/index.html"), "utf8");
     const game = await readFile(resolve(ROOT, "public/game/game.js"), "utf8");
+    const css = await readFile(resolve(ROOT, "public/game/style.css"), "utf8");
     assert.match(html, /id="game"/);
     assert.match(html, /id="start"/);
     assert.match(html, /id="demo"/);
@@ -25,7 +26,12 @@ describe("html game demo", () => {
     assert.match(game, /from "\.\/recipes\.js"/);
     assert.match(game, /tryOpenTable|craftingOpen/);
     assert.match(game, /imageSmoothingEnabled = false/);
+    assert.match(game, /BLOCK_SRC_PAD = 56/);
+    assert.match(game, /BLOCK_SRC_FACE = 400/);
+    assert.match(game, /function drawTile/);
+    assert.match(game, /function supportedByFloor/);
     assert.match(game, /TILE \+ 1/);
+    assert.match(css, /image-rendering:\s*pixelated/);
   });
 
   it("preloads existing repo art instead of inventing new sprites", async () => {

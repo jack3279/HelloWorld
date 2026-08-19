@@ -2,6 +2,9 @@ import { RECIPES, canCraft, craftOnce, itemAsset } from "./recipes.js";
 
 const ROOT = "/repo-assets";
 const TILE = 48;
+// Catalog block SVGs are 512×512 with SINGLE.pad empty margin; the painted face is 400×400.
+const BLOCK_SRC_PAD = 56;
+const BLOCK_SRC_FACE = 400;
 const GOAL_DIAMONDS = 5;
 const GRAVITY = 2100;
 const MOVE = 210;
@@ -389,15 +392,34 @@ function rectHitsSolid(x, y, w, h) {
   return false;
 }
 
+function supportedByFloor(body) {
+  return rectHitsSolid(body.x - body.hw, body.y, body.hw * 2, 3);
+}
+
+function snapToFloor(body) {
+  body.y = Math.floor((body.y + 2) / TILE) * TILE;
+  body.vy = 0;
+  body.grounded = true;
+}
+
 function unstick(body) {
   if (!rectHitsSolid(body.x - body.hw, body.y - body.hh, body.hw * 2, body.hh)) return;
-  for (const dy of [-1, -2, -4, -8]) {
+  if (body.vy >= 0) {
+    const lifted = Math.floor((body.y + 2) / TILE) * TILE;
+    if (!rectHitsSolid(body.x - body.hw, lifted - body.hh, body.hw * 2, body.hh)) {
+      body.y = lifted;
+      body.vy = 0;
+      body.grounded = true;
+      return;
+    }
+  }
+  for (const dy of [-1, -2, -4]) {
     if (!rectHitsSolid(body.x - body.hw, body.y - body.hh + dy, body.hw * 2, body.hh)) {
       body.y += dy;
       return;
     }
   }
-  for (const dx of [2, -2, 4, -4, 8, -8]) {
+  for (const dx of [2, -2, 4, -4]) {
     if (!rectHitsSolid(body.x - body.hw + dx, body.y - body.hh, body.hw * 2, body.hh)) {
       body.x += dx;
       return;
@@ -408,8 +430,9 @@ function unstick(body) {
 function moveBody(body, dt) {
   unstick(body);
   const prevVy = body.vy;
-  if (body.grounded && body.vy >= 0 && rectHitsSolid(body.x - body.hw, body.y - body.hh + 2, body.hw * 2, body.hh)) {
+  if (body.grounded && body.vy >= 0 && supportedByFloor(body)) {
     body.vy = 0;
+    snapToFloor(body);
   } else {
     body.vy = Math.min(MAX_FALL, body.vy + GRAVITY * dt);
   }
@@ -421,17 +444,18 @@ function moveBody(body, dt) {
   const ny = body.y + body.vy * dt;
   if (rectHitsSolid(body.x - body.hw, ny - body.hh, body.hw * 2, body.hh)) {
     if (body.vy > 0) {
-      body.y = Math.floor(ny / TILE) * TILE;
-      body.grounded = true;
+      body.y = ny;
+      snapToFloor(body);
       if (prevVy > 860 && body === player) hurt(player, 2, Math.sign(body.vx) || -1);
     } else {
       body.y = Math.ceil((ny - body.hh) / TILE) * TILE + body.hh + 0.05;
       body.grounded = false;
+      body.vy = 0;
     }
-    body.vy = 0;
   } else {
     body.y = ny;
-    body.grounded = false;
+    body.grounded = supportedByFloor(body);
+    if (body.grounded && body.vy >= 0) snapToFloor(body);
   }
 
   const mid = tileAt(body.x, body.y - 2);
@@ -1170,14 +1194,16 @@ function updateParticles(dt) {
 }
 
 function updateCamera() {
-  const targetX = player.x - viewW * 0.38;
-  const targetY = player.y - viewH * 0.68;
-  cam.x += (targetX - cam.x) * 0.12;
-  cam.y += (targetY - cam.y) * 0.1;
+  const targetX = Math.round(player.x) - viewW * 0.38;
+  const targetY = Math.round(player.y) - viewH * 0.68;
+  let nextX = cam.x + (targetX - cam.x) * 0.14;
+  let nextY = cam.y + (targetY - cam.y) * 0.12;
+  if (Math.abs(targetX - nextX) < 1) nextX = targetX;
+  if (Math.abs(targetY - nextY) < 1) nextY = targetY;
   const maxX = world.w * TILE - viewW;
   const maxY = world.h * TILE - viewH;
-  cam.x = Math.round(Math.max(0, Math.min(maxX, cam.x)));
-  cam.y = Math.round(Math.max(0, Math.min(Math.max(0, maxY), cam.y)));
+  cam.x = Math.round(Math.max(0, Math.min(maxX, nextX)));
+  cam.y = Math.round(Math.max(0, Math.min(Math.max(0, maxY), nextY)));
 }
 
 function viewX(wx) {
@@ -1191,18 +1217,27 @@ function viewY(wy) {
 function drawImage(rel, x, y, w, h) {
   const pic = img(rel);
   if (!pic) return;
-  ctx.drawImage(pic, Math.round(x), Math.round(y), w, h);
+  ctx.drawImage(pic, Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+}
+
+function drawTile(rel, x, y) {
+  const pic = img(rel);
+  if (!pic) return;
+  const dest = TILE + 1;
+  ctx.drawImage(pic, BLOCK_SRC_PAD, BLOCK_SRC_PAD, BLOCK_SRC_FACE, BLOCK_SRC_FACE, Math.round(x), Math.round(y), dest, dest);
 }
 
 function drawAnchored(rel, spec, x, y, face) {
   const pic = img(rel);
   if (!pic) return;
-  const dw = spec.w * spec.scale;
-  const dh = spec.h * spec.scale;
+  const dw = Math.round(spec.w * spec.scale);
+  const dh = Math.round(spec.h * spec.scale);
+  const ox = Math.round(spec.ax * spec.scale);
+  const oy = Math.round(spec.ay * spec.scale);
   ctx.save();
   ctx.translate(Math.round(x), Math.round(y));
   ctx.scale(face, 1);
-  ctx.drawImage(pic, -spec.ax * spec.scale, -spec.ay * spec.scale, dw, dh);
+  ctx.drawImage(pic, -ox, -oy, dw, dh);
   ctx.restore();
 }
 
@@ -1285,8 +1320,8 @@ function drawWorld() {
       if (t === ".") continue;
       const dx = viewX(x * TILE);
       const dy = viewY(y * TILE);
-      if (t === "v") drawImage(lavaFrame, dx, dy, TILE + 1, TILE + 1);
-      else if (BLOCKS[t]) drawImage(BLOCKS[t], dx, dy, TILE + 1, TILE + 1);
+      if (t === "v") drawTile(lavaFrame, dx, dy);
+      else if (BLOCKS[t]) drawTile(BLOCKS[t], dx, dy);
     }
   }
 }
