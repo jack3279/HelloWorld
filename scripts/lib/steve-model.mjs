@@ -72,9 +72,9 @@ export const HORSE_SKIN_URL =
 export const BOAT_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/boat/boat_oak.png";
 export const BLAZE_SKIN_URL =
-  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/blaze.png";
-export const BLAZE_SKIN_FALLBACK_URL =
   "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/blaze/blaze.png";
+export const BLAZE_SKIN_FALLBACK_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/blaze.png";
 export const MAGMA_CUBE_SKIN_URL =
   "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/slime/magmacube.png";
 export const NETHERITE_ARMOR_1_URL =
