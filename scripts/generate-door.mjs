@@ -8,9 +8,21 @@ const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, "..");
 const generator = "scripts/generate-door.mjs";
 
-const upper = await loadBlock("door-oak-upper");
-const lower = await loadBlock("door-oak");
-const skin = stackDoorSkin(upper, lower);
+async function bakeSwing(skin) {
+  return Array.from({ length: DOOR_SWING_FRAMES }, (_, i) => {
+    const t = i / Math.max(1, DOOR_SWING_FRAMES - 1);
+    const baked = bake({
+      skin,
+      pose: doorSwingPose(easeInOut(t)),
+      canvas: DOOR_SPRITE,
+      tolerance: DOOR_TOLERANCE,
+      model: DOOR_MODEL,
+    });
+    return { id: `swing-${i}`, label: `Swing ${i + 1}/${DOOR_SWING_FRAMES}`, ...baked };
+  });
+}
+
+const oakSkin = stackDoorSkin(await loadBlock("door-oak-upper"), await loadBlock("door-oak"));
 
 await writeHeroSvg({
   generator,
@@ -18,30 +30,20 @@ await writeHeroSvg({
   title: "Oak door, closed",
   desc: "Voxel oak door facing the camera, hinged on the left.",
   groupId: "door",
-  skin,
+  skin: oakSkin,
   pose: doorSwingPose(0),
   tolerance: DOOR_TOLERANCE,
   model: DOOR_MODEL,
   canvas: { w: 256, h: 512, pad: 24 },
 });
 
-const frames = Array.from({ length: DOOR_SWING_FRAMES }, (_, i) => {
-  const t = i / Math.max(1, DOOR_SWING_FRAMES - 1);
-  const baked = bake({
-    skin,
-    pose: doorSwingPose(easeInOut(t)),
-    canvas: DOOR_SPRITE,
-    tolerance: DOOR_TOLERANCE,
-    model: DOOR_MODEL,
-  });
-  return { id: `swing-${i}`, label: `Swing ${i + 1}/${DOOR_SWING_FRAMES}`, ...baked };
-});
+const oakFrames = await bakeSwing(oakSkin);
 
 await writeFrames({
   generator,
   groupId: "door",
   sprite: DOOR_SPRITE,
-  frames,
+  frames: oakFrames,
   outDir: resolve(ROOT, "assets/door-sprites"),
 });
 
@@ -51,7 +53,7 @@ await writeScene(
     name: "Oak door — Swing",
     w: DOOR_SPRITE.w,
     h: DOOR_SPRITE.h,
-    frames: frames.map((frame) => ({ id: frame.id, shapes: frame.shapes })),
+    frames: oakFrames.map((frame) => ({ id: frame.id, shapes: frame.shapes })),
     fps: 16,
     hold: 1,
     loop: true,
@@ -59,4 +61,15 @@ await writeScene(
   }),
 );
 
-console.log(`Wrote ${DOOR_SWING_FRAMES} door swing frames`);
+const ironSkin = stackDoorSkin(await loadBlock("door-iron-upper"), await loadBlock("door-iron"));
+const ironFrames = await bakeSwing(ironSkin);
+
+await writeFrames({
+  generator,
+  groupId: "iron-door",
+  sprite: DOOR_SPRITE,
+  frames: ironFrames,
+  outDir: resolve(ROOT, "assets/iron-door-sprites"),
+});
+
+console.log(`Wrote ${DOOR_SWING_FRAMES} oak and iron door swing frames`);

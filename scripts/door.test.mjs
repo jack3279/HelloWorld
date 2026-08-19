@@ -18,10 +18,13 @@ describe("door model", () => {
     assert.deepEqual(DOOR_MODEL.find((p) => p.id === "lower").pivot, [-8, 0, 0]);
   });
 
-  it("stacks official upper and lower oak faces", async () => {
-    const skin = stackDoorSkin(await loadBlock("door-oak-upper"), await loadBlock("door-oak"));
-    assert.equal(skin.width, 16);
-    assert.equal(skin.height, 32);
+  it("stacks official upper and lower oak and iron faces", async () => {
+    const oak = stackDoorSkin(await loadBlock("door-oak-upper"), await loadBlock("door-oak"));
+    assert.equal(oak.width, 16);
+    assert.equal(oak.height, 32);
+    const iron = stackDoorSkin(await loadBlock("door-iron-upper"), await loadBlock("door-iron"));
+    assert.equal(iron.width, 16);
+    assert.equal(iron.height, 32);
   });
 
   it("swings the hinge from 0° to 90°", () => {
@@ -40,6 +43,9 @@ describe("generated door assets", () => {
       const frame = await readFile(resolve(ROOT, "assets/door-sprites", `swing-${i}.svg`), "utf8");
       assert.match(frame, /<svg /);
       assert.match(frame, /id="lower"/);
+      const iron = await readFile(resolve(ROOT, "assets/iron-door-sprites", `swing-${i}.svg`), "utf8");
+      assert.match(iron, /<svg /);
+      assert.match(iron, /id="lower"/);
     }
   });
 

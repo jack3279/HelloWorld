@@ -12,6 +12,8 @@ export const BLOCKS_BASE =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/blocks";
 export const JAVA_BLOCKS_BASE =
   "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/block";
+export const JAVA_ENV_BASE =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/environment";
 const CACHE = resolve(__dirname, "../../node_modules/.cache/minecraft-blocks");
 
 export const TILE = 16;
@@ -155,6 +157,21 @@ export const PLAY_BLOCKS = [
     title: "凋灵头颅",
     base: "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/skulls",
   },
+  { id: "door-iron-upper", file: "door_iron_upper.png", label: "Iron door top", title: "铁门上" },
+  { id: "piston-head", file: "piston_top_normal.png", label: "Piston head", title: "活塞头" },
+  { id: "spruce-log", file: "log_spruce.png", label: "Spruce log", title: "云杉原木" },
+  { id: "birch-log", file: "log_birch.png", label: "Birch log", title: "白桦原木" },
+  { id: "acacia-log", file: "log_acacia.png", label: "Acacia log", title: "金合欢原木" },
+  { id: "dark-oak-log", file: "log_big_oak.png", label: "Dark oak log", title: "深色橡木原木" },
+  {
+    id: "cloud",
+    file: "clouds.png",
+    label: "Cloud",
+    title: "云",
+    base: JAVA_ENV_BASE,
+    crop: [48, 32],
+    punchDark: true,
+  },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {
@@ -183,11 +200,46 @@ export async function loadBlock(id) {
     await mkdir(CACHE, { recursive: true });
     await writeFile(cachePath, buf);
   }
-  const png = decodeTexture(buf);
+  let png = decodeTexture(buf);
+  png = applyFaceOpts(png, block);
   if (png.width < TILE || png.height < TILE) {
     throw new Error(`${block.file} is smaller than ${TILE}×${TILE}`);
   }
   return block.tint ? applyTint(png, block.tint) : png;
+}
+
+export function cropRgba(png, x, y, w = TILE, h = TILE) {
+  const rgba = new Uint8Array(w * h * 4);
+  for (let dy = 0; dy < h; dy++) {
+    for (let dx = 0; dx < w; dx++) {
+      const sx = x + dx;
+      const sy = y + dy;
+      if (sx < 0 || sy < 0 || sx >= png.width || sy >= png.height) continue;
+      const si = (sy * png.width + sx) * 4;
+      const di = (dy * w + dx) * 4;
+      rgba[di] = png.rgba[si];
+      rgba[di + 1] = png.rgba[si + 1];
+      rgba[di + 2] = png.rgba[si + 2];
+      rgba[di + 3] = png.rgba[si + 3];
+    }
+  }
+  return { width: w, height: h, rgba };
+}
+
+export function punchDarkRgba(png, cutoff = 48) {
+  const rgba = new Uint8Array(png.rgba);
+  for (let i = 0; i < rgba.length; i += 4) {
+    const lum = (rgba[i] + rgba[i + 1] + rgba[i + 2]) / 3;
+    if (lum < cutoff) rgba[i + 3] = 0;
+  }
+  return { width: png.width, height: png.height, rgba };
+}
+
+function applyFaceOpts(png, spec) {
+  let out = png;
+  if (spec.crop) out = cropRgba(out, spec.crop[0], spec.crop[1], spec.crop[2] ?? TILE, spec.crop[3] ?? TILE);
+  if (spec.punchDark) out = punchDarkRgba(out, spec.punchDark === true ? 48 : spec.punchDark);
+  return out;
 }
 
 function applyTint(png, tintHex) {

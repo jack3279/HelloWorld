@@ -32,6 +32,10 @@ describe("crafting recipes", () => {
     for (const id of ids) {
       assert.ok(existsSync(resolve(ROOT, "assets", itemAsset(id))), `missing ${itemAsset(id)}`);
     }
+    assert.equal(itemAsset("dispenser"), "blocks/dispenser.svg");
+    assert.equal(itemAsset("cloud"), "blocks/cloud.svg");
+    assert.equal(itemAsset("door-iron"), "blocks/door-iron.svg");
+    assert.equal(itemAsset("spruce-planks"), "blocks/spruce-planks.svg");
   });
 
   it("turns a log into planks then sticks", () => {

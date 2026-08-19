@@ -101,6 +101,15 @@ describe("hotbar item catalog", () => {
     assert.ok(play.includes("nether-star"));
     assert.ok(play.includes("wither-skull"));
     assert.ok(play.includes("dragon-egg"));
+    assert.ok(play.includes("dispenser"));
+    assert.ok(play.includes("piston"));
+    assert.ok(play.includes("hopper"));
+    assert.ok(play.includes("observer"));
+    assert.ok(play.includes("door-iron"));
+    assert.ok(play.includes("gold-block"));
+    assert.ok(play.includes("cloud"));
+    assert.ok(play.includes("spruce-log"));
+    assert.ok(play.includes("birch-planks"));
   });
 
   it("loads official 16×16 sprites", async () => {

@@ -3,6 +3,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { cropRgba, punchDarkRgba } from "./minecraft-blocks.mjs";
 import { decodePng, hexToRgba01, parseArgs, rgbToHex } from "./steve-model.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -197,6 +198,35 @@ export const PLAY_ITEMS = [
   { id: "end-portal-frame", file: "endframe_side.png", label: "End portal frame", title: "末地传送门框架", base: BLOCKS_BASE },
   { id: "chorus-plant", file: "chorus_plant.png", label: "Chorus plant", title: "紫颂植株", base: BLOCKS_BASE },
   { id: "dragon-egg", file: "dragon_egg.png", label: "Dragon egg", title: "龙蛋", base: BLOCKS_BASE },
+  { id: "dispenser", file: "dispenser_front_horizontal.png", label: "Dispenser", title: "发射器", base: BLOCKS_BASE },
+  { id: "piston", file: "piston_side.png", label: "Piston", title: "活塞", base: BLOCKS_BASE },
+  { id: "hopper", file: "hopper_outside.png", label: "Hopper", title: "漏斗", base: BLOCKS_BASE },
+  { id: "observer", file: "observer_front.png", label: "Observer", title: "观察者", base: BLOCKS_BASE },
+  { id: "door-iron", file: "door_iron_lower.png", label: "Iron door", title: "铁门", base: BLOCKS_BASE },
+  { id: "gold-block", file: "gold_block.png", label: "Gold block", title: "金块", base: BLOCKS_BASE },
+  { id: "diamond-block", file: "diamond_block.png", label: "Diamond block", title: "钻石块", base: BLOCKS_BASE },
+  { id: "emerald-block", file: "emerald_block.png", label: "Emerald block", title: "绿宝石块", base: BLOCKS_BASE },
+  { id: "sponge", file: "sponge.png", label: "Sponge", title: "海绵", base: BLOCKS_BASE },
+  { id: "blue-ice", file: "blue_ice.png", label: "Blue ice", title: "蓝冰", base: BLOCKS_BASE },
+  { id: "spruce-planks", file: "planks_spruce.png", label: "Spruce planks", title: "云杉木板", base: BLOCKS_BASE },
+  { id: "birch-planks", file: "planks_birch.png", label: "Birch planks", title: "白桦木板", base: BLOCKS_BASE },
+  { id: "acacia-planks", file: "planks_acacia.png", label: "Acacia planks", title: "金合欢木板", base: BLOCKS_BASE },
+  { id: "dark-oak-planks", file: "planks_big_oak.png", label: "Dark oak planks", title: "深色橡木木板", base: BLOCKS_BASE },
+  { id: "spruce-leaves", file: "leaves_spruce_opaque.png", label: "Spruce leaves", title: "云杉树叶", base: BLOCKS_BASE },
+  { id: "birch-leaves", file: "leaves_birch_opaque.png", label: "Birch leaves", title: "白桦树叶", base: BLOCKS_BASE },
+  { id: "spruce-log", file: "log_spruce.png", label: "Spruce log", title: "云杉原木", base: BLOCKS_BASE },
+  { id: "birch-log", file: "log_birch.png", label: "Birch log", title: "白桦原木", base: BLOCKS_BASE },
+  { id: "acacia-log", file: "log_acacia.png", label: "Acacia log", title: "金合欢原木", base: BLOCKS_BASE },
+  { id: "dark-oak-log", file: "log_big_oak.png", label: "Dark oak log", title: "深色橡木原木", base: BLOCKS_BASE },
+  {
+    id: "cloud",
+    file: "clouds.png",
+    label: "Cloud",
+    title: "云",
+    base: "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/environment",
+    crop: [48, 32],
+    punchDark: true,
+  },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.
@@ -244,7 +274,9 @@ export async function loadItem(id) {
     await mkdir(CACHE, { recursive: true });
     await writeFile(cachePath, buf);
   }
-  const png = decodePng(buf);
+  let png = decodePng(buf);
+  if (item.crop) png = cropRgba(png, item.crop[0], item.crop[1], item.crop[2] ?? TILE, item.crop[3] ?? TILE);
+  if (item.punchDark) png = punchDarkRgba(png, item.punchDark === true ? 48 : item.punchDark);
   if (png.width < TILE || png.height < TILE) {
     throw new Error(`${item.file} is smaller than ${TILE}×${TILE}`);
   }

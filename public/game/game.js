@@ -120,6 +120,26 @@ const MINEABLE = {
   "♣": { drop: "chorus-plant" },
   "☠": { drop: "wither-skull" },
   "♦": { drop: "dragon-egg" },
+  "▷": { drop: "dispenser", tool: "pickaxe" },
+  "⇨": { drop: "piston", tool: "pickaxe" },
+  "▽": { drop: "hopper", tool: "pickaxe" },
+  "◉": { drop: "observer", tool: "pickaxe" },
+  "★": { drop: "gold-block", tool: "pickaxe" },
+  "◆": { drop: "diamond-block", tool: "pickaxe" },
+  "❖": { drop: "emerald-block", tool: "pickaxe" },
+  "▒": { drop: "sponge" },
+  "❄": { drop: "blue-ice", tool: "pickaxe" },
+  "≡": { drop: "spruce-planks", tool: "axe" },
+  "≣": { drop: "birch-planks", tool: "axe" },
+  "☰": { drop: "acacia-planks", tool: "axe" },
+  "☷": { drop: "dark-oak-planks", tool: "axe" },
+  "♠": { drop: "spruce-leaves" },
+  "♧": { drop: "birch-leaves" },
+  "¦": { drop: "spruce-log", tool: "axe" },
+  "┊": { drop: "birch-log", tool: "axe" },
+  "┆": { drop: "acacia-log", tool: "axe" },
+  "┇": { drop: "dark-oak-log", tool: "axe" },
+  "☁": { drop: "cloud" },
 };
 const PLACEABLE = {
   torch: "t",
@@ -170,6 +190,27 @@ const PLACEABLE = {
   "chorus-plant": "♣",
   "wither-skull": "☠",
   "dragon-egg": "♦",
+  dispenser: "▷",
+  piston: "⇨",
+  hopper: "▽",
+  observer: "◉",
+  "door-iron": "⌊",
+  "gold-block": "★",
+  "diamond-block": "◆",
+  "emerald-block": "❖",
+  sponge: "▒",
+  "blue-ice": "❄",
+  "spruce-planks": "≡",
+  "birch-planks": "≣",
+  "acacia-planks": "☰",
+  "dark-oak-planks": "☷",
+  "spruce-leaves": "♠",
+  "birch-leaves": "♧",
+  "spruce-log": "¦",
+  "birch-log": "┊",
+  "acacia-log": "┆",
+  "dark-oak-log": "┇",
+  cloud: "☁",
 };
 const PICK_TOOLS = new Set(["diamond-pickaxe", "iron-pickaxe", "wooden-pickaxe"]);
 const AXE_TOOLS = new Set(["diamond-axe", "iron-axe", "wooden-axe"]);
@@ -396,6 +437,27 @@ const ITEM_LABELS = {
   "end-portal-frame": "末地传送门框架",
   "chorus-plant": "紫颂植株",
   "dragon-egg": "龙蛋",
+  dispenser: "发射器",
+  piston: "活塞",
+  hopper: "漏斗",
+  observer: "观察者",
+  "door-iron": "铁门",
+  "gold-block": "金块",
+  "diamond-block": "钻石块",
+  "emerald-block": "绿宝石块",
+  sponge: "海绵",
+  "blue-ice": "蓝冰",
+  "spruce-planks": "云杉木板",
+  "birch-planks": "白桦木板",
+  "acacia-planks": "金合欢木板",
+  "dark-oak-planks": "深色橡木木板",
+  "spruce-leaves": "云杉树叶",
+  "birch-leaves": "白桦树叶",
+  "spruce-log": "云杉原木",
+  "birch-log": "白桦原木",
+  "acacia-log": "金合欢原木",
+  "dark-oak-log": "深色橡木原木",
+  cloud: "云",
 };
 
 const FOOD = {
@@ -522,9 +584,33 @@ const BLOCKS = {
   "♣": "blocks/chorus-plant.svg",
   "☠": "blocks/wither-skull.svg",
   "♦": "blocks/dragon-egg.svg",
+  "▷": "blocks/dispenser.svg",
+  "⇨": "blocks/piston.svg",
+  "➤": "blocks/piston-head.svg",
+  "▽": "blocks/hopper.svg",
+  "◉": "blocks/observer.svg",
+  "⌊": "blocks/door-iron.svg",
+  "⌈": "blocks/door-iron-upper.svg",
+  "★": "blocks/gold-block.svg",
+  "◆": "blocks/diamond-block.svg",
+  "❖": "blocks/emerald-block.svg",
+  "▒": "blocks/sponge.svg",
+  "❄": "blocks/blue-ice.svg",
+  "≡": "blocks/spruce-planks.svg",
+  "≣": "blocks/birch-planks.svg",
+  "☰": "blocks/acacia-planks.svg",
+  "☷": "blocks/dark-oak-planks.svg",
+  "♠": "blocks/spruce-leaves.svg",
+  "♧": "blocks/birch-leaves.svg",
+  "¦": "blocks/spruce-log.svg",
+  "┊": "blocks/birch-log.svg",
+  "┆": "blocks/acacia-log.svg",
+  "┇": "blocks/dark-oak-log.svg",
+  "☁": "blocks/cloud.svg",
 };
 
 const SOLID = new Set([..."gdscpLabBTFimxIjuyenqHRNVAEKJMOQ8X~Wl=!$", "#", "&", "^", "+", "?", "(", "{", "}", ")", "░", "▤", "♦", "☠"]);
+for (const ch of "▷⇨➤▽◉★◆❖▒❄≡≣☰☷♠♧¦┊┆┇☁") SOLID.add(ch);
 
 const canvas = document.getElementById("game");
 const overlay = document.getElementById("overlay");
@@ -729,6 +815,7 @@ const MANIFEST = [
   ...range(8, (i) => `ender-dragon-sprites/hurt-${i}.svg`),
   ...range(8, (i) => `ender-dragon-sprites/death-${i}.svg`),
   ...range(8, (i) => `door-sprites/swing-${i}.svg`),
+  ...range(8, (i) => `iron-door-sprites/swing-${i}.svg`),
   "steve-sprites/shield-hold.svg",
   "steve-sprites/shield-block.svg",
   ...range(8, (i) => `steve-sprites/shield-hold-run-${i}.svg`),
@@ -814,15 +901,30 @@ function fillRow(tiles, y, x0, x1, t) {
   for (let x = x0; x <= x1; x++) setCell(tiles, x, y, t);
 }
 
-function tree(tiles, x, ground) {
-  setCell(tiles, x, ground - 1, "o");
-  setCell(tiles, x, ground - 2, "o");
-  setCell(tiles, x, ground - 3, "o");
-  for (let dy = 4; dy <= 6; dy++) {
+function tree(tiles, x, ground, log = "o", leaf = "L", trunk = 3) {
+  for (let i = 1; i <= trunk; i++) setCell(tiles, x, ground - i, log);
+  const leafTop = trunk + 3;
+  for (let dy = trunk + 1; dy <= leafTop; dy++) {
     for (let dx = -2; dx <= 2; dx++) {
-      if (Math.abs(dx) + (6 - dy) < 4) setCell(tiles, x + dx, ground - dy, "L");
+      if (Math.abs(dx) + (leafTop - dy) < 4) setCell(tiles, x + dx, ground - dy, leaf);
     }
   }
+}
+
+function worldMaps(extra = {}) {
+  return {
+    cropT: 0,
+    doorOpen: new Map(),
+    tntFuse: new Map(),
+    fireT: new Map(),
+    cakeBites: new Map(),
+    jukebox: new Map(),
+    deviceFace: new Map(),
+    power: new Map(),
+    gadgetCd: new Map(),
+    pistonOut: new Map(),
+    ...extra,
+  };
 }
 
 function oreAt(x, y, ground) {
@@ -879,14 +981,15 @@ function buildWorld() {
   setCell(tiles, 35, ground, "h");
 
   tree(tiles, 8, ground);
-  tree(tiles, 48, ground);
+  tree(tiles, 27, ground, "¦", "♠", 4);
+  tree(tiles, 48, ground, "┊", "♧");
 
   fillRow(tiles, ground, 2, 5, "n");
   setCell(tiles, 7, ground, "n");
   setCell(tiles, 6, ground - 1, "u");
   setCell(tiles, 9, ground - 1, "u");
   setCell(tiles, 13, ground, "I");
-  setCell(tiles, 18, ground, "I");
+  setCell(tiles, 18, ground, "❄");
   setCell(tiles, 15, ground + 3, "q");
   setCell(tiles, 47, ground - 1, "e");
   setCell(tiles, 49, ground - 1, "u");
@@ -911,6 +1014,7 @@ function buildWorld() {
   setCell(tiles, 28, ground - 2, "Y");
   setCell(tiles, 30, ground - 1, "Y");
   setCell(tiles, 16, ground - 1, "l");
+  setCell(tiles, 17, ground - 1, "▒");
   setCell(tiles, 8, ground - 4, "9");
   setCell(tiles, 48, ground - 4, "9");
   setCell(tiles, 25, ground - 1, "r");
@@ -931,6 +1035,9 @@ function buildWorld() {
   setCell(tiles, 72, ground, "~");
   setCell(tiles, 73, ground, "~");
   fillRow(tiles, ground - 1, 71, 73, "A");
+  setCell(tiles, 71, ground - 1, "◉");
+  setCell(tiles, 72, ground - 1, "⇨");
+  setCell(tiles, 73, ground - 1, "▷");
   setCell(tiles, 74, ground - 1, "E");
   setCell(tiles, 69, ground - 1, "W");
   fillRow(tiles, ground + 3, 8, 11, "V");
@@ -968,7 +1075,8 @@ function buildWorld() {
   fillRow(tiles, ground - 4, 62, 70, "p");
   setCell(tiles, 62, ground - 1, "D");
   setCell(tiles, 62, ground - 2, "U");
-  setCell(tiles, 70, ground - 2, "j");
+  setCell(tiles, 70, ground - 1, "⌊");
+  setCell(tiles, 70, ground - 2, "⌈");
   setCell(tiles, 63, ground - 1, "F");
   setCell(tiles, 63, ground - 2, ")");
   setCell(tiles, 64, ground - 1, "T");
@@ -977,22 +1085,39 @@ function buildWorld() {
   setCell(tiles, 69, ground - 1, "{");
   setCell(tiles, 69, ground - 2, "!");
   setCell(tiles, 68, ground - 1, "C");
+  setCell(tiles, 68, ground - 2, "▽");
   setCell(tiles, 66, ground - 1, "z");
   setCell(tiles, 67, ground - 1, "Z");
   setCell(tiles, 66, ground - 2, "t");
   setCell(tiles, 64, ground - 2, "[");
   setCell(tiles, 69, ground - 5, "t");
   setCell(tiles, 60, ground - 1, "N");
-  setCell(tiles, 74, ground - 1, "(");
-  setCell(tiles, 75, ground - 1, "(");
-  setCell(tiles, 76, ground - 1, "~");
+  setCell(tiles, 74, ground - 1, "★");
+  setCell(tiles, 75, ground - 1, "◆");
+  setCell(tiles, 76, ground - 1, "❖");
   setCell(tiles, 76, ground - 2, "~");
+  setCell(tiles, 53, ground - 1, "≡");
+  setCell(tiles, 54, ground - 1, "≣");
+  setCell(tiles, 55, ground - 1, "☰");
+  setCell(tiles, 56, ground - 1, "☷");
+  setCell(tiles, 53, ground - 2, "¦");
+  setCell(tiles, 54, ground - 2, "┊");
+  setCell(tiles, 55, ground - 2, "┆");
+  setCell(tiles, 56, ground - 2, "┇");
+  for (let x = 8; x <= 12; x++) setCell(tiles, x, 2, "☁");
+  for (let x = 9; x <= 11; x++) setCell(tiles, x, 3, "☁");
+  for (let x = 32; x <= 36; x++) setCell(tiles, x, 2, "☁");
+  for (let x = 50; x <= 55; x++) setCell(tiles, x, 2, "☁");
 
   fillRow(tiles, ground, 71, W - 1, "m");
   setCell(tiles, 0, ground, "B");
   setCell(tiles, W - 1, ground, "B");
 
-  return { w: W, h: H, tiles, ground, nightSpawned: false, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map(), cakeBites: new Map(), jukebox: new Map() };
+  const gadget = worldMaps({ nightSpawned: false });
+  gadget.deviceFace.set("71,9", 1);
+  gadget.deviceFace.set("72,9", 1);
+  gadget.deviceFace.set("73,9", 1);
+  return { w: W, h: H, tiles, ground, ...gadget };
 }
 
 function portalFrame(tiles, x, ground) {
@@ -1049,7 +1174,7 @@ function buildNether() {
   setCell(tiles, 0, ground, "B");
   setCell(tiles, W - 1, ground, "B");
 
-  return { w: W, h: H, tiles, ground, nightSpawned: true, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map(), cakeBites: new Map(), jukebox: new Map() };
+  return { w: W, h: H, tiles, ground, ...worldMaps({ nightSpawned: true }) };
 }
 
 function endPortalFrame(tiles, x, ground) {
@@ -1086,7 +1211,7 @@ function buildEnd() {
   setCell(tiles, 0, ground, "B");
   setCell(tiles, W - 1, ground, "B");
 
-  return { w: W, h: H, tiles, ground, nightSpawned: true, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map(), cakeBites: new Map(), jukebox: new Map() };
+  return { w: W, h: H, tiles, ground, ...worldMaps({ nightSpawned: true }) };
 }
 
 function tileAt(px, py) {
@@ -1105,14 +1230,22 @@ function doorClosedAt(tx) {
   return (world?.doorOpen.get(tx)?.t ?? 0) < 0.55;
 }
 
-function doorFrame(t) {
-  const u = t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2;
-  return Math.min(DOOR_SWING - 1, Math.max(0, Math.round(u * (DOOR_SWING - 1))));
+function isOakDoor(ch) {
+  return ch === "D" || ch === "U";
+}
+
+function isIronDoor(ch) {
+  return ch === "⌊" || ch === "⌈";
 }
 
 function tileIsSolid(t, tx) {
-  if (t === "D" || t === "U") return doorClosedAt(tx);
+  if (isOakDoor(t) || isIronDoor(t)) return doorClosedAt(tx);
   return SOLID.has(t);
+}
+
+function doorFrame(t) {
+  const u = t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2;
+  return Math.min(DOOR_SWING - 1, Math.max(0, Math.round(u * (DOOR_SWING - 1))));
 }
 
 function solidAt(px, py) {
@@ -1716,13 +1849,190 @@ function startToolSwing(kind) {
 function tryToggleDoor() {
   for (const cell of frontCell()) {
     const t = world.tiles[cell.y]?.[cell.x];
-    if (t !== "D" && t !== "U") continue;
+    if (isIronDoor(t)) {
+      say("铁门要用观察者、活塞或发射器的信号才能开。");
+      return true;
+    }
+    if (!isOakDoor(t)) continue;
     const st = doorState(cell.x);
     st.open = !st.open;
     say(st.open ? "打开了门。" : "关上了门。");
     return true;
   }
   return false;
+}
+
+const PISTON_STUCK = new Set([..."B$@▓DU⌊⌈⇨➤▷◉▽CTF{})N", "☁"]);
+
+function gadgetKey(x, y) {
+  return `${x},${y}`;
+}
+
+function ensureGadgetMaps() {
+  if (!world.deviceFace) world.deviceFace = new Map();
+  if (!world.power) world.power = new Map();
+  if (!world.gadgetCd) world.gadgetCd = new Map();
+  if (!world.pistonOut) world.pistonOut = new Map();
+}
+
+function deviceFacing(tx, ty) {
+  ensureGadgetMaps();
+  return world.deviceFace.get(gadgetKey(tx, ty)) ?? 1;
+}
+
+function playerTouchesTile(tx, ty) {
+  const x0 = tx * TILE;
+  const y0 = ty * TILE;
+  return player.x + 10 > x0 && player.x - 10 < x0 + TILE && player.y > y0 && player.y - 40 < y0 + TILE;
+}
+
+function fireDispenser(tx, ty) {
+  const face = deviceFacing(tx, ty);
+  arrows.push({
+    x: tx * TILE + 24 + face * 26,
+    y: ty * TILE + 24,
+    vx: face * 320,
+    vy: -8,
+    life: 2.2,
+    gone: false,
+    from: "mob",
+    dmg: 2,
+  });
+}
+
+function extendPiston(tx, ty) {
+  ensureGadgetMaps();
+  const key = gadgetKey(tx, ty);
+  if (world.pistonOut.get(key)) return;
+  const face = deviceFacing(tx, ty);
+  const nx = tx + face;
+  const beyond = nx + face;
+  const ch = world.tiles[ty]?.[nx];
+  if (!ch || ch === ".") {
+    setCell(world.tiles, nx, ty, "➤");
+    world.pistonOut.set(key, true);
+    return;
+  }
+  if (PISTON_STUCK.has(ch) || isOakDoor(ch) || isIronDoor(ch)) return;
+  if (world.tiles[ty]?.[beyond] !== ".") return;
+  setCell(world.tiles, beyond, ty, ch);
+  setCell(world.tiles, nx, ty, "➤");
+  world.pistonOut.set(key, true);
+}
+
+function retractPiston(tx, ty) {
+  ensureGadgetMaps();
+  const key = gadgetKey(tx, ty);
+  if (!world.pistonOut.get(key)) return;
+  const face = deviceFacing(tx, ty);
+  const hx = tx + face;
+  if (world.tiles[ty]?.[hx] === "➤") setCell(world.tiles, hx, ty, ".");
+  world.pistonOut.delete(key);
+}
+
+function pulseFrom(tx, ty, msg) {
+  ensureGadgetMaps();
+  const key = gadgetKey(tx, ty);
+  if ((world.gadgetCd.get(key) ?? 0) > 0) return false;
+  world.gadgetCd.set(key, 0.8);
+  const ttl = 0.45;
+  world.power.set(key, ttl);
+  world.power.set(gadgetKey(tx - 1, ty), ttl);
+  world.power.set(gadgetKey(tx + 1, ty), ttl);
+  world.power.set(gadgetKey(tx, ty - 1), ttl);
+  world.power.set(gadgetKey(tx, ty + 1), ttl);
+  const t = world.tiles[ty]?.[tx];
+  if (t === "▷") fireDispenser(tx, ty);
+  if (t === "⇨") extendPiston(tx, ty);
+  if (msg) say(msg);
+  return true;
+}
+
+function tryGadget() {
+  for (const cell of frontCell()) {
+    const t = world.tiles[cell.y]?.[cell.x];
+    if (t === "◉") {
+      pulseFrom(cell.x, cell.y, "观察者发出了信号。");
+      return true;
+    }
+    if (t === "⇨") {
+      pulseFrom(cell.x, cell.y, "活塞动了一下。");
+      return true;
+    }
+    if (t === "▷") {
+      pulseFrom(cell.x, cell.y, "发射器射出一支箭。");
+      return true;
+    }
+  }
+  return false;
+}
+
+function soakSponge(sx, sy) {
+  let n = 0;
+  for (let y = sy - 2; y <= sy + 2; y++) {
+    for (let x = sx - 2; x <= sx + 2; x++) {
+      if (world.tiles[y]?.[x] === "w") {
+        setCell(world.tiles, x, y, ".");
+        n += 1;
+      }
+    }
+  }
+  if (n) say("海绵吸干了附近的水。");
+}
+
+function suckHopper(tx, ty) {
+  const cx = tx * TILE + 24;
+  const cy = ty * TILE + 24;
+  for (const drop of drops) {
+    if (drop.gone) continue;
+    if (Math.hypot(drop.x - cx, drop.y - cy) > 44) continue;
+    if (tryAddItem(chestItems, drop.id, drop.count, CHEST_SLOTS)) drop.gone = true;
+  }
+}
+
+function ironDoorPowered(tx) {
+  ensureGadgetMaps();
+  for (let y = 0; y < world.h; y++) {
+    const t = world.tiles[y]?.[tx];
+    if (!isIronDoor(t)) continue;
+    if ((world.power.get(gadgetKey(tx, y)) ?? 0) > 0) return true;
+    if ((world.power.get(gadgetKey(tx - 1, y)) ?? 0) > 0) return true;
+    if ((world.power.get(gadgetKey(tx + 1, y)) ?? 0) > 0) return true;
+    if ((world.power.get(gadgetKey(tx, y - 1)) ?? 0) > 0) return true;
+    if ((world.power.get(gadgetKey(tx, y + 1)) ?? 0) > 0) return true;
+  }
+  return false;
+}
+
+function tickMap(map, dt) {
+  for (const [key, t] of [...map]) {
+    const next = t - dt;
+    if (next <= 0) map.delete(key);
+    else map.set(key, next);
+  }
+}
+
+function updateGadgets(dt) {
+  if (!world) return;
+  ensureGadgetMaps();
+  tickMap(world.gadgetCd, dt);
+  tickMap(world.power, dt);
+  const doorXs = new Set();
+  for (let y = 0; y < world.h; y++) {
+    for (let x = 0; x < world.w; x++) {
+      const t = world.tiles[y][x];
+      if (t === "⇨" && world.pistonOut.get(gadgetKey(x, y)) && (world.power.get(gadgetKey(x, y)) ?? 0) <= 0) {
+        retractPiston(x, y);
+      }
+      if (t === "◉" && playerTouchesTile(x + deviceFacing(x, y), y)) pulseFrom(x, y);
+      if (t === "▽") suckHopper(x, y);
+      if (isIronDoor(t)) doorXs.add(x);
+    }
+  }
+  for (const tx of doorXs) {
+    const st = doorState(tx);
+    st.open = ironDoorPowered(tx);
+  }
 }
 
 function tryOpenTable() {
@@ -2103,7 +2413,7 @@ function updateHazards(dt) {
       setCell(world.tiles, x, y, ".");
       world.fireT.delete(key);
       const below = world.tiles[y + 1]?.[x];
-      if (below === "o" || below === "p" || below === "L") setCell(world.tiles, x, y + 1, ".");
+      if (below === "o" || below === "p" || below === "L" || "¦┊┆┇♠♧≡≣☰☷".includes(below)) setCell(world.tiles, x, y + 1, ".");
     } else world.fireT.set(key, next);
   }
 }
@@ -2138,6 +2448,33 @@ function tryMineOrPlace() {
   for (const cell of frontCell()) {
     const t = world.tiles[cell.y]?.[cell.x];
     if (!t || t === ".") continue;
+    if (isOakDoor(t) || isIronDoor(t)) {
+      if (player.swingT > 0) return true;
+      startToolSwing("tool");
+      const drop = isIronDoor(t) ? "door-iron" : "door-oak";
+      for (let y = 0; y < world.h; y++) {
+        const ch = world.tiles[y]?.[cell.x];
+        if (isOakDoor(ch) || isIronDoor(ch)) setCell(world.tiles, cell.x, y, ".");
+      }
+      world.doorOpen.delete(cell.x);
+      drops.push(makeDrop(drop, cell.x * TILE + 24, cell.y * TILE + 8));
+      burstBits(cell.x * TILE + 24, cell.y * TILE + 24, "#bbb");
+      return true;
+    }
+    if (t === "➤") {
+      if (player.swingT > 0) return true;
+      startToolSwing("tool");
+      for (const face of [-1, 1]) {
+        const bx = cell.x - face;
+        if (world.tiles[cell.y]?.[bx] === "⇨") {
+          world.pistonOut?.delete(gadgetKey(bx, cell.y));
+          break;
+        }
+      }
+      setCell(world.tiles, cell.x, cell.y, ".");
+      burstBits(cell.x * TILE + 24, cell.y * TILE + 24, "#bbb");
+      return true;
+    }
     const spec = MINEABLE[t];
     if (spec) {
       if (!hasTool(spec, item)) {
@@ -2148,6 +2485,13 @@ function tryMineOrPlace() {
         if (player.swingT > 0) return true;
         startToolSwing(item?.id === "diamond-sword" ? "sword" : "tool");
       }
+      if (t === "⇨") {
+        const face = deviceFacing(cell.x, cell.y);
+        const hx = cell.x + face;
+        if (world.tiles[cell.y]?.[hx] === "➤") setCell(world.tiles, hx, cell.y, ".");
+        world.pistonOut?.delete(gadgetKey(cell.x, cell.y));
+      }
+      if ("▷◉⇨▽".includes(t)) world.deviceFace?.delete(gadgetKey(cell.x, cell.y));
       setCell(world.tiles, cell.x, cell.y, "xiHRJKMO".includes(t) ? "s" : ".");
       const extra = t === "L" && item?.id === "shears" ? 1 : 0;
       drops.push(makeDrop(spec.drop, cell.x * TILE + 24, cell.y * TILE + 8, 1 + extra));
@@ -2168,14 +2512,19 @@ function tryMineOrPlace() {
     const ty = Math.floor((player.y - 12) / TILE);
     if (world.tiles[ty]?.[tx] === ".") {
       const below = world.tiles[ty + 1]?.[tx];
-      if (below && (SOLID.has(below) || below === "n" || below === "g" || below === "d" || below === "a")) {
-        if (item.id === "door-oak") {
+      if (below && (SOLID.has(below) || below === "n" || below === "g" || below === "d" || below === "a" || below === "C" || below === "☁")) {
+        if (item.id === "door-oak" || item.id === "door-iron") {
           if (world.tiles[ty - 1]?.[tx] !== ".") {
             say("上面没有空间装门。");
             return true;
           }
-          setCell(world.tiles, tx, ty, "D");
-          setCell(world.tiles, tx, ty - 1, "U");
+          if (item.id === "door-iron") {
+            setCell(world.tiles, tx, ty, "⌊");
+            setCell(world.tiles, tx, ty - 1, "⌈");
+          } else {
+            setCell(world.tiles, tx, ty, "D");
+            setCell(world.tiles, tx, ty - 1, "U");
+          }
         } else if (item.id === "bed") {
           const nx = tx + player.face;
           if (world.tiles[ty]?.[nx] !== ".") {
@@ -2192,6 +2541,11 @@ function tryMineOrPlace() {
           setCell(world.tiles, tx, ty, "Y");
         } else {
           setCell(world.tiles, tx, ty, PLACEABLE[item.id]);
+          if ("dispenser piston hopper observer".split(" ").includes(item.id)) {
+            ensureGadgetMaps();
+            world.deviceFace.set(gadgetKey(tx, ty), player.face < 0 ? -1 : 1);
+          }
+          if (item.id === "sponge") soakSponge(tx, ty);
           if (item.id === "pumpkin" && tryBuildGolem(tx, ty)) {
             item.count -= 1;
             return true;
@@ -2763,6 +3117,7 @@ function pressUse(down) {
   }
   if (player.sleeping > 0 || player.eatT > 0) return;
   if (tryToggleDoor()) return;
+  if (tryGadget()) return;
   if (tryOpenBrew()) return;
   if (tryOpenFurnace()) return;
   if (tryEnchant()) return;
@@ -2927,7 +3282,13 @@ function updatePlayer(dt) {
   } else if (player.knockT > 0) {
     player.knockT -= dt;
   } else if (player.swingT <= 0 && player.eatT <= 0) {
-    player.vx = (right ? speed : 0) - (left ? speed : 0);
+    const wish = (right ? speed : 0) - (left ? speed : 0);
+    const under = tileAt(player.x, player.y + 2);
+    const iceGrip = under === "❄" ? 0.08 : under === "I" ? 0.16 : 1;
+    if (iceGrip < 1 && player.grounded) {
+      player.vx += (wish - player.vx) * iceGrip;
+      if (wish === 0 && Math.abs(player.vx) < 6) player.vx = 0;
+    } else player.vx = wish;
     if (left) player.face = -1;
     if (right) player.face = 1;
   } else {
@@ -3747,6 +4108,31 @@ function drawSky() {
   ctx.fillRect(0, 0, viewW, viewH);
 }
 
+function drawClouds() {
+  if (dimension !== "overworld") return;
+  const night = isNight();
+  const dusk = clock >= 17 && clock < 19 ? (clock - 17) / 2 : clock >= 5 && clock < 7 ? 1 - (clock - 5) / 2 : night ? 1 : 0;
+  ctx.save();
+  ctx.globalAlpha = 0.88 - dusk * 0.25;
+  ctx.fillStyle = mixHex("#f7fbff", "#8b93b0", dusk);
+  const drift = time * 14 + cam.x * 0.22;
+  const puffs = [
+    { x: 80, y: 42, w: 160, h: 26 },
+    { x: 320, y: 70, w: 110, h: 22 },
+    { x: 540, y: 36, w: 180, h: 28 },
+    { x: 780, y: 88, w: 96, h: 20 },
+    { x: 980, y: 54, w: 140, h: 24 },
+  ];
+  const span = viewW + 280;
+  for (const puff of puffs) {
+    let x = ((puff.x - drift) % span + span) % span - 120;
+    ctx.fillRect(x, puff.y, puff.w, puff.h);
+    ctx.fillRect(x + 22, puff.y - 14, puff.w * 0.58, 16);
+    ctx.fillRect(x + puff.w * 0.42, puff.y + puff.h - 8, puff.w * 0.4, 14);
+  }
+  ctx.restore();
+}
+
 function drawRain() {
   if (!isRaining()) return;
   ctx.save();
@@ -3789,9 +4175,13 @@ function drawWorld() {
       else if (t === "w") drawTile(waterFrame, dx, dy);
       else if (t === "F" && furnace.burn > 0) drawTile("blocks/furnace-on.svg", dx, dy);
       else if (t === "U" && world.tiles[y + 1]?.[x] === "D") continue;
+      else if (t === "⌈" && world.tiles[y + 1]?.[x] === "⌊") continue;
       else if (t === "D") {
         const spec = { w: 256, h: 512, ax: 128, ay: 496, scale: TILE / 16 };
         drawAnchored(`door-sprites/swing-${doorFrame(world.doorOpen.get(x)?.t ?? 0)}.svg`, spec, dx + TILE / 2, dy + TILE, 1);
+      } else if (t === "⌊") {
+        const spec = { w: 256, h: 512, ax: 128, ay: 496, scale: TILE / 16 };
+        drawAnchored(`iron-door-sprites/swing-${doorFrame(world.doorOpen.get(x)?.t ?? 0)}.svg`, spec, dx + TILE / 2, dy + TILE, 1);
       } else if (t === "C" && chestOpen && player.atChest && Math.abs(x * TILE + 24 - player.x) < 80) {
         drawTile("blocks/chest-open.svg", dx, dy);
       } else if (t === "N" && world.tntFuse.has(`${x},${y}`)) {
@@ -4397,6 +4787,7 @@ function frame(ts) {
       updateCrops(dt);
       updateJukebox(dt);
       updateDoors(dt);
+      updateGadgets(dt);
       updateHazards(dt);
       furnaceTick(furnace, dt);
       brewTick(brew, dt);
@@ -4404,6 +4795,7 @@ function frame(ts) {
       updateCamera();
     }
     drawSky();
+    drawClouds();
     if (world) {
       drawWorld();
       drawRain();

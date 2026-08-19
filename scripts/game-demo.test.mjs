@@ -43,6 +43,10 @@ describe("html game demo", () => {
     assert.match(game, /function tryThrowTrident/);
     assert.match(game, /furnaceTick/);
     assert.match(game, /function tryToggleDoor/);
+    assert.match(game, /function tryGadget/);
+    assert.match(game, /function drawClouds/);
+    assert.match(game, /function pulseFrom/);
+    assert.match(game, /function buildEnd/);
     assert.match(game, /doorOpen/);
     assert.match(game, /function tryBucket/);
     assert.match(game, /function tryShear/);
@@ -256,6 +260,12 @@ describe("html game demo", () => {
     assert.ok(existsSync(resolve(ROOT, "assets/items/oak-boat.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/items/blaze-rod.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/blocks/nether-portal.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/cloud.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/piston-head.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/door-iron-upper.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/spruce-log.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/birch-log.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/iron-door-sprites/swing-0.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/steve-sprites/armor-netherite.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/items/fishing-rod.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/blocks/bookshelf.svg")));
