@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-import { RECIPES, canCraft, countOwned, craftOnce, itemAsset, takeNeed } from "../public/game/recipes.js";
+import { RECIPES, canCraft, countOwned, craftOnce, itemAsset, takeNeed, tryAddItem } from "../public/game/recipes.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -43,5 +43,25 @@ describe("crafting recipes", () => {
     assert.equal(canCraft(items, sword), false);
     assert.equal(takeNeed(items, sword.need), false);
     assert.equal(countOwned(items, "diamond"), 8);
+  });
+
+  it("leaves a tenth unique item on the ground instead of growing the bag", () => {
+    const items = Array.from({ length: 9 }, (_, i) => ({ id: `slot-${i}`, count: 1 }));
+    assert.equal(tryAddItem(items, "golden-apple", 1), false);
+    assert.equal(items.length, 9);
+    assert.equal(tryAddItem(items, "slot-0", 2), true);
+    assert.equal(items[0].count, 3);
+  });
+
+  it("does not spawn another pickup while iterating a full bag", () => {
+    const items = Array.from({ length: 9 }, (_, i) => ({ id: `n${i}`, count: 1 }));
+    const drops = [{ id: "golden-apple", count: 1, gone: false }];
+    const n = drops.length;
+    for (let i = 0; i < n; i++) {
+      const drop = drops[i];
+      if (tryAddItem(items, drop.id, drop.count)) drop.gone = true;
+    }
+    assert.equal(drops.length, 1);
+    assert.equal(drops[0].gone, false);
   });
 });

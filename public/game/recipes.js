@@ -19,9 +19,31 @@ export const RECIPES = [
   { id: "pumpkin-pie", count: 1, need: { pumpkin: 1, sugar: 1, egg: 1 } },
 ];
 
+export const HOTBAR_SLOTS = 9;
+
 export function itemAsset(id) {
   if (id === "crafting-table") return "blocks/crafting-table.svg";
   return `items/${id}.svg`;
+}
+
+export function tryAddItem(items, id, count, maxSlots = HOTBAR_SLOTS) {
+  if (!id || !Number.isFinite(count) || count <= 0) return false;
+  const stack = items.find((it) => it.id === id);
+  if (stack) {
+    stack.count += count;
+    return true;
+  }
+  const empty = items.find((it) => it.count <= 0);
+  if (empty) {
+    empty.id = id;
+    empty.count = count;
+    return true;
+  }
+  if (items.length < maxSlots) {
+    items.push({ id, count });
+    return true;
+  }
+  return false;
 }
 
 export function countOwned(items, id) {

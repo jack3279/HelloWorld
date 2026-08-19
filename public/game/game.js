@@ -1,4 +1,4 @@
-import { RECIPES, canCraft, craftOnce, itemAsset } from "./recipes.js";
+import { RECIPES, canCraft, craftOnce, itemAsset, tryAddItem } from "./recipes.js";
 
 const ROOT = "/repo-assets";
 const TILE = 48;
@@ -602,25 +602,15 @@ function selectedItem() {
 }
 
 function addItem(id, count) {
+  if (!tryAddItem(player.items, id, count)) return false;
   if (id === "iron-chestplate" || id === "diamond-chestplate") {
     player.armor = Math.min(20, player.armor + (id.startsWith("diamond") ? 16 : 8));
   }
-  const stack = player.items.find((it) => it.id === id);
-  if (stack) {
-    stack.count += count;
-    return;
-  }
-  const empty = player.items.find((it) => it.count <= 0);
-  if (empty) {
-    empty.id = id;
-    empty.count = count;
-    return;
-  }
-  if (player.items.length < 9) {
-    player.items.push({ id, count });
-    return;
-  }
-  drops.push(makeDrop(id, player.x, player.y - 20, count));
+  return true;
+}
+
+function spillItem(id, count, x = player.x + player.face * 36, y = player.y - 28) {
+  drops.push(makeDrop(id, x, y, count));
   say(`背包满了，${ITEM_LABELS[id] ?? id}掉在地上。`);
 }
 
@@ -705,9 +695,9 @@ function doCraft(recipe) {
   }
   const made = craftOnce(player.items, recipe);
   if (!made) return;
-  addItem(made.id, made.count);
+  if (addItem(made.id, made.count)) say(`合成了${ITEM_LABELS[made.id] ?? made.id} ×${made.count}。`);
+  else spillItem(made.id, made.count);
   burstBits(player.x, player.y - 20, "#c6a15b");
-  say(`合成了${ITEM_LABELS[made.id] ?? made.id} ×${made.count}。`);
 }
 
 function trySleep() {
@@ -757,8 +747,8 @@ function tryFarm() {
   }
   if (above === "2") {
     setCell(world.tiles, tx, cropY, ".");
-    addItem("wheat", 1);
-    if (Math.random() < 0.7) addItem("wheat-seeds", 1);
+    if (!addItem("wheat", 1)) spillItem("wheat", 1);
+    if (Math.random() < 0.7 && !addItem("wheat-seeds", 1)) spillItem("wheat-seeds", 1);
     burstBits(tx * TILE + 24, cropY * TILE + 24, "#c6b34a");
     say("收割了小麦。");
     return true;
@@ -1147,7 +1137,9 @@ function updateArrows(dt) {
 }
 
 function updateDrops(dt) {
-  for (const drop of drops) {
+  const n = drops.length;
+  for (let i = 0; i < n; i++) {
+    const drop = drops[i];
     if (drop.gone) continue;
     drop.vy = Math.min(420, drop.vy + 1400 * dt);
     drop.y += drop.vy * dt;
@@ -1156,12 +1148,15 @@ function updateDrops(dt) {
       drop.vy = 0;
     }
     drop.bob += dt * 3;
-    if (!player.dead && Math.hypot(drop.x - player.x, drop.y - (player.y - 20)) < 28) {
-      addItem(drop.id, drop.count);
+    if (player.dead || Math.hypot(drop.x - player.x, drop.y - (player.y - 20)) >= 28) continue;
+    if (addItem(drop.id, drop.count)) {
       drop.gone = true;
       say(`捡到 ${ITEM_LABELS[drop.id] ?? drop.id}`);
+    } else if (messageT <= 0.2) {
+      say(`背包满了，捡不了${ITEM_LABELS[drop.id] ?? drop.id}。`);
     }
   }
+  if (drops.some((drop) => drop.gone)) drops = drops.filter((drop) => !drop.gone);
 }
 
 function updateClock(dt) {

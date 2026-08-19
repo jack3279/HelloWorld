@@ -24,6 +24,8 @@ describe("html game demo", () => {
     assert.match(html, /href="\/game\/style\.css"/);
     assert.match(html, /type="module"/);
     assert.match(game, /from "\.\/recipes\.js"/);
+    assert.match(game, /tryAddItem/);
+    assert.match(game, /捡不了/);
     assert.match(game, /tryOpenTable|craftingOpen/);
     assert.match(game, /imageSmoothingEnabled = false/);
     assert.match(game, /BLOCK_SRC_PAD = 56/);
