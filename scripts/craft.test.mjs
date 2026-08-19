@@ -3,7 +3,18 @@ import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-import { RECIPES, canCraft, countOwned, craftOnce, itemAsset, takeNeed, tryAddItem } from "../public/game/recipes.js";
+import {
+  CHEST_SLOTS,
+  RECIPES,
+  canCraft,
+  countOwned,
+  craftOnce,
+  emptySlots,
+  itemAsset,
+  takeNeed,
+  transferStack,
+  tryAddItem,
+} from "../public/game/recipes.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -63,5 +74,15 @@ describe("crafting recipes", () => {
     }
     assert.equal(drops.length, 1);
     assert.equal(drops[0].gone, false);
+  });
+
+  it("moves a stack from the hotbar into a chest", () => {
+    const bar = [{ id: "diamond", count: 3 }, { id: "apple", count: 1 }];
+    const chest = emptySlots(CHEST_SLOTS);
+    assert.equal(transferStack(bar, 0, chest, CHEST_SLOTS), true);
+    assert.equal(countOwned(bar, "diamond"), 0);
+    assert.equal(countOwned(chest, "diamond"), 3);
+    assert.equal(transferStack(chest, 0, bar, 9), true);
+    assert.equal(countOwned(bar, "diamond"), 3);
   });
 });

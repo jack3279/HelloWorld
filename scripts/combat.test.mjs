@@ -76,7 +76,7 @@ describe("held items", () => {
     const { idleA } = await import("./lib/steve-poses.mjs");
     const pose = {
       ...idleA(),
-      parts: { ...idleA().parts, "held-sword": { pitch: 40, roll: 0, yaw: 0 } },
+      parts: { ...idleA().parts, "held-sword": { pitch: 0, roll: 0, yaw: 0 } },
     };
     const { parts } = buildFigure({ skin: await loadSkin(), pose, extras: [await swordExtra()] });
     const originY = 308;
@@ -89,5 +89,6 @@ describe("held items", () => {
     assert.ok((sword.minX + sword.maxX) / 2 > (torso.minX + torso.maxX) / 2, "blade sits in front");
     assert.ok(Math.abs(swordMidY - armMidY) < 90, "handle sits in the hand, not at the feet");
     assert.ok(sword.maxY < originY - 20, "blade is not planted between the feet");
+    assert.ok(sword.maxX - sword.minX > (sword.maxY - sword.minY) * 0.7, "blade points forward, not straight up");
   });
 });

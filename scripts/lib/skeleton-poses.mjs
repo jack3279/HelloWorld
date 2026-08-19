@@ -39,6 +39,7 @@ export function idleA() {
     "arm-left": limb(FAR, { pitch: -8, roll: -4 }),
     "leg-right": limb(NEAR, { pitch: 4, roll: 2 }),
     "leg-left": limb(FAR, { pitch: -3, roll: -2 }),
+    "held-bow": { pitch: 0, roll: 0, yaw: 0 },
   });
 }
 
@@ -136,8 +137,8 @@ function aimPose(raise, aim) {
       head: { ...FACE, pitch: 6 + aim * 0.4, yaw: -45 },
       "arm-left": limb(FAR, { pitch: -8 - 78 * raise, roll: -4 }),
       "arm-right": limb(NEAR, { pitch: 10 - 52 * raise + aim, roll: 8 * raise }),
-      "held-bow": { pitch: -8 - 70 * raise, roll: 0, yaw: 180 },
-      "held-arrow": { pitch: -6 - 74 * raise, roll: 0, yaw: 180 },
+      "held-bow": { pitch: 0, roll: 0, yaw: 0 },
+      "held-arrow": { pitch: 0, roll: 0, yaw: 0 },
     },
   };
 }

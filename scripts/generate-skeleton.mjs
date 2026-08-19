@@ -46,8 +46,16 @@ await writeHeroSvg({
 });
 console.log(`Wrote ${hero}`);
 
+const idleBow = await skeletonDrawExtras(0);
 const walkSprites = catalog().map((entry) => {
-  const baked = bake({ skin, pose: entry.pose, canvas: SPRITE, tolerance: TOLERANCE, model });
+  const baked = bake({
+    skin,
+    pose: { ...entry.pose, parts: { ...entry.pose.parts, "held-bow": { pitch: 0, roll: 0, yaw: 0 } } },
+    canvas: SPRITE,
+    tolerance: TOLERANCE,
+    model,
+    extras: idleBow,
+  });
   return { ...entry, ...baked };
 });
 const sprites = await writeSpriteKit({
@@ -70,7 +78,7 @@ await writeSampledClips({
   tolerance: TOLERANCE,
   model,
   sequences: [
-    { prefix: "idle", label: "Idle", count: 8, sample: sampleIdle, loop: true },
+    { prefix: "idle", label: "Idle", count: 8, sample: sampleIdle, loop: true, extras: idleBow },
     { prefix: "hurt", label: "Hurt", count: HURT_FRAMES, sample: sampleHurt },
     { prefix: "death", label: "Death", count: DEATH_FRAMES, sample: sampleDeath },
   ],

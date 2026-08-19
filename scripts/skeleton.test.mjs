@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { loadSkeletonSkin } from "./lib/steve-model.mjs";
-import { DRAW_FRAMES, FACE, WALK_FRAMES, aimFrame, drawFrame, idleA, sampleDeath, sampleHurt, sampleIdle, walkFrame } from "./lib/skeleton-poses.mjs";
+import { DRAW_FRAMES, FACE, SPRITE, WALK_FRAMES, aimFrame, drawFrame, idleA, sampleDeath, sampleHurt, sampleIdle, walkFrame } from "./lib/skeleton-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -54,6 +54,27 @@ describe("skeleton pose", () => {
     const aimed = aimFrame(1);
     assert.ok(aimed.bowPull > 0.95);
     assert.ok(aimed.parts["arm-left"].pitch < idle.parts["arm-left"].pitch - 40);
+  });
+
+  it("holds the bow at chest height facing forward, not by the feet", async () => {
+    const { boundsOf, buildFigure, loadSkeletonSkin, makeProjector } = await import("./lib/steve-model.mjs");
+    const { skeletonDrawExtras } = await import("./lib/held-item.mjs");
+    const { SKELETON_MODEL } = await import("./lib/skeleton-model.mjs");
+    const { parts } = buildFigure({
+      skin: await loadSkeletonSkin(),
+      pose: idleA(),
+      extras: await skeletonDrawExtras(0),
+      tolerance: { default: 18 },
+      model: SKELETON_MODEL,
+    });
+    const project = makeProjector({ scale: SPRITE.scale, originX: SPRITE.originX, originY: SPRITE.originY });
+    const bow = boundsOf(parts.filter((p) => p.id === "held-bow"), project);
+    const torso = boundsOf(parts.filter((p) => p.id === "torso"), project);
+    const bowMidY = (bow.minY + bow.maxY) / 2;
+    const torsoMidY = (torso.minY + torso.maxY) / 2;
+    assert.ok(Math.abs(bowMidY - torsoMidY) < 140, "bow sits at the hands / chest");
+    assert.ok((bow.minX + bow.maxX) / 2 > (torso.minX + torso.maxX) / 2, "bow faces forward");
+    assert.ok(bow.maxY < SPRITE.originY - 40, "bow is not on the ground");
   });
 
   it("flashes on hurt and collapses on death", () => {

@@ -197,7 +197,8 @@ function withSword(base, sword = {}) {
     ...base,
     parts: {
       ...base.parts,
-      "held-sword": { pitch: 40, roll: 0, yaw: 0, ...sword },
+      // Blade already points +Z in bind pose; the arm swing carries it.
+      "held-sword": { pitch: 0, roll: 0, yaw: 0, ...sword },
     },
   };
 }
@@ -215,7 +216,6 @@ export function swingWindup() {
       },
       { x: -0.4, y: 0.15 },
     ),
-    { pitch: -55 },
   );
 }
 
@@ -232,7 +232,6 @@ export function swingStrike() {
       },
       { x: 1.1, y: 0.35 },
     ),
-    { pitch: -100 },
   );
 }
 
@@ -249,7 +248,6 @@ export function swingFollow() {
       },
       { x: 0.6, y: 0.1 },
     ),
-    { pitch: -118 },
   );
 }
 
@@ -259,7 +257,7 @@ export function sampleSwing(t) {
     { t: 0.18, pose: swingWindup() },
     { t: 0.38, pose: swingStrike() },
     { t: 0.58, pose: swingFollow() },
-    { t: 0.82, pose: withSword(idleA(), { pitch: 28 }) },
+    { t: 0.82, pose: withSword(idleA()) },
     { t: 1, pose: withSword(idleA()) },
   ];
   const x = Math.min(1, Math.max(0, t));

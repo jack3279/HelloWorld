@@ -144,7 +144,7 @@ export async function writeSampledClips({
   for (const seq of sequences) {
     const frames = Array.from({ length: seq.count }, (_, i) => {
       const t = seq.loop ? i / seq.count : i / Math.max(1, seq.count - 1);
-      const baked = bake({ skin, pose: seq.sample(t), canvas: sprite, tolerance, model });
+      const baked = bake({ skin, pose: seq.sample(t), canvas: sprite, tolerance, model, extras: seq.extras });
       return { id: `${seq.prefix}-${i}`, label: `${seq.label} ${i + 1}/${seq.count}`, ...baked };
     });
     await writeFrames({ generator, groupId, sprite, frames, outDir });

@@ -61,7 +61,7 @@ function flipRgbaU(skin) {
   return { width, height, rgba: out };
 }
 
-export async function loadItemTexture(file, { flipU = true } = {}) {
+export async function loadItemTexture(file, { flipU = false } = {}) {
   const cachePath = resolve(CACHE, file);
   let buf;
   try {
@@ -101,7 +101,12 @@ export function heldSlab({
   };
 }
 
-// Diamond sword in Steve's near (right) hand. Handle at the wrist, blade pointing the way he faces.
+// Official item PNGs stay unflipped: sword handle is bottom-left, tip top-right;
+// bow stave sits on the right. The slab is in body space, parented to the near
+// arm, so a side-view (yaw 90) sees the silhouette on the ±X faces.
+//
+// Handle / grip at the right wrist. Blade runs forward (+Z) and a little up
+// so idle looks like the hotbar icon — diagonal, not a flagpole.
 export function swordPart() {
   return heldSlab({
     id: "held-sword",
@@ -109,24 +114,24 @@ export function swordPart() {
     parent: "arm-right",
     size: 16,
     thickness: 0.9,
-    min: [-6.5, 11.4, -0.5],
-    max: [-5.5, 22.4, 10.4],
-    pivot: [-6, 12.2, 0.8],
+    min: [-6.45, 10.6, -0.4],
+    max: [-5.55, 17.8, 14.8],
+    pivot: [-6, 12.0, 0.5],
   });
 }
 
-// Bow in the skeleton's far (left) hand, pushed forward so the D-shape reads
-// in front of the ribs in profile.
+// Bow in the near (right) hand so it stays in front of the ribs in profile.
+// Upright-enough slab at chest / wrist height, stave toward +Z (the target).
 export function bowPart() {
   return heldSlab({
     id: "held-bow",
     label: "Bow",
-    parent: "arm-left",
+    parent: "arm-right",
     size: 16,
     thickness: 1,
-    min: [-2.4, 1, 3],
-    max: [-1.5, 13, 15],
-    pivot: [-1.95, 2.2, 4.2],
+    min: [-5.6, 8.2, 1.2],
+    max: [-4.5, 22.2, 13.8],
+    pivot: [-5.05, 12.2, 4.0],
   });
 }
 
@@ -134,12 +139,12 @@ export function arrowPart() {
   return heldSlab({
     id: "held-arrow",
     label: "Arrow",
-    parent: "arm-left",
+    parent: "arm-right",
     size: 16,
     thickness: 0.7,
-    min: [-4.4, 6, 8],
-    max: [-3.6, 17, 19],
-    pivot: [-4.0, 7.5, 9.5],
+    min: [-4.9, 11.2, 3.5],
+    max: [-4.2, 13.6, 19.2],
+    pivot: [-4.55, 12.4, 8.0],
   });
 }
 

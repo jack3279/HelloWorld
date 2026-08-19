@@ -1,4 +1,14 @@
-import { RECIPES, canCraft, craftOnce, itemAsset, tryAddItem } from "./recipes.js";
+import {
+  CHEST_SLOTS,
+  RECIPES,
+  canCraft,
+  countOwned,
+  craftOnce,
+  emptySlots,
+  itemAsset,
+  transferStack,
+  tryAddItem,
+} from "./recipes.js";
 
 const ROOT = "/repo-assets";
 const TILE = 48;
@@ -156,6 +166,8 @@ let drops = [];
 let arrows = [];
 let particles = [];
 let craftingOpen = false;
+let chestOpen = false;
+let chestItems = emptySlots(CHEST_SLOTS);
 let craftScroll = 0;
 const CRAFT_VISIBLE = 6;
 let cam = { x: 0, y: 0 };
@@ -663,6 +675,8 @@ function resetGame() {
   particles = [];
   arrows = [];
   craftingOpen = false;
+  chestOpen = false;
+  chestItems = emptySlots(CHEST_SLOTS);
   craftScroll = 0;
   cam = { x: 0, y: 0 };
   time = 0;
@@ -670,7 +684,7 @@ function resetGame() {
   win = false;
   demo = null;
   hold.left = hold.right = hold.jump = hold.use = false;
-  message = "向东走。房子里有工作台可以合成。箱子要 5 颗钻石。";
+  message = "向东走。工作台合成，箱子能存东西。把 5 颗钻石放进箱子。";
   messageT = 5;
 }
 
@@ -679,7 +693,7 @@ function selectedItem() {
 }
 
 function throwSelected() {
-  if (!player || player.dead || win || craftingOpen) return;
+  if (!player || player.dead || win || craftingOpen || chestOpen) return;
   const item = selectedItem();
   if (!item || item.count <= 0) {
     say("这一格是空的。");
@@ -767,10 +781,32 @@ function frontCell() {
 
 function tryOpenTable() {
   if (!player.atTable) return false;
+  chestOpen = false;
   craftingOpen = !craftingOpen;
   craftScroll = 0;
   say(craftingOpen ? "打开了工作台。点击配方合成。" : "关上了工作台。", 3);
   return true;
+}
+
+function tryOpenChest() {
+  if (!player.atChest) return false;
+  craftingOpen = false;
+  chestOpen = !chestOpen;
+  say(chestOpen ? "打开了箱子。点击格子存入或取出。" : "关上了箱子。", 3);
+  return true;
+}
+
+function chestDiamonds() {
+  return countOwned(chestItems, "diamond");
+}
+
+function checkChestWin() {
+  if (win) return;
+  if (chestDiamonds() >= GOAL_DIAMONDS) {
+    win = true;
+    chestOpen = false;
+    say("钻石放进箱子了。试玩通关！", 10);
+  }
 }
 
 function visibleRecipes() {
@@ -943,6 +979,12 @@ function useSelected() {
     say("关上了工作台。");
     return;
   }
+  if (chestOpen) {
+    chestOpen = false;
+    say("关上了箱子。");
+    return;
+  }
+  if (tryOpenChest()) return;
   if (tryOpenTable()) return;
   if (trySleep()) return;
   if (tryFeed()) return;
@@ -994,13 +1036,14 @@ function updatePlayer(dt) {
     return;
   }
 
-  if (craftingOpen) {
+  if (craftingOpen || chestOpen) {
     player.vx = 0;
     player.vy = 0;
     player.anim = "idle";
     player.frame = 0;
     player.age += dt;
-    if (!player.atTable) craftingOpen = false;
+    if (craftingOpen && !player.atTable) craftingOpen = false;
+    if (chestOpen && !player.atChest) chestOpen = false;
     return;
   }
 
@@ -1085,14 +1128,6 @@ function updatePlayer(dt) {
     player.frame = 0;
   }
 
-  if (player.atChest && !win) {
-    if (diamonds() >= GOAL_DIAMONDS) {
-      win = true;
-      say("箱子打开了。试玩通关！", 10);
-    } else {
-      say(`还差 ${GOAL_DIAMONDS - diamonds()} 颗钻石。`);
-    }
-  }
 }
 
 function updateMobs(dt) {
@@ -1554,7 +1589,99 @@ function drawCraftPanel() {
 }
 
 function countOwnedSafe(id) {
-  return player.items.reduce((sum, it) => sum + (it.id === id && it.count > 0 ? it.count : 0), 0);
+  return countOwned(player.items, id);
+}
+
+function drawItemSlot(it, x, y, size = 32) {
+  ctx.fillStyle = "rgba(18, 16, 14, 0.95)";
+  ctx.fillRect(x, y, size, size);
+  ctx.strokeStyle = "#6b5a3a";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x + 0.5, y + 0.5, size - 1, size - 1);
+  if (it && it.count > 0) {
+    drawImage(itemAsset(it.id), x + 2, y + 2, size - 4, size - 4);
+    if (it.count > 1) {
+      ctx.font = "bold 11px sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#111";
+      ctx.fillText(String(it.count), x + size - 2, y + size - 2);
+      ctx.fillStyle = "#fff";
+      ctx.fillText(String(it.count), x + size - 3, y + size - 3);
+    }
+  }
+}
+
+function chestPanelBox() {
+  const w = Math.min(420, viewW - 32);
+  const h = Math.min(320, viewH - 120);
+  return { x: (viewW - w) / 2, y: 56, w, h };
+}
+
+function chestSlotAt(mx, my) {
+  const box = chestPanelBox();
+  const originX = box.x + 18;
+  const chestY = box.y + 64;
+  const barY = box.y + box.h - 58;
+  const gap = 38;
+  if (my >= chestY && my < chestY + 3 * gap) {
+    const col = Math.floor((mx - originX) / gap);
+    const row = Math.floor((my - chestY) / gap);
+    if (col >= 0 && col < 9 && row >= 0 && row < 3) return { kind: "chest", index: row * 9 + col };
+  }
+  if (my >= barY && my < barY + 36) {
+    const col = Math.floor((mx - originX) / gap);
+    if (col >= 0 && col < 9) return { kind: "hotbar", index: col };
+  }
+  return null;
+}
+
+function clickChestSlot(hit) {
+  if (!hit) return;
+  if (hit.kind === "chest") {
+    if (transferStack(chestItems, hit.index, player.items, 9)) say("取出了物品。");
+    else if (chestItems[hit.index]?.count > 0) say("快捷栏满了。");
+  } else {
+    if (transferStack(player.items, hit.index, chestItems, CHEST_SLOTS)) {
+      say("放进了箱子。");
+      checkChestWin();
+    } else if (player.items[hit.index]?.count > 0) say("箱子满了。");
+  }
+}
+
+function drawChestPanel() {
+  const box = chestPanelBox();
+  ctx.fillStyle = "rgba(8, 10, 16, 0.78)";
+  ctx.fillRect(0, 0, viewW, viewH);
+  ctx.fillStyle = "rgba(22, 18, 14, 0.96)";
+  ctx.fillRect(box.x, box.y, box.w, box.h);
+  ctx.strokeStyle = "#c6a15b";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(box.x + 1.5, box.y + 1.5, box.w - 3, box.h - 3);
+
+  ctx.textAlign = "left";
+  ctx.font = "bold 22px sans-serif";
+  ctx.fillStyle = "#ffe566";
+  ctx.fillText("箱子", box.x + 18, box.y + 32);
+  ctx.font = "13px sans-serif";
+  ctx.fillStyle = "#ddd";
+  ctx.fillText("点击箱子格子取出  ·  点击快捷栏存入  ·  Esc 关闭", box.x + 18, box.y + 52);
+
+  const originX = box.x + 18;
+  const chestY = box.y + 64;
+  const gap = 38;
+  for (let i = 0; i < CHEST_SLOTS; i++) {
+    const col = i % 9;
+    const row = Math.floor(i / 9);
+    drawItemSlot(chestItems[i], originX + col * gap, chestY + row * gap, 34);
+  }
+
+  ctx.fillStyle = "#ffe566";
+  ctx.font = "14px sans-serif";
+  ctx.fillText("快捷栏", originX, box.y + box.h - 68);
+  const barY = box.y + box.h - 58;
+  for (let i = 0; i < 9; i++) {
+    drawItemSlot(player.items[i], originX + i * gap, barY, 34);
+  }
 }
 
 function craftRowAt(mx, my) {
@@ -1578,7 +1705,7 @@ function drawHud() {
   }
 
   drawImage("hud/xp-bar.svg", barX, barY - 8, barW, 28);
-  const progress = Math.min(1, diamonds() / GOAL_DIAMONDS);
+  const progress = Math.min(1, chestDiamonds() / GOAL_DIAMONDS);
   ctx.fillStyle = "#7cf37c";
   ctx.fillRect(barX + 28, barY + 4, (barW - 56) * progress, 6);
 
@@ -1617,8 +1744,9 @@ function drawHud() {
   ctx.textAlign = "left";
   ctx.font = "14px sans-serif";
   ctx.fillStyle = "#fff";
-  ctx.fillText(`钻石 ${diamonds()} / ${GOAL_DIAMONDS}   ${hourLabel()}`, 16, 28);
+  ctx.fillText(`箱子钻石 ${chestDiamonds()} / ${GOAL_DIAMONDS}   ${hourLabel()}`, 16, 28);
   if (craftingOpen) drawCraftPanel();
+  if (chestOpen) drawChestPanel();
   if (player.sleeping > 0) {
     ctx.fillStyle = `rgba(8,10,24,${1 - player.sleeping / 1.7})`;
     ctx.fillRect(0, 0, viewW, viewH);
@@ -1715,6 +1843,14 @@ function bindKey(e) {
 }
 
 function handleCraftKey(key) {
+  if (chestOpen && mode === "play") {
+    if (key === "escape" || key === "q" || key === "e" || key === "j") {
+      chestOpen = false;
+      say("关上了箱子。");
+      return true;
+    }
+    return ["w", "s", "arrowup", "arrowdown", "a", "d", "arrowleft", "arrowright", " "].includes(key);
+  }
   if (!craftingOpen || mode !== "play") return false;
   if (key === "escape" || key === "q") {
     craftingOpen = false;
@@ -1796,7 +1932,7 @@ window.addEventListener("keydown", (e) => {
     player.selected = Number(key) - 1;
   }
   if (key === "j" || key === "e") useSelected();
-  if (key === "q" && mode === "play" && !craftingOpen) throwSelected();
+  if (key === "q" && mode === "play" && !craftingOpen && !chestOpen) throwSelected();
   if (key === "r" && mode === "play") resetGame();
 });
 
@@ -1818,6 +1954,19 @@ canvas.addEventListener("mousedown", (e) => {
       if (pos.x < box.x || pos.x > box.x + box.w || pos.y < box.y || pos.y > box.y + box.h) {
         craftingOpen = false;
         say("关上了工作台。");
+      }
+    }
+    return;
+  }
+  if (chestOpen) {
+    const pos = canvasPos(e);
+    const hit = chestSlotAt(pos.x, pos.y);
+    if (hit) clickChestSlot(hit);
+    else {
+      const box = chestPanelBox();
+      if (pos.x < box.x || pos.x > box.x + box.w || pos.y < box.y || pos.y > box.y + box.h) {
+        chestOpen = false;
+        say("关上了箱子。");
       }
     }
     return;

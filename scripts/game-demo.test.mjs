@@ -30,6 +30,11 @@ describe("html game demo", () => {
     assert.match(game, /setCell\(tiles, 62, ground - 1, "D"\)/);
     assert.match(html, /扔掉快捷栏/);
     assert.match(game, /tryOpenTable|craftingOpen/);
+    assert.match(game, /function tryOpenChest/);
+    assert.match(game, /chestOpen/);
+    assert.match(game, /transferStack/);
+    assert.match(game, /放进了箱子/);
+    assert.doesNotMatch(game, /player\.atChest && !win/);
     assert.match(game, /imageSmoothingEnabled = false/);
     assert.match(game, /BLOCK_SRC_PAD = 56/);
     assert.match(game, /BLOCK_SRC_FACE = 400/);

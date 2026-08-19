@@ -20,6 +20,20 @@ export const RECIPES = [
 ];
 
 export const HOTBAR_SLOTS = 9;
+export const CHEST_SLOTS = 27;
+
+export function emptySlots(n) {
+  return Array.from({ length: n }, () => ({ id: "", count: 0 }));
+}
+
+export function transferStack(from, index, to, maxSlots = HOTBAR_SLOTS) {
+  const src = from[index];
+  if (!src || src.count <= 0) return false;
+  if (!tryAddItem(to, src.id, src.count, maxSlots)) return false;
+  src.count = 0;
+  src.id = "";
+  return true;
+}
 
 export function itemAsset(id) {
   if (id === "crafting-table") return "blocks/crafting-table.svg";
