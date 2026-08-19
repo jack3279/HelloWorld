@@ -391,7 +391,13 @@ function rectHitsSolid(x, y, w, h) {
 
 function unstick(body) {
   if (!rectHitsSolid(body.x - body.hw, body.y - body.hh, body.hw * 2, body.hh)) return;
-  for (const dx of [6, -6, 12, -12, 20, -20]) {
+  for (const dy of [-1, -2, -4, -8]) {
+    if (!rectHitsSolid(body.x - body.hw, body.y - body.hh + dy, body.hw * 2, body.hh)) {
+      body.y += dy;
+      return;
+    }
+  }
+  for (const dx of [2, -2, 4, -4, 8, -8]) {
     if (!rectHitsSolid(body.x - body.hw + dx, body.y - body.hh, body.hw * 2, body.hh)) {
       body.x += dx;
       return;
@@ -402,7 +408,11 @@ function unstick(body) {
 function moveBody(body, dt) {
   unstick(body);
   const prevVy = body.vy;
-  body.vy = Math.min(MAX_FALL, body.vy + GRAVITY * dt);
+  if (body.grounded && body.vy >= 0 && rectHitsSolid(body.x - body.hw, body.y - body.hh + 2, body.hw * 2, body.hh)) {
+    body.vy = 0;
+  } else {
+    body.vy = Math.min(MAX_FALL, body.vy + GRAVITY * dt);
+  }
 
   const nx = body.x + body.vx * dt;
   if (rectHitsSolid(nx - body.hw, body.y - body.hh, body.hw * 2, body.hh)) body.vx = 0;
@@ -874,7 +884,7 @@ function updatePlayer(dt) {
     player.vx = 0;
     player.vy = 0;
     player.anim = "idle";
-    player.frame = Math.floor(player.age * 6) % 2;
+    player.frame = 0;
     player.age += dt;
     if (!player.atTable) craftingOpen = false;
     return;
@@ -955,7 +965,7 @@ function updatePlayer(dt) {
     player.frame = Math.floor(player.age * 12) % 8;
   } else {
     player.anim = "idle";
-    player.frame = Math.floor(player.age * 6) % 2;
+    player.frame = 0;
   }
 
   if (player.atChest && !win) {
@@ -1166,14 +1176,22 @@ function updateCamera() {
   cam.y += (targetY - cam.y) * 0.1;
   const maxX = world.w * TILE - viewW;
   const maxY = world.h * TILE - viewH;
-  cam.x = Math.max(0, Math.min(maxX, cam.x));
-  cam.y = Math.max(0, Math.min(Math.max(0, maxY), cam.y));
+  cam.x = Math.round(Math.max(0, Math.min(maxX, cam.x)));
+  cam.y = Math.round(Math.max(0, Math.min(Math.max(0, maxY), cam.y)));
+}
+
+function viewX(wx) {
+  return Math.round(wx - cam.x);
+}
+
+function viewY(wy) {
+  return Math.round(wy - cam.y);
 }
 
 function drawImage(rel, x, y, w, h) {
   const pic = img(rel);
   if (!pic) return;
-  ctx.drawImage(pic, x, y, w, h);
+  ctx.drawImage(pic, Math.round(x), Math.round(y), w, h);
 }
 
 function drawAnchored(rel, spec, x, y, face) {
@@ -1182,7 +1200,7 @@ function drawAnchored(rel, spec, x, y, face) {
   const dw = spec.w * spec.scale;
   const dh = spec.h * spec.scale;
   ctx.save();
-  ctx.translate(x, y);
+  ctx.translate(Math.round(x), Math.round(y));
   ctx.scale(face, 1);
   ctx.drawImage(pic, -spec.ax * spec.scale, -spec.ay * spec.scale, dw, dh);
   ctx.restore();
@@ -1265,10 +1283,10 @@ function drawWorld() {
     for (let x = x0; x <= x1; x++) {
       const t = world.tiles[y][x];
       if (t === ".") continue;
-      const dx = x * TILE - cam.x;
-      const dy = y * TILE - cam.y;
-      if (t === "v") drawImage(lavaFrame, dx, dy, TILE, TILE);
-      else if (BLOCKS[t]) drawImage(BLOCKS[t], dx, dy, TILE, TILE);
+      const dx = viewX(x * TILE);
+      const dy = viewY(y * TILE);
+      if (t === "v") drawImage(lavaFrame, dx, dy, TILE + 1, TILE + 1);
+      else if (BLOCKS[t]) drawImage(BLOCKS[t], dx, dy, TILE + 1, TILE + 1);
     }
   }
 }
@@ -1277,7 +1295,7 @@ function drawDrops() {
   for (const drop of drops) {
     if (drop.gone) continue;
     const bob = Math.sin(drop.bob) * 4;
-    drawImage(itemAsset(drop.id), drop.x - 14 - cam.x, drop.y - 14 + bob - cam.y, 28, 28);
+    drawImage(itemAsset(drop.id), viewX(drop.x - 14), viewY(drop.y - 14 + bob), 28, 28);
   }
 }
 
@@ -1286,7 +1304,7 @@ function drawArrows() {
     const pic = img("items/arrow.svg");
     if (!pic) continue;
     ctx.save();
-    ctx.translate(shot.x - cam.x, shot.y - cam.y);
+    ctx.translate(viewX(shot.x), viewY(shot.y));
     ctx.rotate(Math.atan2(shot.vy, shot.vx));
     ctx.drawImage(pic, -16, -5, 32, 10);
     ctx.restore();
@@ -1298,7 +1316,7 @@ function drawMobs() {
     if (mob.dead && mobGone(mob)) continue;
     const spec = { w: 512, h: mob.h, ax: 256, ay: mob.h - 16, scale: mob.scale };
     if (mob.hitT > 0 || (mob.kind === "creeper" && mob.fuse > 0.4 && Math.floor(time * 16) % 2 === 0)) ctx.filter = "brightness(2)";
-    drawAnchored(mobSprite(mob), spec, mob.x - cam.x, mob.y - cam.y, mob.face);
+    drawAnchored(mobSprite(mob), spec, viewX(mob.x), viewY(mob.y), mob.face);
     ctx.filter = "none";
   }
 }
@@ -1307,10 +1325,10 @@ function drawParticles() {
   for (const p of particles) {
     const alpha = Math.max(0, Math.min(1, p.life * 1.6));
     ctx.globalAlpha = alpha;
-    if (p.kind === "heart") drawImage("hud/heart.svg", p.x - 6 - cam.x, p.y - 6 - cam.y, 12, 12);
+    if (p.kind === "heart") drawImage("hud/heart.svg", viewX(p.x - 6), viewY(p.y - 6), 12, 12);
     else {
       ctx.fillStyle = p.color ?? "#ccc";
-      ctx.fillRect(p.x - cam.x, p.y - cam.y, 4, 4);
+      ctx.fillRect(viewX(p.x), viewY(p.y), 4, 4);
     }
     ctx.globalAlpha = 1;
   }
@@ -1319,7 +1337,7 @@ function drawParticles() {
 function drawPlayer() {
   if (player.invuln > 0 && Math.floor(time * 16) % 2 === 0 && !player.dead) ctx.globalAlpha = 0.45;
   const combat = player.anim === "swing" || player.anim === "hurt" || player.anim === "death" || player.anim === "sleep";
-  drawAnchored(steveFrame(), combat ? STEVE.combat : STEVE.loco, player.x - cam.x, player.y - cam.y, player.face);
+  drawAnchored(steveFrame(), combat ? STEVE.combat : STEVE.loco, viewX(player.x), viewY(player.y), player.face);
   ctx.globalAlpha = 1;
 }
 
@@ -1483,6 +1501,7 @@ function resize() {
   canvas.width = Math.floor(viewW * dpr);
   canvas.height = Math.floor(viewH * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.imageSmoothingEnabled = false;
 }
 
 function frame(ts) {

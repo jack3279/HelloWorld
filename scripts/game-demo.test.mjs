@@ -24,6 +24,8 @@ describe("html game demo", () => {
     assert.match(html, /type="module"/);
     assert.match(game, /from "\.\/recipes\.js"/);
     assert.match(game, /tryOpenTable|craftingOpen/);
+    assert.match(game, /imageSmoothingEnabled = false/);
+    assert.match(game, /TILE \+ 1/);
   });
 
   it("preloads existing repo art instead of inventing new sprites", async () => {
