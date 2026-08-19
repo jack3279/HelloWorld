@@ -72,6 +72,11 @@ describe("hotbar item catalog", () => {
       assert.ok(ids.includes(id), id);
     }
     assert.ok(!ids.includes("leather-helmet"), "leather helmet is missing from Bedrock items");
+    const play = PLAY_ITEMS.map((it) => it.id);
+    assert.ok(play.includes("leather-helmet"));
+    assert.ok(play.includes("leather-leggings"));
+    assert.ok(play.includes("leather-boots"));
+    assert.ok(play.includes("leather-chestplate"));
   });
 
   it("loads official 16×16 sprites", async () => {

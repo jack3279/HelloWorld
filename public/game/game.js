@@ -28,7 +28,7 @@ const MOVE = 210;
 const JUMP = 680;
 const MAX_FALL = 980;
 const DAY_LENGTH = 90;
-const FEED = { pig: "carrot", cow: "wheat" };
+const FEED = { pig: "carrot", cow: "wheat", chicken: "wheat-seeds", sheep: "wheat", wolf: "bone" };
 const WHEAT_STAGE = { 0: { next: "1", wait: 9 }, 1: { next: "2", wait: 11 } };
 const MINEABLE = {
   s: { drop: "cobblestone", tool: "diamond-pickaxe" },
@@ -54,6 +54,7 @@ const PLACEABLE = {
   "oak-planks": "p",
   "crafting-table": "T",
   "oak-sapling": "S",
+  tnt: "N",
 };
 const PICK_TOOLS = new Set(["diamond-pickaxe", "iron-pickaxe", "wooden-pickaxe"]);
 const AXE_TOOLS = new Set(["diamond-axe", "iron-axe", "wooden-axe"]);
@@ -61,6 +62,9 @@ const SWORD_IDS = new Set(["diamond-sword", "iron-sword", "wooden-sword"]);
 const HELD_TOOLS = new Set([
   ...SWORD_IDS,
   "bow",
+  "shield",
+  "shears",
+  "flint-and-steel",
   ...PICK_TOOLS,
   ...AXE_TOOLS,
   ...HOE_IDS,
@@ -68,6 +72,21 @@ const HELD_TOOLS = new Set([
   "iron-shovel",
   "diamond-shovel",
 ]);
+
+const ARMOR_GEAR = {
+  "leather-helmet": { slot: "helmet", pts: 1, mat: "leather" },
+  "leather-chestplate": { slot: "chest", pts: 3, mat: "leather" },
+  "leather-leggings": { slot: "legs", pts: 2, mat: "leather" },
+  "leather-boots": { slot: "boots", pts: 1, mat: "leather" },
+  "iron-helmet": { slot: "helmet", pts: 2, mat: "iron" },
+  "iron-chestplate": { slot: "chest", pts: 6, mat: "iron" },
+  "iron-leggings": { slot: "legs", pts: 5, mat: "iron" },
+  "iron-boots": { slot: "boots", pts: 2, mat: "iron" },
+  "diamond-helmet": { slot: "helmet", pts: 3, mat: "diamond" },
+  "diamond-chestplate": { slot: "chest", pts: 8, mat: "diamond" },
+  "diamond-leggings": { slot: "legs", pts: 6, mat: "diamond" },
+  "diamond-boots": { slot: "boots", pts: 3, mat: "diamond" },
+};
 
 const STEVE = {
   loco: { w: 256, h: 320, ax: 128, ay: 300, scale: 0.3 },
@@ -129,6 +148,23 @@ const ITEM_LABELS = {
   "raw-mutton": "生羊肉",
   "cooked-mutton": "熟羊肉",
   shears: "剪刀",
+  "flint-and-steel": "打火石",
+  shield: "盾",
+  "leather-helmet": "皮革头盔",
+  "leather-chestplate": "皮革胸甲",
+  "leather-leggings": "皮革裤子",
+  "leather-boots": "皮革靴子",
+  "iron-helmet": "铁头盔",
+  "iron-leggings": "铁护腿",
+  "iron-boots": "铁靴子",
+  "diamond-helmet": "钻石头盔",
+  "diamond-leggings": "钻石护腿",
+  "diamond-boots": "钻石靴子",
+  feather: "羽毛",
+  slimeball: "粘液球",
+  "white-wool": "白色羊毛",
+  tnt: "TNT",
+  sand: "沙子",
   bucket: "桶",
   "iron-ingot": "铁锭",
   "gold-ingot": "金锭",
@@ -199,6 +235,8 @@ const BLOCKS = {
   y: "blocks/hay.svg",
   e: "blocks/melon.svg",
   n: "blocks/farmland.svg",
+  N: "blocks/tnt.svg",
+  "*": "blocks/fire.svg",
   q: "blocks/clay.svg",
   z: "blocks/bed.svg",
   Z: "blocks/bed-head.svg",
@@ -207,7 +245,7 @@ const BLOCKS = {
   2: "blocks/wheat-7.svg",
 };
 
-const SOLID = new Set("gdscpLabBTFimxIjuyenqHR".split(""));
+const SOLID = new Set("gdscpLabBTFimxIjuyenqHRN".split(""));
 
 const canvas = document.getElementById("game");
 const overlay = document.getElementById("overlay");
@@ -297,6 +335,25 @@ const MANIFEST = [
   ...range(8, (i) => `cow-sprites/rest-${i}.svg`),
   ...range(8, (i) => `cow-sprites/hurt-${i}.svg`),
   ...range(8, (i) => `cow-sprites/death-${i}.svg`),
+  ...range(8, (i) => `chicken-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `chicken-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `chicken-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `chicken-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `chicken-sprites/death-${i}.svg`),
+  ...range(8, (i) => `sheep-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `sheep-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `sheep-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `sheep-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `sheep-sprites/death-${i}.svg`),
+  ...range(8, (i) => `wolf-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `wolf-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `wolf-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `wolf-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `wolf-sprites/death-${i}.svg`),
+  ...range(8, (i) => `slime-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `slime-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `slime-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `slime-sprites/death-${i}.svg`),
   ...Object.keys(ITEM_LABELS).map((id) => itemAsset(id)),
   "hud/heart.svg",
   "hud/heart-half.svg",
@@ -318,6 +375,13 @@ const MANIFEST = [
   "items/bow-pulling-0.svg",
   "items/bow-pulling-1.svg",
   "items/bow-pulling-2.svg",
+  "steve-sprites/armor-leather.svg",
+  "steve-sprites/armor-iron.svg",
+  "steve-sprites/armor-diamond.svg",
+  "blocks/chest-open.svg",
+  "blocks/door-oak-open.svg",
+  "blocks/door-oak-upper-open.svg",
+  "items/shield.svg",
 ];
 
 export function listGameAssets() {
@@ -464,12 +528,13 @@ function buildWorld() {
   setCell(tiles, 67, ground - 1, "Z");
   setCell(tiles, 66, ground - 2, "t");
   setCell(tiles, 69, ground - 5, "t");
+  setCell(tiles, 60, ground - 1, "N");
 
   fillRow(tiles, ground, 71, W - 1, "m");
   setCell(tiles, 0, ground, "B");
   setCell(tiles, W - 1, ground, "B");
 
-  return { w: W, h: H, tiles, ground, nightSpawned: false, cropT: 0, doorOpen: new Set() };
+  return { w: W, h: H, tiles, ground, nightSpawned: false, cropT: 0, doorOpen: new Set(), tntFuse: new Map(), fireT: new Map() };
 }
 
 function tileAt(px, py) {
@@ -689,11 +754,13 @@ function makePlayer() {
     atBed: false,
     atTable: false,
     armor: 0,
+    armorMat: null,
     selected: 0,
     sleeping: 0,
     hungerT: 0,
     drawT: 0,
     bowHeld: false,
+    shieldHeld: false,
     swingKind: "sword",
     items: [
       { id: "diamond-sword", count: 1 },
@@ -718,6 +785,10 @@ function makeMob(kind, tx, ty) {
     creeper: { hp: 10, speed: 75, dmg: 8, hw: 12, hh: 44, scale: 0.18, sheet: "creeper-sprites", h: 480 },
     pig: { hp: 6, speed: 55, dmg: 0, hw: 14, hh: 28, scale: 0.16, sheet: "pig-sprites", h: 480, passive: true },
     cow: { hp: 8, speed: 50, dmg: 0, hw: 16, hh: 40, scale: 0.17, sheet: "cow-sprites", h: 480, passive: true },
+    chicken: { hp: 4, speed: 70, dmg: 0, hw: 8, hh: 18, scale: 0.14, sheet: "chicken-sprites", h: 480, passive: true },
+    sheep: { hp: 6, speed: 52, dmg: 0, hw: 14, hh: 36, scale: 0.16, sheet: "sheep-sprites", h: 480, passive: true },
+    wolf: { hp: 8, speed: 95, dmg: 2, hw: 12, hh: 28, scale: 0.16, sheet: "wolf-sprites", h: 480, passive: true },
+    slime: { hp: 6, speed: 40, dmg: 2, hw: 16, hh: 22, scale: 0.14, sheet: "slime-sprites", h: 480 },
   };
   return {
     kind,
@@ -745,6 +816,8 @@ function makeMob(kind, tx, ty) {
     stillT: Math.random() * 3,
     followT: 0,
     loveT: 0,
+    sheared: false,
+    angry: false,
   };
 }
 
@@ -758,10 +831,16 @@ function resetGame() {
   mobs = [
     makeMob("pig", 7, 10),
     makeMob("pig", 10, 10),
+    makeMob("chicken", 12, 10),
+    makeMob("chicken", 14, 10),
     makeMob("zombie", 18, 10),
     makeMob("skeleton", 27, 10),
+    makeMob("slime", 31, 10),
     makeMob("creeper", 33, 10),
+    makeMob("wolf", 40, 10),
     makeMob("spider", 43, 10),
+    makeMob("sheep", 47, 10),
+    makeMob("sheep", 49, 10),
     makeMob("cow", 51, 10),
     makeMob("cow", 54, 10),
     makeMob("enderman", 56, 10),
@@ -774,6 +853,11 @@ function resetGame() {
     makeDrop("golden-apple", TILE * 21, TILE * 9),
     makeDrop("potion-heal", TILE * 39, TILE * 9),
     makeDrop("iron-chestplate", TILE * 67, TILE * 9),
+    makeDrop("leather-helmet", TILE * 66.2, TILE * 9),
+    makeDrop("leather-boots", TILE * 65.4, TILE * 9),
+    makeDrop("shears", TILE * 61.5, TILE * 9),
+    makeDrop("flint-and-steel", TILE * 60.6, TILE * 9),
+    makeDrop("shield", TILE * 59.8, TILE * 9),
     makeDrop("coal", TILE * 63.5, TILE * 9, 6),
     makeDrop("iron-ingot", TILE * 64.2, TILE * 9, 4),
     makeDrop("apple", TILE * 69, TILE * 9, 2),
@@ -794,7 +878,7 @@ function resetGame() {
   win = false;
   demo = null;
   hold.left = hold.right = hold.jump = hold.use = false;
-  message = "向东走。锄地种田，熔炉烧矿，关门挡怪。把 5 颗钻石放进箱子。";
+  message = "向东走。剪羊毛、点火、举盾。锄地种田，熔炉烧矿，关门挡怪。把 5 颗钻石放进箱子。";
   messageT = 5;
 }
 
@@ -814,14 +898,28 @@ function throwSelected() {
   toss.vy = -240;
   drops.push(toss);
   player.dropCd = 0.55;
+  if (ARMOR_GEAR[item.id]) refreshArmor();
   say(`扔掉了${ITEM_LABELS[item.id] ?? item.id}`);
+}
+
+function refreshArmor() {
+  const worn = {};
+  const mats = { leather: 0, iron: 0, diamond: 0 };
+  let pts = 0;
+  for (const it of player.items) {
+    const gear = ARMOR_GEAR[it.id];
+    if (!gear || it.count <= 0 || worn[gear.slot]) continue;
+    worn[gear.slot] = gear;
+    pts += gear.pts;
+    mats[gear.mat] += 1;
+  }
+  player.armor = Math.min(20, pts);
+  player.armorMat = mats.diamond ? "diamond" : mats.iron ? "iron" : mats.leather ? "leather" : null;
 }
 
 function addItem(id, count) {
   if (!tryAddItem(player.items, id, count)) return false;
-  if (id === "iron-chestplate" || id === "diamond-chestplate") {
-    player.armor = Math.min(20, player.armor + (id.startsWith("diamond") ? 16 : 8));
-  }
+  if (ARMOR_GEAR[id]) refreshArmor();
   return true;
 }
 
@@ -1003,7 +1101,8 @@ function tryFeed() {
     mob.stillT = 0;
     mob.hurtFlee = 0;
     burstHearts(mob.x, mob.y);
-    say(`喂了${mob.kind === "pig" ? "猪" : "牛"}。它跟着你。`);
+    const names = { pig: "猪", cow: "牛", chicken: "鸡", sheep: "羊", wolf: "狼" };
+    say(`喂了${names[mob.kind] ?? mob.kind}。它跟着你。`);
     return true;
   }
   return false;
@@ -1057,10 +1156,103 @@ function tryFarm() {
   return false;
 }
 
+function tryShear() {
+  const item = selectedItem();
+  if (item?.id !== "shears" || item.count <= 0) return false;
+  for (const mob of mobs) {
+    if (mob.dead || mob.kind !== "sheep" || mob.sheared) continue;
+    if (Math.hypot(mob.x - player.x, mob.y - player.y) > 52) continue;
+    mob.sheared = true;
+    startToolSwing("tool");
+    drops.push(makeDrop("white-wool", mob.x, mob.y - 18, 2));
+    say("剪下了羊毛。");
+    return true;
+  }
+  return false;
+}
+
+function lightTnt(tx, ty) {
+  const key = `${tx},${ty}`;
+  if (world.tntFuse.has(key)) return;
+  world.tntFuse.set(key, 1.35);
+  say("点燃了 TNT。");
+}
+
+function tryFlint() {
+  const item = selectedItem();
+  if (item?.id !== "flint-and-steel" || item.count <= 0) return false;
+  for (const cell of frontCell()) {
+    const t = world.tiles[cell.y]?.[cell.x];
+    if (t === "N") {
+      startToolSwing("tool");
+      lightTnt(cell.x, cell.y);
+      return true;
+    }
+  }
+  const tx = Math.floor((player.x + player.face * 28) / TILE);
+  const ty = Math.floor((player.y - 12) / TILE);
+  if (world.tiles[ty]?.[tx] === "." && world.tiles[ty + 1]?.[tx] && world.tiles[ty + 1][tx] !== ".") {
+    startToolSwing("tool");
+    setCell(world.tiles, tx, ty, "*");
+    world.fireT.set(`${tx},${ty}`, 3.6);
+    say("点燃了火。");
+    return true;
+  }
+  return false;
+}
+
+function explodeTnt(tx, ty) {
+  setCell(world.tiles, tx, ty, ".");
+  world.tntFuse.delete(`${tx},${ty}`);
+  const cx = tx * TILE + TILE / 2;
+  const cy = ty * TILE + TILE / 2;
+  burstBits(cx, cy, "#f4a54a");
+  if (Math.hypot(player.x - cx, player.y - cy) < 96) hurt(player, 8, Math.sign(player.x - cx) || -1);
+  for (const mob of mobs) {
+    if (mob.dead) continue;
+    if (Math.hypot(mob.x - cx, mob.y - cy) < 96) hurt(mob, 8, Math.sign(mob.x - cx) || 1);
+  }
+  for (let dy = -2; dy <= 2; dy++) {
+    for (let dx = -2; dx <= 2; dx++) {
+      if (Math.abs(dx) + Math.abs(dy) > 3) continue;
+      const x = tx + dx;
+      const y = ty + dy;
+      const t = world.tiles[y]?.[x];
+      if (!t || t === "." || t === "B") continue;
+      setCell(world.tiles, x, y, ".");
+    }
+  }
+  say("TNT 爆炸了！");
+}
+
+function updateHazards(dt) {
+  for (const [key, left] of [...world.tntFuse]) {
+    const next = left - dt;
+    if (next <= 0) {
+      const [x, y] = key.split(",").map(Number);
+      explodeTnt(x, y);
+    } else world.tntFuse.set(key, next);
+  }
+  for (const [key, left] of [...world.fireT]) {
+    const next = left - dt;
+    const [x, y] = key.split(",").map(Number);
+    if (world.tiles[y]?.[x] !== "*") {
+      world.fireT.delete(key);
+      continue;
+    }
+    if (next <= 0) {
+      setCell(world.tiles, x, y, ".");
+      world.fireT.delete(key);
+      const below = world.tiles[y + 1]?.[x];
+      if (below === "o" || below === "p" || below === "L") setCell(world.tiles, x, y + 1, ".");
+    } else world.fireT.set(key, next);
+  }
+}
+
 function hasTool(spec, item) {
   if (!spec.tool) return true;
   if (spec.tool === "diamond-pickaxe") return PICK_TOOLS.has(item?.id);
-  if (spec.tool === "diamond-axe") return AXE_TOOLS.has(item?.id);
+  if (spec.tool === "diamond-axe") return AXE_TOOLS.has(item?.id) || item?.id === "shears";
   return item?.id === spec.tool;
 }
 
@@ -1097,7 +1289,8 @@ function tryMineOrPlace() {
         startToolSwing(item?.id === "diamond-sword" ? "sword" : "tool");
       }
       setCell(world.tiles, cell.x, cell.y, t === "x" || t === "i" || t === "H" || t === "R" ? "s" : ".");
-      drops.push(makeDrop(spec.drop, cell.x * TILE + 24, cell.y * TILE + 8));
+      const extra = t === "L" && item?.id === "shears" ? 1 : 0;
+      drops.push(makeDrop(spec.drop, cell.x * TILE + 24, cell.y * TILE + 8, 1 + extra));
       burstBits(cell.x * TILE + 24, cell.y * TILE + 24, "#bbb");
       return true;
     }
@@ -1122,7 +1315,7 @@ function hurt(who, amount, dir) {
   if (who.dead) return;
   if (who === player) {
     if (player.invuln > 0) return;
-    const soaked = Math.min(amount - 1, Math.floor(player.armor / 4));
+    const soaked = Math.min(amount - 1, Math.floor(player.armor / 4) + (player.shieldHeld ? 3 : 0));
     const taken = Math.max(1, amount - soaked);
     player.health = Math.max(0, player.health - taken);
     player.invuln = 0.9;
@@ -1148,6 +1341,11 @@ function hurt(who, amount, dir) {
     who.vy = -160;
   }
   if (who.passive) who.hurtFlee = 1.6;
+  if (who.kind === "wolf" && who.health > 0) {
+    who.angry = true;
+    who.passive = false;
+    who.hurtFlee = 0;
+  }
   if (who.health <= 0) {
     who.dead = true;
     who.deathT = 0;
@@ -1159,9 +1357,15 @@ function hurt(who, amount, dir) {
       enderman: "ender-pearl",
       pig: "raw-porkchop",
       cow: "raw-beef",
+      chicken: "raw-chicken",
+      sheep: "raw-mutton",
+      wolf: "bone",
+      slime: "slimeball",
     };
     drops.push(makeDrop(loot[who.kind] ?? "apple", who.x, who.y - 20));
     if (who.kind === "skeleton") drops.push(makeDrop("arrow", who.x - 8, who.y - 18));
+    if (who.kind === "chicken") drops.push(makeDrop("feather", who.x + 6, who.y - 16));
+    if (who.kind === "sheep" && !who.sheared) drops.push(makeDrop("white-wool", who.x + 6, who.y - 16));
     if (who.kind === "enderman" || Math.random() < 0.25) drops.push(makeDrop("diamond", who.x + 8, who.y - 24));
   }
 }
@@ -1197,6 +1401,7 @@ function pressUse(down) {
   if (!player || player.dead || win || mode !== "play") return;
   if (!down) {
     if (player.bowHeld) firePlayerBow();
+    player.shieldHeld = false;
     return;
   }
   if (craftingOpen) {
@@ -1224,6 +1429,11 @@ function pressUse(down) {
     player.bowHeld = true;
     return;
   }
+  if (selectedItem()?.id === "shield") {
+    player.shieldHeld = true;
+    say("举起了盾。");
+    return;
+  }
   useSelected();
 }
 
@@ -1232,6 +1442,8 @@ function useSelected() {
   if (player.sleeping > 0 || player.eatT > 0) return;
   if (uiOpen()) return;
   if (tryFeed()) return;
+  if (tryShear()) return;
+  if (tryFlint()) return;
   if (tryHoe()) return;
   if (tryBucket()) return;
   if (tryFarm()) return;
@@ -1332,6 +1544,8 @@ function updatePlayer(dt) {
   moveBody(player, dt);
 
   if (player.inLava) hurt(player, 3, -player.face);
+  const foot = tileAt(player.x, player.y - 4);
+  if (foot === "*") hurt(player, 2, -player.face);
   if (tileAt(player.x, player.y - 8) === "k") hurt(player, 1, -player.face);
 
   if (player.swingT > 0) {
@@ -1362,6 +1576,7 @@ function updatePlayer(dt) {
     player.bowHeld = false;
     player.drawT = 0;
   }
+  if (selectedItem()?.id !== "shield") player.shieldHeld = false;
 
   if (player.swingT > 0 && player.swingKind === "sword") {
     player.anim = "swing";
@@ -1422,6 +1637,7 @@ function updateMobs(dt) {
       }
       if (Math.abs(mob.vx) < 12) mob.stillT += dt;
       else mob.stillT = 0;
+      if (mob.kind === "chicken" && mob.grounded && Math.abs(mob.vx) > 20 && Math.random() < 0.04) mob.vy = -220;
       moveBody(mob, dt);
       if (mob.inLava) hurt(mob, 4, -mob.face);
       continue;
@@ -1447,6 +1663,7 @@ function updateMobs(dt) {
         mob.face = Math.sign(dx) || mob.face;
         mob.vx = mob.face * mob.speed * (mob.inWater ? 0.55 : 1);
         if (mob.kind === "spider" && mob.grounded && Math.abs(dx) < 90 && Math.random() < 0.02) mob.vy = -520;
+        if (mob.kind === "slime" && mob.grounded && Math.random() < 0.06) mob.vy = -420;
       } else {
         mob.vx *= 0.8;
       }
@@ -1668,7 +1885,7 @@ function steveFrame() {
 }
 
 function deathFrames(kind) {
-  return kind === "pig" || kind === "cow" ? 8 : 12;
+  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" ? 8 : 12;
 }
 
 function mobGone(mob) {
@@ -1741,11 +1958,13 @@ function drawWorld() {
       else if (t === "w") drawTile(waterFrame, dx, dy);
       else if (t === "F" && furnace.burn > 0) drawTile("blocks/furnace-on.svg", dx, dy);
       else if ((t === "D" || t === "U") && world.doorOpen.has(x)) {
-        ctx.save();
-        ctx.translate(dx + TILE * 0.78, dy);
-        ctx.scale(0.22, 1);
-        drawTile(BLOCKS[t], 0, 0);
-        ctx.restore();
+        drawTile(t === "U" ? "blocks/door-oak-upper-open.svg" : "blocks/door-oak-open.svg", dx, dy);
+      } else if (t === "C" && chestOpen && player.atChest && Math.abs(x * TILE + 24 - player.x) < 80) {
+        drawTile("blocks/chest-open.svg", dx, dy);
+      } else if (t === "N" && world.tntFuse.has(`${x},${y}`) && Math.floor(time * 16) % 2 === 0) {
+        ctx.globalAlpha = 0.55;
+        drawTile(BLOCKS[t], dx, dy);
+        ctx.globalAlpha = 1;
       } else if (BLOCKS[t]) drawTile(BLOCKS[t], dx, dy);
     }
   }
@@ -1803,6 +2022,9 @@ function drawPlayer() {
     player.anim === "death" ||
     player.anim === "sleep";
   drawAnchored(steveFrame(), combat ? STEVE.combat : STEVE.loco, viewX(player.x), viewY(player.y), player.face);
+  if (!combat && player.armorMat) {
+    drawAnchored(`steve-sprites/armor-${player.armorMat}.svg`, STEVE.loco, viewX(player.x), viewY(player.y), player.face);
+  }
   ctx.globalAlpha = 1;
   drawHeldItem();
 }
@@ -1819,13 +2041,14 @@ function drawHeldItem() {
   if (!pic) return;
   const swing = player.swingT > 0 && player.swingKind === "tool";
   const drawing = id === "bow" && player.drawT > 0;
-  let rot = id === "bow" ? -0.15 : 0.35;
+  let rot = id === "bow" ? -0.15 : id === "shield" ? -0.05 : 0.35;
   if (swing) rot = -1.15 * Math.sin((1 - player.swingT / (10 / 12)) * Math.PI);
   if (drawing) rot = -0.4 - player.drawT * 0.5;
+  if (id === "shield" && player.shieldHeld) rot = -0.35;
   ctx.save();
   ctx.translate(viewX(player.x), viewY(player.y));
   ctx.scale(player.face, 1);
-  ctx.translate(id === "bow" ? 10 : 12, id === "bow" ? -26 : -22);
+  ctx.translate(id === "bow" ? 10 : id === "shield" ? 16 : 12, id === "bow" ? -26 : id === "shield" ? -24 : -22);
   ctx.rotate(rot);
   const size = id === "bow" ? 36 : 30;
   ctx.drawImage(pic, -size * 0.2, -size * 0.85, size, size);
@@ -1949,10 +2172,14 @@ function chestSlotAt(mx, my) {
 function clickChestSlot(hit) {
   if (!hit) return;
   if (hit.kind === "chest") {
-    if (transferStack(chestItems, hit.index, player.items, 9)) say("取出了物品。");
+    if (transferStack(chestItems, hit.index, player.items, 9)) {
+      refreshArmor();
+      say("取出了物品。");
+    }
     else if (chestItems[hit.index]?.count > 0) say("快捷栏满了。");
   } else {
     if (transferStack(player.items, hit.index, chestItems, CHEST_SLOTS)) {
+      refreshArmor();
       say("放进了箱子。");
       checkChestWin();
     } else if (player.items[hit.index]?.count > 0) say("箱子满了。");
@@ -2208,6 +2435,7 @@ function frame(ts) {
       updateArrows(dt);
       updateDrops(dt);
       updateCrops(dt);
+      updateHazards(dt);
       furnaceTick(furnace, dt);
       updateParticles(dt);
       updateCamera();
@@ -2370,6 +2598,7 @@ window.addEventListener("blur", () => {
     player.bowHeld = false;
     player.drawT = 0;
   }
+  if (player) player.shieldHeld = false;
 });
 
 canvas.addEventListener("mousedown", (e) => {

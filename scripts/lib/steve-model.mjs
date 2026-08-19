@@ -31,6 +31,32 @@ export const PIG_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/pig/pig.png";
 export const COW_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/cow/cow.png";
+export const CHICKEN_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/chicken.png";
+export const SHEEP_SKIN_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/sheep/sheep.png";
+export const SHEEP_WOOL_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/sheep/sheep_wool.png";
+export const WOLF_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/wolf/wolf.png";
+export const SLIME_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/slime/slime.png";
+export const CHEST_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/chest/normal.png";
+export const SHIELD_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/shield.png";
+export const LEATHER_ARMOR_1_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/cloth_1.png";
+export const LEATHER_ARMOR_2_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/cloth_2.png";
+export const IRON_ARMOR_1_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/iron_1.png";
+export const IRON_ARMOR_2_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/iron_2.png";
+export const DIAMOND_ARMOR_1_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/diamond_1.png";
+export const DIAMOND_ARMOR_2_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/diamond_2.png";
 const SKIN_URL = STEVE_SKIN_URL;
 const CACHE = resolve(__dirname, "../../node_modules/.cache/steve-skin.png");
 const ZOMBIE_CACHE = resolve(__dirname, "../../node_modules/.cache/zombie-skin.png");
@@ -40,6 +66,19 @@ const ENDERMAN_CACHE = resolve(__dirname, "../../node_modules/.cache/enderman-sk
 const CREEPER_CACHE = resolve(__dirname, "../../node_modules/.cache/creeper-skin.png");
 const PIG_CACHE = resolve(__dirname, "../../node_modules/.cache/pig-skin.png");
 const COW_CACHE = resolve(__dirname, "../../node_modules/.cache/cow-skin.png");
+const CHICKEN_CACHE = resolve(__dirname, "../../node_modules/.cache/chicken-skin.png");
+const SHEEP_CACHE = resolve(__dirname, "../../node_modules/.cache/sheep-skin.png");
+const SHEEP_WOOL_CACHE = resolve(__dirname, "../../node_modules/.cache/sheep-wool.png");
+const WOLF_CACHE = resolve(__dirname, "../../node_modules/.cache/wolf-skin.png");
+const SLIME_CACHE = resolve(__dirname, "../../node_modules/.cache/slime-skin.png");
+const CHEST_CACHE = resolve(__dirname, "../../node_modules/.cache/chest-entity.png");
+const SHIELD_CACHE = resolve(__dirname, "../../node_modules/.cache/shield-entity.png");
+const LEATHER_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-leather-1.png");
+const LEATHER_ARMOR_2_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-leather-2.png");
+const IRON_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-iron-1.png");
+const IRON_ARMOR_2_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-iron-2.png");
+const DIAMOND_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-diamond-1.png");
+const DIAMOND_ARMOR_2_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-diamond-2.png");
 
 // ---------------------------------------------------------------- png decoding
 
@@ -282,6 +321,67 @@ export async function loadPigSkin(explicitPath) {
 
 export async function loadCowSkin(explicitPath) {
   return loadSkin(explicitPath, { url: COW_SKIN_URL, cache: COW_CACHE, normalize: false });
+}
+
+export async function loadChickenSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: CHICKEN_SKIN_URL, cache: CHICKEN_CACHE, normalize: false });
+}
+
+export async function loadSheepSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: SHEEP_SKIN_URL, cache: SHEEP_CACHE, normalize: false });
+}
+
+export async function loadSheepWoolSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: SHEEP_WOOL_URL, cache: SHEEP_WOOL_CACHE, normalize: false });
+}
+
+export async function loadWolfSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: WOLF_SKIN_URL, cache: WOLF_CACHE, normalize: false });
+}
+
+export async function loadSlimeSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: SLIME_SKIN_URL, cache: SLIME_CACHE, normalize: false });
+}
+
+export async function loadChestSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: CHEST_SKIN_URL, cache: CHEST_CACHE, normalize: false });
+}
+
+export async function loadShieldSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: SHIELD_SKIN_URL, cache: SHIELD_CACHE, normalize: false });
+}
+
+function tintLeatherArmor(skin) {
+  const rgba = new Uint8Array(skin.rgba);
+  const [tr, tg, tb] = [196, 112, 80];
+  for (let i = 0; i < rgba.length; i += 4) {
+    if (rgba[i + 3] === 0) continue;
+    rgba[i] = Math.round((rgba[i] * tr) / 255);
+    rgba[i + 1] = Math.round((rgba[i + 1] * tg) / 255);
+    rgba[i + 2] = Math.round((rgba[i + 2] * tb) / 255);
+  }
+  return { width: skin.width, height: skin.height, rgba };
+}
+
+export async function loadArmorLayer(kind, layer, explicitPath) {
+  const spec = {
+    leather: [
+      { url: LEATHER_ARMOR_1_URL, cache: LEATHER_ARMOR_1_CACHE },
+      { url: LEATHER_ARMOR_2_URL, cache: LEATHER_ARMOR_2_CACHE },
+    ],
+    iron: [
+      { url: IRON_ARMOR_1_URL, cache: IRON_ARMOR_1_CACHE },
+      { url: IRON_ARMOR_2_URL, cache: IRON_ARMOR_2_CACHE },
+    ],
+    diamond: [
+      { url: DIAMOND_ARMOR_1_URL, cache: DIAMOND_ARMOR_1_CACHE },
+      { url: DIAMOND_ARMOR_2_URL, cache: DIAMOND_ARMOR_2_CACHE },
+    ],
+  }[kind];
+  if (!spec) throw new Error(`unknown armor ${kind}`);
+  const { url, cache } = spec[layer === 2 ? 1 : 0];
+  const skin = await loadSkin(explicitPath, { url, cache, normalize: false });
+  return kind === "leather" ? tintLeatherArmor(skin) : skin;
 }
 
 // ------------------------------------------------------------------- 3d helpers

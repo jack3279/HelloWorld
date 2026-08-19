@@ -38,6 +38,17 @@ describe("html game demo", () => {
     assert.match(game, /function tryToggleDoor/);
     assert.match(game, /doorOpen/);
     assert.match(game, /function tryBucket/);
+    assert.match(game, /function tryShear/);
+    assert.match(game, /function tryFlint/);
+    assert.match(game, /function refreshArmor/);
+    assert.match(game, /steve-sprites\/armor-/);
+    assert.match(game, /blocks\/chest-open\.svg/);
+    assert.match(game, /blocks\/door-oak-open\.svg/);
+    assert.match(game, /flint-and-steel/);
+    assert.match(game, /makeMob\("chicken"/);
+    assert.match(game, /makeMob\("sheep"/);
+    assert.match(game, /makeMob\("wolf"/);
+    assert.match(game, /makeMob\("slime"/);
     assert.match(game, /bow-pulling-/);
     assert.match(game, /hud\/bubble\.svg/);
     assert.match(game, /water-bucket/);
@@ -70,7 +81,7 @@ describe("html game demo", () => {
   it("preloads existing repo art instead of inventing new sprites", async () => {
     const src = await readFile(resolve(ROOT, "public/game/game.js"), "utf8");
     const rels = new Set();
-    for (const match of src.matchAll(/["']((?:blocks|items|hud|steve-sprites|zombie-sprites|skeleton-sprites|spider-sprites|enderman-sprites|creeper-sprites|pig-sprites|cow-sprites|lava-sprites|water-sprites)\/[a-z0-9-]+\.svg)["']/g)) {
+    for (const match of src.matchAll(/["']((?:blocks|items|hud|steve-sprites|zombie-sprites|skeleton-sprites|spider-sprites|enderman-sprites|creeper-sprites|pig-sprites|cow-sprites|chicken-sprites|sheep-sprites|wolf-sprites|slime-sprites|lava-sprites|water-sprites)\/[a-z0-9-]+\.svg)["']/g)) {
       rels.add(match[1]);
     }
     const steve = ["idle-a", "idle-b", ...Array.from({ length: 8 }, (_, i) => `run-${i}`), "jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"];
@@ -80,13 +91,13 @@ describe("html game demo", () => {
     for (let i = 0; i < 12; i++) rels.add(`steve-sprites/death-${i}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`steve-sprites/sleep-${i}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`steve-sprites/eat-${i}.svg`);
-    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow"]) {
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/walk-${i * 2}.svg`);
     }
-    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow"]) {
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/idle-${i}.svg`);
     }
-    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow"]) {
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/hurt-${i}.svg`);
     }
     for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper"]) {
@@ -94,11 +105,11 @@ describe("html game demo", () => {
     }
     for (let i = 0; i < 12; i++) rels.add(`skeleton-sprites/draw-${i}.svg`);
     rels.add("items/arrow.svg");
-    for (const mob of ["pig", "cow"]) {
-      for (let i = 0; i < 8; i++) {
-        rels.add(`${mob}-sprites/rest-${i}.svg`);
-        rels.add(`${mob}-sprites/death-${i}.svg`);
-      }
+    for (const mob of ["pig", "cow", "chicken", "sheep", "wolf", "slime"]) {
+      for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/death-${i}.svg`);
+    }
+    for (const mob of ["pig", "cow", "chicken", "sheep", "wolf"]) {
+      for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/rest-${i}.svg`);
     }
     for (let i = 0; i < 10; i++) rels.add(`creeper-sprites/swell-${i * 2}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`lava-sprites/boil-${i * 4}.svg`);
@@ -122,6 +133,16 @@ describe("html game demo", () => {
     assert.ok(existsSync(resolve(ROOT, "assets/hud/bubble-empty.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/items/wooden-pickaxe.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/blocks/wheat-6.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/chest-open.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/door-oak-open.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/fire.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/items/shield.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/items/leather-helmet.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/steve-sprites/armor-leather.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/chicken-sprites/idle-0.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/sheep-sprites/idle-0.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/wolf-sprites/idle-0.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/slime-sprites/idle-0.svg")));
   });
 
   it("serves those files from /repo-assets/", async () => {

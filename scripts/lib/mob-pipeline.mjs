@@ -88,12 +88,13 @@ ${svgFigureBody(parts, project).join("\n")}
 `;
 }
 
-export async function writeHeroSvg({ generator, out, title, desc, groupId, skin, pose, tolerance, model, canvas, shading }) {
+export async function writeHeroSvg({ generator, out, title, desc, groupId, skin, pose, tolerance, model, canvas, shading, extras }) {
   const { parts } = buildFigure({
     skin,
     pose,
     tolerance,
     model,
+    extras,
     shading: shading ?? { ...DEFAULT_SHADING, grade: false },
   });
   const project = fitProjector(parts, canvas, pose.roll ?? 0);

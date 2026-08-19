@@ -27,6 +27,12 @@ export const RECIPES = [
   { id: "bucket", count: 1, need: { "iron-ingot": 3 } },
   { id: "iron-chestplate", count: 1, need: { "iron-ingot": 8 } },
   { id: "diamond-chestplate", count: 1, need: { diamond: 8 } },
+  { id: "leather-helmet", count: 1, need: { leather: 5 } },
+  { id: "leather-chestplate", count: 1, need: { leather: 8 } },
+  { id: "leather-leggings", count: 1, need: { leather: 7 } },
+  { id: "leather-boots", count: 1, need: { leather: 4 } },
+  { id: "shield", count: 1, need: { "oak-planks": 6, "iron-ingot": 1 } },
+  { id: "tnt", count: 1, need: { sand: 4, gunpowder: 5 } },
   { id: "golden-apple", count: 1, need: { apple: 1, "gold-ingot": 8 } },
   { id: "pumpkin-pie", count: 1, need: { pumpkin: 1, sugar: 1, egg: 1 } },
 ];
@@ -46,7 +52,7 @@ export const SMELT = {
 };
 export const FURNACE_FUEL = { coal: 8 };
 export const HOE_IDS = new Set(["diamond-hoe", "wooden-hoe", "iron-hoe"]);
-export const BLOCK_FACE_ITEMS = new Set(["crafting-table", "iron-ore", "gold-ore", "oak-sapling"]);
+export const BLOCK_FACE_ITEMS = new Set(["crafting-table", "iron-ore", "gold-ore", "oak-sapling", "white-wool", "tnt"]);
 
 export function emptySlots(n) {
   return Array.from({ length: n }, () => ({ id: "", count: 0 }));

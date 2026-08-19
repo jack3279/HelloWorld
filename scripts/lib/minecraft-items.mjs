@@ -11,6 +11,8 @@ export const ITEMS_BASE =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items";
 export const BLOCKS_BASE =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/blocks";
+export const JAVA_ITEMS_BASE =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/item";
 const CACHE = resolve(__dirname, "../../node_modules/.cache/minecraft-items");
 
 export const TILE = 16;
@@ -149,6 +151,10 @@ export const PLAY_ITEMS = [
   { id: "iron-shovel", file: "iron_shovel.png", label: "Iron shovel", title: "铁铲" },
   { id: "iron-hoe", file: "iron_hoe.png", label: "Iron hoe", title: "铁锄" },
   { id: "diamond-shovel", file: "diamond_shovel.png", label: "Diamond shovel", title: "钻石铲" },
+  { id: "leather-helmet", file: "leather_helmet.png", label: "Leather helmet", title: "皮革头盔", base: JAVA_ITEMS_BASE },
+  { id: "leather-chestplate", file: "leather_chestplate.png", label: "Leather chestplate", title: "皮革胸甲", base: JAVA_ITEMS_BASE },
+  { id: "leather-leggings", file: "leather_leggings.png", label: "Leather leggings", title: "皮革裤子", base: JAVA_ITEMS_BASE },
+  { id: "leather-boots", file: "leather_boots.png", label: "Leather boots", title: "皮革靴子", base: JAVA_ITEMS_BASE },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.
