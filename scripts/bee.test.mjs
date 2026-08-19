@@ -40,7 +40,7 @@ describe("generated bee assets", () => {
   it("writes walk, idle, rest, hurt, and death frames", async () => {
     const svg = await readFile(resolve(ROOT, "assets/bee-side.svg"), "utf8");
     assert.match(svg, /id="body"/);
-    assert.match(svg, /id="wing-right"/);
+    assert.match(svg, /id="wing-left"/);
     assert.doesNotMatch(svg, /NaN|undefined/);
     for (let i = 0; i < WALK_FRAMES; i++) {
       const frame = await readFile(resolve(ROOT, "assets/bee-sprites", `walk-${i}.svg`), "utf8");
