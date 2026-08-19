@@ -94,6 +94,8 @@ export const RECIPES = [
   { id: "ender-chest", count: 1, need: { obsidian: 8, "ender-pearl": 1 } },
   { id: "smithing-table", count: 1, need: { "oak-planks": 4, "iron-ingot": 2 } },
   { id: "netherite-ingot", count: 1, need: { "netherite-scrap": 4, "gold-ingot": 4 } },
+  { id: "beehive", count: 1, need: { "oak-planks": 6, honeycomb: 3 } },
+  { id: "honey-block", count: 1, need: { "honey-bottle": 4 } },
 ];
 
 export const HOTBAR_SLOTS = 9;
@@ -138,7 +140,7 @@ export const BREW = {
   "ghast-tear": { id: "potion-heal", n: 1 },
   "nether-wart": { id: "potion-heal", n: 1 },
 };
-export const HOE_IDS = new Set(["diamond-hoe", "wooden-hoe", "iron-hoe"]);
+export const HOE_IDS = new Set(["diamond-hoe", "wooden-hoe", "iron-hoe", "netherite-hoe"]);
 export const BLOCK_FACE_ITEMS = new Set([
   "crafting-table",
   "iron-ore",
@@ -216,6 +218,8 @@ export const BLOCK_FACE_ITEMS = new Set([
   "powered-rail",
   "smithing-table",
   "ancient-debris",
+  "beehive",
+  "honey-block",
 ]);
 
 export function emptySlots(n) {

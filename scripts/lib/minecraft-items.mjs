@@ -14,6 +14,8 @@ export const BLOCKS_BASE =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/blocks";
 export const JAVA_ITEMS_BASE =
   "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/item";
+export const JAVA_BLOCKS_BASE =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/block";
 const CACHE = resolve(__dirname, "../../node_modules/.cache/minecraft-items");
 
 export const TILE = 16;
@@ -240,6 +242,16 @@ export const PLAY_ITEMS = [
   { id: "paper", file: "paper.png", label: "Paper", title: "纸" },
   { id: "firework", file: "fireworks.png", label: "Firework rocket", title: "烟花火箭" },
   { id: "chorus-fruit", file: "chorus_fruit.png", label: "Chorus fruit", title: "紫颂果" },
+  { id: "netherite-sword", file: "netherite_sword.png", label: "Netherite sword", title: "下界合金剑" },
+  { id: "netherite-pickaxe", file: "netherite_pickaxe.png", label: "Netherite pickaxe", title: "下界合金镐" },
+  { id: "netherite-axe", file: "netherite_axe.png", label: "Netherite axe", title: "下界合金斧" },
+  { id: "netherite-shovel", file: "netherite_shovel.png", label: "Netherite shovel", title: "下界合金铲" },
+  { id: "netherite-hoe", file: "netherite_hoe.png", label: "Netherite hoe", title: "下界合金锄" },
+  { id: "honey-bottle", file: "honey_bottle.png", label: "Honey bottle", title: "蜂蜜瓶", base: JAVA_ITEMS_BASE },
+  { id: "honeycomb", file: "honeycomb.png", label: "Honeycomb", title: "蜜脾", base: JAVA_ITEMS_BASE },
+  { id: "sweet-berries", file: "sweet_berries.png", label: "Sweet berries", title: "甜浆果", base: JAVA_ITEMS_BASE },
+  { id: "beehive", file: "beehive_front.png", label: "Beehive", title: "蜂箱", base: JAVA_BLOCKS_BASE },
+  { id: "honey-block", file: "honey_block_side.png", label: "Honey block", title: "蜂蜜块", base: JAVA_BLOCKS_BASE },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.

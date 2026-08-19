@@ -182,6 +182,9 @@ export const PLAY_BLOCKS = [
   { id: "powered-rail-on", file: "rail_golden_powered.png", label: "Powered rail on", title: "充能动力铁轨" },
   { id: "smithing-table", file: "smithing_table_front.png", label: "Smithing table", title: "锻造台" },
   { id: "ancient-debris", file: "ancient_debris_side.png", label: "Ancient debris", title: "远古残骸" },
+  { id: "beehive", file: "beehive_front.png", label: "Beehive", title: "蜂箱", base: JAVA_BLOCKS_BASE },
+  { id: "honey-block", file: "honey_block_side.png", label: "Honey block", title: "蜂蜜块", base: JAVA_BLOCKS_BASE },
+  { id: "sweet-berry-bush", file: "sweet_berry_bush_stage3.png", label: "Sweet berry bush", title: "甜浆果丛", base: JAVA_BLOCKS_BASE },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {

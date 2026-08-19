@@ -99,6 +99,18 @@ export const WITHER_SKIN_FALLBACK_URL =
   "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/wither/wither.png";
 export const ENDER_DRAGON_SKIN_URL =
   "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/enderdragon/dragon.png";
+export const FOX_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/fox/fox.png";
+export const FOX_SKIN_FALLBACK_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/fox/fox.png";
+export const PARROT_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/parrot/parrot_red_blue.png";
+export const PARROT_SKIN_FALLBACK_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/parrot/parrot_red_blue.png";
+export const BEE_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/bee/bee.png";
+export const BEE_SKIN_FALLBACK_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/bee/bee.png";
 export const NETHERITE_ARMOR_1_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/netherite_1.png";
 export const NETHERITE_ARMOR_2_URL =
@@ -158,6 +170,9 @@ const PILLAGER_CACHE = resolve(__dirname, "../../node_modules/.cache/pillager-sk
 const MINECART_CACHE = resolve(__dirname, "../../node_modules/.cache/minecart-skin.png");
 const WITHER_CACHE = resolve(__dirname, "../../node_modules/.cache/wither-skin.png");
 const ENDER_DRAGON_CACHE = resolve(__dirname, "../../node_modules/.cache/ender-dragon-skin.png");
+const FOX_CACHE = resolve(__dirname, "../../node_modules/.cache/fox-skin.png");
+const PARROT_CACHE = resolve(__dirname, "../../node_modules/.cache/parrot-skin.png");
+const BEE_CACHE = resolve(__dirname, "../../node_modules/.cache/bee-skin.png");
 const NETHERITE_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-netherite-1.png");
 const NETHERITE_ARMOR_2_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-netherite-2.png");
 const LEATHER_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-leather-1.png");
@@ -563,6 +578,30 @@ export async function loadEnderDragonSkin(explicitPath) {
   return loadSkin(explicitPath, {
     url: ENDER_DRAGON_SKIN_URL,
     cache: ENDER_DRAGON_CACHE,
+    normalize: false,
+  });
+}
+
+export async function loadFoxSkin(explicitPath) {
+  return loadSkin(explicitPath, {
+    urls: [FOX_SKIN_URL, FOX_SKIN_FALLBACK_URL],
+    cache: FOX_CACHE,
+    normalize: false,
+  });
+}
+
+export async function loadParrotSkin(explicitPath) {
+  return loadSkin(explicitPath, {
+    urls: [PARROT_SKIN_URL, PARROT_SKIN_FALLBACK_URL],
+    cache: PARROT_CACHE,
+    normalize: false,
+  });
+}
+
+export async function loadBeeSkin(explicitPath) {
+  return loadSkin(explicitPath, {
+    urls: [BEE_SKIN_URL, BEE_SKIN_FALLBACK_URL],
+    cache: BEE_CACHE,
     normalize: false,
   });
 }

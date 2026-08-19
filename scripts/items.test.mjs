@@ -116,6 +116,10 @@ describe("hotbar item catalog", () => {
     assert.ok(play.includes("firework"));
     assert.ok(play.includes("chorus-fruit"));
     assert.ok(play.includes("netherite-ingot"));
+    assert.ok(play.includes("netherite-sword"));
+    assert.ok(play.includes("honey-bottle"));
+    assert.ok(play.includes("sweet-berries"));
+    assert.ok(play.includes("beehive"));
   });
 
   it("loads official 16×16 sprites", async () => {

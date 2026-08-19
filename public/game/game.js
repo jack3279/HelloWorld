@@ -30,7 +30,7 @@ const MOVE = 210;
 const JUMP = 680;
 const MAX_FALL = 980;
 const DAY_LENGTH = 90;
-const FEED = { pig: "carrot", cow: "wheat", chicken: "wheat-seeds", sheep: "wheat", wolf: "bone", rabbit: "carrot", cat: "raw-cod", horse: "wheat" };
+const FEED = { pig: "carrot", cow: "wheat", chicken: "wheat-seeds", sheep: "wheat", wolf: "bone", rabbit: "carrot", cat: "raw-cod", horse: "wheat", fox: "sweet-berries", parrot: "wheat-seeds" };
 const WHEAT_STAGE = {
   0: { next: "1", wait: 5 },
   1: { next: "2", wait: 5 },
@@ -64,6 +64,11 @@ const SMITH_UP = {
   "diamond-chestplate": "netherite-chestplate",
   "diamond-leggings": "netherite-leggings",
   "diamond-boots": "netherite-boots",
+  "diamond-sword": "netherite-sword",
+  "diamond-pickaxe": "netherite-pickaxe",
+  "diamond-axe": "netherite-axe",
+  "diamond-shovel": "netherite-shovel",
+  "diamond-hoe": "netherite-hoe",
 };
 const DOOR_SWING = 8;
 const OFFHAND_SLOT = 9;
@@ -155,6 +160,9 @@ const MINEABLE = {
   "╪": { drop: "powered-rail" },
   "⊞": { drop: "smithing-table", tool: "axe" },
   "Ω": { drop: "ancient-debris", tool: "pickaxe" },
+  "⏣": { drop: "beehive", tool: "axe" },
+  "⬡": { drop: "honey-block" },
+  "⚘": { drop: "sweet-berries" },
 };
 const PLACEABLE = {
   torch: "t",
@@ -235,11 +243,14 @@ const PLACEABLE = {
   "powered-rail": "╪",
   "smithing-table": "⊞",
   "ancient-debris": "Ω",
+  beehive: "⏣",
+  "honey-block": "⬡",
+  "sweet-berries": "⚘",
 };
-const PICK_TOOLS = new Set(["diamond-pickaxe", "iron-pickaxe", "wooden-pickaxe"]);
-const AXE_TOOLS = new Set(["diamond-axe", "iron-axe", "wooden-axe"]);
-const SHOVEL_TOOLS = new Set(["wooden-shovel", "iron-shovel", "diamond-shovel"]);
-const SWORD_IDS = new Set(["diamond-sword", "iron-sword", "wooden-sword", "stone-sword"]);
+const PICK_TOOLS = new Set(["diamond-pickaxe", "iron-pickaxe", "wooden-pickaxe", "netherite-pickaxe"]);
+const AXE_TOOLS = new Set(["diamond-axe", "iron-axe", "wooden-axe", "netherite-axe"]);
+const SHOVEL_TOOLS = new Set(["wooden-shovel", "iron-shovel", "diamond-shovel", "netherite-shovel"]);
+const SWORD_IDS = new Set(["diamond-sword", "iron-sword", "wooden-sword", "stone-sword", "netherite-sword"]);
 const HELD_TOOLS = new Set([
   ...SWORD_IDS,
   "bow",
@@ -253,6 +264,7 @@ const HELD_TOOLS = new Set([
   "wooden-shovel",
   "iron-shovel",
   "diamond-shovel",
+  "netherite-shovel",
   "trident",
   "crossbow",
   "lead",
@@ -496,6 +508,16 @@ const ITEM_LABELS = {
   paper: "纸",
   firework: "烟花火箭",
   "chorus-fruit": "紫颂果",
+  "netherite-sword": "下界合金剑",
+  "netherite-pickaxe": "下界合金镐",
+  "netherite-axe": "下界合金斧",
+  "netherite-shovel": "下界合金铲",
+  "netherite-hoe": "下界合金锄",
+  "honey-bottle": "蜂蜜瓶",
+  honeycomb: "蜜脾",
+  "sweet-berries": "甜浆果",
+  beehive: "蜂箱",
+  "honey-block": "蜂蜜块",
 };
 
 const FOOD = {
@@ -523,6 +545,8 @@ const FOOD = {
   "mushroom-stew": { hunger: 6, health: 3 },
   cake: { hunger: 2, health: 1 },
   "chorus-fruit": { hunger: 4, health: 2 },
+  "honey-bottle": { hunger: 6, health: 2 },
+  "sweet-berries": { hunger: 2, health: 1 },
 };
 
 const BLOCKS = {
@@ -655,10 +679,13 @@ const BLOCKS = {
   "╪": "blocks/powered-rail.svg",
   "⊞": "blocks/smithing-table.svg",
   "Ω": "blocks/ancient-debris.svg",
+  "⏣": "blocks/beehive.svg",
+  "⬡": "blocks/honey-block.svg",
+  "⚘": "blocks/sweet-berry-bush.svg",
 };
 
 const SOLID = new Set([..."gdscpLabBTFimxIjuyenqHRNVAEKJMOQ8X~Wl=!$", "#", "&", "^", "+", "?", "(", "{", "}", ")", "░", "▤", "♦", "☠"]);
-for (const ch of "▷⇨➤▽◉★◆❖▒❄≡≣☰☷♠♧¦┊┆┇☁☼⊓▣⊞Ω") SOLID.add(ch);
+for (const ch of "▷⇨➤▽◉★◆❖▒❄≡≣☰☷♠♧¦┊┆┇☁☼⊓▣⊞Ω⏣⬡") SOLID.add(ch);
 
 const canvas = document.getElementById("game");
 const overlay = document.getElementById("overlay");
@@ -864,6 +891,21 @@ const MANIFEST = [
   ...range(8, (i) => `ender-dragon-sprites/rest-${i}.svg`),
   ...range(8, (i) => `ender-dragon-sprites/hurt-${i}.svg`),
   ...range(8, (i) => `ender-dragon-sprites/death-${i}.svg`),
+  ...range(8, (i) => `fox-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `fox-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `fox-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `fox-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `fox-sprites/death-${i}.svg`),
+  ...range(8, (i) => `parrot-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `parrot-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `parrot-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `parrot-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `parrot-sprites/death-${i}.svg`),
+  ...range(8, (i) => `bee-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `bee-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `bee-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `bee-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `bee-sprites/death-${i}.svg`),
   ...range(8, (i) => `door-sprites/swing-${i}.svg`),
   ...range(8, (i) => `iron-door-sprites/swing-${i}.svg`),
   "steve-sprites/shield-hold.svg",
@@ -1168,6 +1210,9 @@ function buildWorld() {
   for (let x = 9; x <= 11; x++) setCell(tiles, x, 3, "☁");
   for (let x = 32; x <= 36; x++) setCell(tiles, x, 2, "☁");
   for (let x = 50; x <= 55; x++) setCell(tiles, x, 2, "☁");
+  setCell(tiles, 9, ground - 2, "⏣");
+  setCell(tiles, 19, ground, "⬡");
+  setCell(tiles, 45, ground - 1, "⚘");
 
   fillRow(tiles, ground, 71, W - 1, "m");
   setCell(tiles, 0, ground, "B");
@@ -1614,6 +1659,9 @@ function makeMob(kind, tx, ty) {
     minecart: { hp: 8, speed: 150, dmg: 0, hw: 20, hh: 16, scale: 0.14, sheet: "minecart-sprites", h: 400, passive: true },
     wither: { hp: 30, speed: 70, dmg: 6, hw: 16, hh: 52, scale: 0.16, sheet: "wither-sprites", h: 480, fly: true },
     "ender-dragon": { hp: 40, speed: 80, dmg: 8, hw: 28, hh: 40, scale: 0.12, sheet: "ender-dragon-sprites", h: 480, fly: true },
+    fox: { hp: 6, speed: 100, dmg: 0, hw: 12, hh: 22, scale: 0.16, sheet: "fox-sprites", h: 480, passive: true },
+    parrot: { hp: 4, speed: 78, dmg: 0, hw: 8, hh: 18, scale: 0.15, sheet: "parrot-sprites", h: 480, passive: true },
+    bee: { hp: 4, speed: 70, dmg: 1, hw: 10, hh: 16, scale: 0.14, sheet: "bee-sprites", h: 480, passive: true, fly: true },
   };
   return {
     kind,
@@ -1715,6 +1763,9 @@ function resetGame() {
     makeMob("drowned", 16, 12),
     makeMob("pillager", 59, 10),
     makeMob("minecart", 23, 8),
+    makeMob("fox", 28, 10),
+    makeMob("parrot", 8, 8),
+    makeMob("bee", 10, 7),
   ];
   drops = [
     makeDrop("diamond", TILE * 13.5, TILE * 9),
@@ -1753,6 +1804,9 @@ function resetGame() {
     makeDrop("firework", TILE * 59.2, TILE * 9, 2),
     makeDrop("glass", TILE * 63.2, TILE * 9, 6),
     makeDrop("egg", TILE * 8.6, TILE * 9, 2),
+    makeDrop("netherite-ingot", TILE * 58.2, TILE * 9, 2),
+    makeDrop("honey-bottle", TILE * 9.6, TILE * 8, 2),
+    makeDrop("sweet-berries", TILE * 45.4, TILE * 9, 4),
   ];
   particles = [];
   arrows = [];
@@ -2165,6 +2219,28 @@ function updateGadgets(dt) {
   for (const tx of doorXs) doorState(tx).open = ironDoorPowered(tx);
 }
 
+function tryHive() {
+  const item = selectedItem();
+  for (const cell of frontCell()) {
+    if (world.tiles[cell.y]?.[cell.x] !== "⏣") continue;
+    if (item?.id === "shears" && item.count > 0) {
+      if (!addItem("honeycomb", 3)) spillItem("honeycomb", 3);
+      say("从蜂箱剪下了蜜脾。");
+      burstBits(cell.x * TILE + 24, cell.y * TILE + 8, "#f2c94c");
+      return true;
+    }
+    if (item?.id === "glass-bottle" && item.count > 0) {
+      item.count -= 1;
+      if (!addItem("honey-bottle", 1)) spillItem("honey-bottle", 1);
+      say("从蜂箱装满了蜂蜜瓶。");
+      return true;
+    }
+    say("拿剪刀剪蜜脾，或拿玻璃瓶装蜂蜜。");
+    return true;
+  }
+  return false;
+}
+
 function tryOpenTable() {
   if (!player.atTable) return false;
   chestOpen = false;
@@ -2263,7 +2339,7 @@ function trySmith() {
   const item = selectedItem();
   const next = SMITH_UP[item?.id];
   if (!next || item.count <= 0) {
-    say("锻造台要把钻石盔甲拿在手里，并准备下界合金锭。");
+    say("锻造台要把钻石装备拿在手里，并准备下界合金锭。");
     return true;
   }
   const barHas = countOwned(player.items, "netherite-ingot") > 0;
@@ -2502,7 +2578,7 @@ function tryFeed() {
     mob.stillT = 0;
     mob.hurtFlee = 0;
     burstHearts(mob.x, mob.y);
-    const names = { pig: "猪", cow: "牛", chicken: "鸡", sheep: "羊", wolf: "狼", rabbit: "兔子", villager: "村民", cat: "猫", horse: "马" };
+    const names = { pig: "猪", cow: "牛", chicken: "鸡", sheep: "羊", wolf: "狼", rabbit: "兔子", villager: "村民", cat: "猫", horse: "马", fox: "狐狸", parrot: "鹦鹉" };
     say(`喂了${names[mob.kind] ?? mob.kind}。它跟着你。`);
     return true;
   }
@@ -2757,7 +2833,7 @@ function tryMineOrPlace() {
       }
       if (spec.tool || HELD_TOOLS.has(item?.id)) {
         if (player.swingT > 0) return true;
-        startToolSwing(item?.id === "diamond-sword" ? "sword" : "tool");
+        startToolSwing(SWORD_IDS.has(item?.id) ? "sword" : "tool");
       }
       if (t === "⇨") {
         const face = deviceFacing(cell.x, cell.y);
@@ -2917,6 +2993,9 @@ function hurt(who, amount, dir) {
       minecart: "minecart",
       wither: "nether-star",
       "ender-dragon": "elytra",
+      fox: "sweet-berries",
+      parrot: "feather",
+      bee: "honeycomb",
     };
     if (who.kind !== "bat") drops.push(makeDrop(loot[who.kind] ?? "apple", who.x, who.y - 20));
     if (who.kind === "cow") drops.push(makeDrop("leather", who.x + 6, who.y - 16));
@@ -3173,7 +3252,7 @@ function tryPlaceMinecart() {
   return true;
 }
 
-const LEASHABLE = new Set(["pig", "cow", "sheep", "chicken", "wolf", "rabbit", "cat", "horse"]);
+const LEASHABLE = new Set(["pig", "cow", "sheep", "chicken", "wolf", "rabbit", "cat", "horse", "fox", "parrot"]);
 
 function tryLead() {
   const item = selectedItem();
@@ -3407,6 +3486,7 @@ function pressUse(down) {
   if (player.sleeping > 0 || player.eatT > 0) return;
   if (tryToggleDoor()) return;
   if (tryGadget()) return;
+  if (tryHive()) return;
   if (tryOpenBrew()) return;
   if (tryOpenFurnace()) return;
   if (tryEnchant()) return;
@@ -3559,7 +3639,7 @@ function updatePlayer(dt) {
   const sprint = keys.has("control") && !sneak;
   const mount = player.mount && !player.mount.dead ? player.mount : null;
   if (player.mount && !mount) dismount();
-  const speed = (player.inWater || mount?.kind === "boat" ? MOVE * 0.55 : sneak ? MOVE * 0.45 : sprint ? MOVE * 1.45 : mount?.kind === "horse" ? MOVE * 1.55 : mount?.kind === "minecart" ? MOVE * 1.35 : MOVE) * (player.beaconT > 0 ? 1.22 : 1);
+  const speed = (player.inWater || mount?.kind === "boat" ? MOVE * 0.55 : sneak ? MOVE * 0.45 : sprint ? MOVE * 1.45 : mount?.kind === "horse" ? MOVE * 1.55 : mount?.kind === "minecart" ? MOVE * 1.35 : MOVE) * (player.beaconT > 0 ? 1.22 : 1) * (tileAt(player.x, player.y + 2) === "⬡" ? 0.42 : 1);
 
   if (mount) {
     if (sneak) {
@@ -3757,7 +3837,7 @@ function updateMobs(dt) {
       else mob.stillT = 0;
       if (mob.kind === "chicken" && mob.grounded && Math.abs(mob.vx) > 20 && Math.random() < 0.04) mob.vy = -220;
       if (mob.kind === "rabbit" && mob.grounded && Math.abs(mob.vx) > 16 && Math.random() < 0.08) mob.vy = -280;
-      if (mob.kind === "cat" && mob.grounded && Math.abs(mob.vx) > 20 && Math.random() < 0.05) mob.vy = -240;
+      if (mob.kind === "parrot" && mob.grounded && Math.abs(mob.vx) > 20 && Math.random() < 0.05) mob.vy = -260;
       if (mob.kind === "squid" && !mob.inWater) {
         const pond = 15.5 * TILE;
         mob.face = Math.sign(pond - mob.x) || mob.face;
@@ -4351,7 +4431,7 @@ function heldOverlayId() {
   const item = selectedItem();
   if (!item || item.count <= 0 || !HELD_TOOLS.has(item.id)) return null;
   if (player.dead || player.anim === "sleep" || player.anim === "eat" || player.anim === "death") return null;
-  if (player.anim === "swing" && item.id === "diamond-sword") return null;
+  if (player.anim === "swing" && SWORD_IDS.has(item.id)) return null;
   if (item.id === "fishing-rod" && player.fishT > 0) return "fishing-rod-cast";
   return item.id;
 }
@@ -4368,7 +4448,7 @@ function steveFrame() {
 }
 
 function deathFrames(kind) {
-  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" || kind === "rabbit" || kind === "villager" || kind === "cat" || kind === "bat" || kind === "squid" || kind === "witch" || kind === "iron-golem" || kind === "horse" || kind === "boat" || kind === "blaze" || kind === "magma-cube" || kind === "ghast" || kind === "snow-golem" || kind === "pillager" || kind === "minecart" || kind === "wither" || kind === "ender-dragon" ? 8 : 12;
+  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" || kind === "rabbit" || kind === "villager" || kind === "cat" || kind === "bat" || kind === "squid" || kind === "witch" || kind === "iron-golem" || kind === "horse" || kind === "boat" || kind === "blaze" || kind === "magma-cube" || kind === "ghast" || kind === "snow-golem" || kind === "pillager" || kind === "minecart" || kind === "wither" || kind === "ender-dragon" || kind === "fox" || kind === "parrot" || kind === "bee" ? 8 : 12;
 }
 
 function mobGone(mob) {

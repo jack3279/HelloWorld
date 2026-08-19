@@ -37,6 +37,8 @@ describe("crafting recipes", () => {
     assert.equal(itemAsset("door-iron"), "blocks/door-iron.svg");
     assert.equal(itemAsset("beacon"), "blocks/beacon.svg");
     assert.equal(itemAsset("anvil"), "blocks/anvil.svg");
+    assert.equal(itemAsset("beehive"), "blocks/beehive.svg");
+    assert.equal(itemAsset("netherite-sword"), "items/netherite-sword.svg");
     assert.equal(itemAsset("firework"), "items/firework.svg");
   });
 

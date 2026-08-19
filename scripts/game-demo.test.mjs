@@ -84,6 +84,10 @@ describe("html game demo", () => {
     assert.match(game, /makeMob\("minecart"/);
     assert.match(game, /makeMob\("wither"/);
     assert.match(game, /makeMob\("ender-dragon"/);
+    assert.match(game, /makeMob\("fox"/);
+    assert.match(game, /makeMob\("parrot"/);
+    assert.match(game, /makeMob\("bee"/);
+    assert.match(game, /function tryHive/);
     assert.match(game, /function tryPlaceMinecart/);
     assert.match(game, /function tryLead/);
     assert.match(game, /function tryBuildWither/);
@@ -157,13 +161,13 @@ describe("html game demo", () => {
     for (let i = 0; i < 12; i++) rels.add(`steve-sprites/death-${i}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`steve-sprites/sleep-${i}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`steve-sprites/eat-${i}.svg`);
-    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze", "magma-cube", "drowned", "pillager"]) {
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze", "magma-cube", "drowned", "pillager", "fox", "parrot", "bee"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/walk-${i * 2}.svg`);
     }
-    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze", "magma-cube", "drowned", "pillager"]) {
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze", "magma-cube", "drowned", "pillager", "fox", "parrot", "bee"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/idle-${i}.svg`);
     }
-    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze", "magma-cube", "drowned", "pillager"]) {
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze", "magma-cube", "drowned", "pillager", "fox", "parrot", "bee"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/hurt-${i}.svg`);
     }
     for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "drowned"]) {
@@ -171,10 +175,10 @@ describe("html game demo", () => {
     }
     for (let i = 0; i < 12; i++) rels.add(`skeleton-sprites/draw-${i}.svg`);
     rels.add("items/arrow.svg");
-    for (const mob of ["pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze", "magma-cube", "pillager"]) {
+    for (const mob of ["pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze", "magma-cube", "pillager", "fox", "parrot", "bee"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/death-${i}.svg`);
     }
-    for (const mob of ["pig", "cow", "chicken", "sheep", "wolf", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze"]) {
+    for (const mob of ["pig", "cow", "chicken", "sheep", "wolf", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze", "fox", "parrot", "bee"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/rest-${i}.svg`);
     }
     for (let i = 0; i < 10; i++) rels.add(`creeper-sprites/swell-${i * 2}.svg`);
@@ -282,6 +286,14 @@ describe("html game demo", () => {
     assert.ok(existsSync(resolve(ROOT, "assets/items/firework.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/items/chorus-fruit.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/items/netherite-ingot.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/items/netherite-sword.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/items/honey-bottle.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/items/sweet-berries.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/beehive.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/honey-block.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/fox-sprites/idle-0.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/parrot-sprites/idle-0.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/bee-sprites/idle-0.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/steve-sprites/armor-netherite.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/items/fishing-rod.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/blocks/bookshelf.svg")));
