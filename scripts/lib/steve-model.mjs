@@ -53,6 +53,24 @@ export const VILLAGER_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/villager/villager.png";
 export const VILLAGER_SKIN_FALLBACK_URL =
   "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/villager/villager.png";
+export const CAT_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/cat/redtabby.png";
+export const BAT_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/bat.png";
+export const BAT_SKIN_FALLBACK_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/bat/bat.png";
+export const SQUID_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/squid.png";
+export const WITCH_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/witch.png";
+export const IRON_GOLEM_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/iron_golem.png";
+export const IRON_GOLEM_SKIN_FALLBACK_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/iron_golem/iron_golem.png";
+export const NETHERITE_ARMOR_1_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/netherite_1.png";
+export const NETHERITE_ARMOR_2_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/netherite_2.png";
 export const LEATHER_ARMOR_1_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/cloth_1.png";
 export const LEATHER_ARMOR_2_URL =
@@ -91,6 +109,13 @@ const CHEST_CACHE = resolve(__dirname, "../../node_modules/.cache/chest-entity.p
 const SHIELD_CACHE = resolve(__dirname, "../../node_modules/.cache/shield-entity.png");
 const RABBIT_CACHE = resolve(__dirname, "../../node_modules/.cache/rabbit-skin.png");
 const VILLAGER_CACHE = resolve(__dirname, "../../node_modules/.cache/villager-skin.png");
+const CAT_CACHE = resolve(__dirname, "../../node_modules/.cache/cat-skin.png");
+const BAT_CACHE = resolve(__dirname, "../../node_modules/.cache/bat-skin.png");
+const SQUID_CACHE = resolve(__dirname, "../../node_modules/.cache/squid-skin.png");
+const WITCH_CACHE = resolve(__dirname, "../../node_modules/.cache/witch-skin.png");
+const IRON_GOLEM_CACHE = resolve(__dirname, "../../node_modules/.cache/iron-golem-skin.png");
+const NETHERITE_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-netherite-1.png");
+const NETHERITE_ARMOR_2_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-netherite-2.png");
 const LEATHER_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-leather-1.png");
 const LEATHER_ARMOR_2_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-leather-2.png");
 const IRON_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-iron-1.png");
@@ -399,6 +424,34 @@ export async function loadVillagerSkin(explicitPath) {
   });
 }
 
+export async function loadCatSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: CAT_SKIN_URL, cache: CAT_CACHE, normalize: false });
+}
+
+export async function loadBatSkin(explicitPath) {
+  return loadSkin(explicitPath, {
+    urls: [BAT_SKIN_URL, BAT_SKIN_FALLBACK_URL],
+    cache: BAT_CACHE,
+    normalize: false,
+  });
+}
+
+export async function loadSquidSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: SQUID_SKIN_URL, cache: SQUID_CACHE, normalize: false });
+}
+
+export async function loadWitchSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: WITCH_SKIN_URL, cache: WITCH_CACHE, normalize: false });
+}
+
+export async function loadIronGolemSkin(explicitPath) {
+  return loadSkin(explicitPath, {
+    urls: [IRON_GOLEM_SKIN_URL, IRON_GOLEM_SKIN_FALLBACK_URL],
+    cache: IRON_GOLEM_CACHE,
+    normalize: false,
+  });
+}
+
 function tintLeatherArmor(skin) {
   const rgba = new Uint8Array(skin.rgba);
   const [tr, tg, tb] = [196, 112, 80];
@@ -432,6 +485,10 @@ export async function loadArmorLayer(kind, layer, explicitPath) {
     chainmail: [
       { url: CHAIN_ARMOR_1_URL, cache: CHAIN_ARMOR_1_CACHE },
       { url: CHAIN_ARMOR_2_URL, cache: CHAIN_ARMOR_2_CACHE },
+    ],
+    netherite: [
+      { url: NETHERITE_ARMOR_1_URL, cache: NETHERITE_ARMOR_1_CACHE },
+      { url: NETHERITE_ARMOR_2_URL, cache: NETHERITE_ARMOR_2_CACHE },
     ],
   }[kind];
   if (!spec) throw new Error(`unknown armor ${kind}`);

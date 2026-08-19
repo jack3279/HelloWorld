@@ -157,6 +157,13 @@ export const PLAY_ITEMS = [
   { id: "leather-boots", file: "leather_boots.png", label: "Leather boots", title: "皮革靴子", base: JAVA_ITEMS_BASE },
   { id: "flint", file: "flint.png", label: "Flint", title: "燧石" },
   { id: "charcoal", file: "charcoal.png", label: "Charcoal", title: "木炭" },
+  { id: "fishing-rod", file: "fishing_rod_uncast.png", label: "Fishing rod", title: "钓鱼竿" },
+  { id: "fishing-rod-cast", file: "fishing_rod_cast.png", label: "Fishing rod cast", title: "钓鱼中" },
+  { id: "raw-cod", file: "fish_raw.png", label: "Raw cod", title: "生鳕鱼" },
+  { id: "cooked-cod", file: "fish_cooked.png", label: "Cooked cod", title: "熟鳕鱼" },
+  { id: "ink-sac", file: "ink_sac.png", label: "Ink sac", title: "墨囊", base: JAVA_ITEMS_BASE },
+  { id: "bowl", file: "bowl.png", label: "Bowl", title: "碗" },
+  { id: "mushroom-stew", file: "mushroom_stew.png", label: "Mushroom stew", title: "蘑菇煲" },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.

@@ -115,6 +115,9 @@ describe("crafting recipes", () => {
     assert.equal(itemAsset("ice"), "blocks/ice.svg");
     assert.equal(itemAsset("flint"), "items/flint.svg");
     assert.equal(itemAsset("diamond-hoe"), "items/diamond-hoe.svg");
+    assert.equal(itemAsset("bookshelf"), "blocks/bookshelf.svg");
+    assert.equal(itemAsset("obsidian"), "blocks/obsidian.svg");
+    assert.equal(itemAsset("fishing-rod"), "items/fishing-rod.svg");
   });
 
   it("crafts a hoe from planks or diamonds", () => {
@@ -142,6 +145,10 @@ describe("crafting recipes", () => {
     assert.ok(canCraft(bag, cookie));
     const steel = RECIPES.find((r) => r.id === "flint-and-steel");
     assert.deepEqual(steel.need, { "iron-ingot": 1, flint: 1 });
+    const rod = RECIPES.find((r) => r.id === "fishing-rod");
+    assert.deepEqual(rod.need, { stick: 3, string: 2 });
+    const stew = RECIPES.find((r) => r.id === "mushroom-stew");
+    assert.deepEqual(stew.need, { bowl: 1, "red-mushroom": 1, "brown-mushroom": 1 });
   });
 
   it("smelts sand to glass and logs to charcoal", () => {

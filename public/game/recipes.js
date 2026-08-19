@@ -53,6 +53,11 @@ export const RECIPES = [
   { id: "furnace", count: 1, need: { cobblestone: 8 } },
   { id: "door-oak", count: 3, need: { "oak-planks": 6 } },
   { id: "bed", count: 1, need: { "white-wool": 3, "oak-planks": 3 } },
+  { id: "fishing-rod", count: 1, need: { stick: 3, string: 2 } },
+  { id: "bowl", count: 4, need: { "oak-planks": 3 } },
+  { id: "mushroom-stew", count: 1, need: { bowl: 1, "red-mushroom": 1, "brown-mushroom": 1 } },
+  { id: "bookshelf", count: 1, need: { "oak-planks": 6 } },
+  { id: "noteblock", count: 1, need: { "oak-planks": 8, "redstone-dust": 1 } },
 ];
 
 export const HOTBAR_SLOTS = 9;
@@ -70,6 +75,7 @@ export const SMELT = {
   sand: { id: "glass", n: 1 },
   clay: { id: "bricks", n: 1 },
   "oak-log": { id: "charcoal", n: 1 },
+  "raw-cod": { id: "cooked-cod", n: 1 },
 };
 export const FURNACE_FUEL = { coal: 8, charcoal: 8, "oak-planks": 4, "oak-log": 4 };
 export const HOE_IDS = new Set(["diamond-hoe", "wooden-hoe", "iron-hoe"]);
@@ -101,6 +107,11 @@ export const BLOCK_FACE_ITEMS = new Set([
   "lily-pad",
   "ice",
   "sugar-cane",
+  "bookshelf",
+  "noteblock",
+  "obsidian",
+  "red-mushroom",
+  "brown-mushroom",
 ]);
 
 export function emptySlots(n) {
