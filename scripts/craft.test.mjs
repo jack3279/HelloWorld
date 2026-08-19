@@ -162,6 +162,13 @@ describe("crafting recipes", () => {
     assert.deepEqual(jukebox.need, { "oak-planks": 8, diamond: 1 });
     const crossbow = RECIPES.find((r) => r.id === "crossbow");
     assert.deepEqual(crossbow.need, { stick: 3, string: 2, "iron-ingot": 1 });
+    const rail = RECIPES.find((r) => r.id === "rail");
+    assert.deepEqual(rail.need, { "iron-ingot": 6, stick: 1 });
+    assert.equal(rail.count, 16);
+    const cart = RECIPES.find((r) => r.id === "minecart");
+    assert.deepEqual(cart.need, { "iron-ingot": 5 });
+    const lead = RECIPES.find((r) => r.id === "lead");
+    assert.deepEqual(lead.need, { string: 4, slimeball: 1 });
     const ironBlock = RECIPES.find((r) => r.id === "iron-block");
     assert.deepEqual(ironBlock.need, { "iron-ingot": 9 });
     assert.equal(itemAsset("netherrack"), "blocks/netherrack.svg");
@@ -175,6 +182,11 @@ describe("crafting recipes", () => {
     assert.equal(itemAsset("trident"), "items/trident.svg");
     assert.equal(itemAsset("crossbow"), "items/crossbow.svg");
     assert.equal(itemAsset("music-disc-13"), "items/music-disc-13.svg");
+    assert.equal(itemAsset("rail"), "blocks/rail.svg");
+    assert.equal(itemAsset("minecart"), "items/minecart.svg");
+    assert.equal(itemAsset("lead"), "items/lead.svg");
+    assert.equal(itemAsset("end-stone"), "blocks/end-stone.svg");
+    assert.equal(itemAsset("dragon-egg"), "blocks/dragon-egg.svg");
   });
 
   it("smelts sand to glass and logs to charcoal", () => {

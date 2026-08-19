@@ -114,6 +114,12 @@ const MINEABLE = {
   "}": { drop: "enchanting-table", tool: "pickaxe" },
   "[": { drop: "cake" },
   ")": { drop: "jukebox", tool: "axe" },
+  "═": { drop: "rail" },
+  "░": { drop: "end-stone", tool: "pickaxe" },
+  "▤": { drop: "end-portal-frame", tool: "pickaxe" },
+  "♣": { drop: "chorus-plant" },
+  "☠": { drop: "wither-skull" },
+  "♦": { drop: "dragon-egg" },
 };
 const PLACEABLE = {
   torch: "t",
@@ -157,6 +163,13 @@ const PLACEABLE = {
   "enchanting-table": "}",
   cake: "[",
   jukebox: ")",
+  pumpkin: "u",
+  rail: "═",
+  "end-stone": "░",
+  "end-portal-frame": "▤",
+  "chorus-plant": "♣",
+  "wither-skull": "☠",
+  "dragon-egg": "♦",
 };
 const PICK_TOOLS = new Set(["diamond-pickaxe", "iron-pickaxe", "wooden-pickaxe"]);
 const AXE_TOOLS = new Set(["diamond-axe", "iron-axe", "wooden-axe"]);
@@ -177,6 +190,7 @@ const HELD_TOOLS = new Set([
   "diamond-shovel",
   "trident",
   "crossbow",
+  "lead",
 ]);
 
 const ARMOR_GEAR = {
@@ -370,6 +384,18 @@ const ITEM_LABELS = {
   crossbow: "弩",
   "music-disc-13": "唱片 13",
   "music-disc-cat": "唱片 Cat",
+  rail: "铁轨",
+  minecart: "矿车",
+  lead: "拴绳",
+  elytra: "鞘翅",
+  totem: "不死图腾",
+  "nether-star": "下界之星",
+  "wither-skull": "凋灵头颅",
+  "end-stone": "末地石",
+  "end-portal": "末地传送门",
+  "end-portal-frame": "末地传送门框架",
+  "chorus-plant": "紫颂植株",
+  "dragon-egg": "龙蛋",
 };
 
 const FOOD = {
@@ -489,9 +515,16 @@ const BLOCKS = {
   "|": "blocks/potato-1.svg",
   "]": "blocks/potato-2.svg",
   '"': "blocks/potato-3.svg",
+  "═": "blocks/rail.svg",
+  "░": "blocks/end-stone.svg",
+  "▓": "blocks/end-portal.svg",
+  "▤": "blocks/end-portal-frame.svg",
+  "♣": "blocks/chorus-plant.svg",
+  "☠": "blocks/wither-skull.svg",
+  "♦": "blocks/dragon-egg.svg",
 };
 
-const SOLID = new Set([..."gdscpLabBTFimxIjuyenqHRNVAEKJMOQ8X~Wl=!$", "#", "&", "^", "+", "?", "(", "{", "}", ")"]);
+const SOLID = new Set([..."gdscpLabBTFimxIjuyenqHRNVAEKJMOQ8X~Wl=!$", "#", "&", "^", "+", "?", "(", "{", "}", ")", "░", "▤", "♦", "☠"]);
 
 const canvas = document.getElementById("game");
 const overlay = document.getElementById("overlay");
@@ -510,7 +543,7 @@ let last = 0;
 let mode = "boot";
 let world;
 let dimension = "overworld";
-const dimKeep = { overworld: null, nether: null };
+const dimKeep = { overworld: null, nether: null, end: null };
 let player;
 let mobs = [];
 let drops = [];
@@ -680,6 +713,21 @@ const MANIFEST = [
   ...range(8, (i) => `pillager-sprites/idle-${i}.svg`),
   ...range(8, (i) => `pillager-sprites/hurt-${i}.svg`),
   ...range(8, (i) => `pillager-sprites/death-${i}.svg`),
+  ...range(8, (i) => `minecart-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `minecart-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `minecart-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `minecart-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `minecart-sprites/death-${i}.svg`),
+  ...range(8, (i) => `wither-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `wither-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `wither-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `wither-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `wither-sprites/death-${i}.svg`),
+  ...range(8, (i) => `ender-dragon-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `ender-dragon-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `ender-dragon-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `ender-dragon-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `ender-dragon-sprites/death-${i}.svg`),
   ...range(8, (i) => `door-sprites/swing-${i}.svg`),
   "steve-sprites/shield-hold.svg",
   "steve-sprites/shield-block.svg",
@@ -819,6 +867,8 @@ function buildWorld() {
   fillRow(tiles, ground + 3, 32, 35, "s");
 
   fillRow(tiles, ground - 2, 22, 26, "p");
+  fillRow(tiles, ground - 3, 22, 25, "═");
+  setCell(tiles, 26, ground - 3, "t");
   fillRow(tiles, ground - 2, 40, 44, "p");
   fillRow(tiles, ground - 4, 41, 43, "p");
   setCell(tiles, 43, ground - 5, "t");
@@ -884,6 +934,21 @@ function buildWorld() {
   setCell(tiles, 74, ground - 1, "E");
   setCell(tiles, 69, ground - 1, "W");
   fillRow(tiles, ground + 3, 8, 11, "V");
+  for (let y = ground + 1; y <= ground + 3; y++) fillRow(tiles, y, 40, 44, ".");
+  fillRow(tiles, ground + 3, 40, 44, "░");
+  setCell(tiles, 40, ground + 2, "▤");
+  setCell(tiles, 44, ground + 2, "▤");
+  setCell(tiles, 40, ground + 1, "▤");
+  setCell(tiles, 44, ground + 1, "▤");
+  setCell(tiles, 41, ground + 1, "▓");
+  setCell(tiles, 42, ground + 1, "▓");
+  setCell(tiles, 43, ground + 1, "▓");
+  setCell(tiles, 41, ground + 2, "▓");
+  setCell(tiles, 42, ground + 2, "▓");
+  setCell(tiles, 43, ground + 2, "▓");
+  setCell(tiles, 42, ground, "h");
+  setCell(tiles, 42, ground - 1, "h");
+  setCell(tiles, 42, ground - 2, "h");
 
   setCell(tiles, 19, ground + 3, "x");
   setCell(tiles, 21, ground + 4, "H");
@@ -981,6 +1046,43 @@ function buildNether() {
   setCell(tiles, 23, ground - 1, ">");
 
   portalFrame(tiles, 36, ground);
+  setCell(tiles, 0, ground, "B");
+  setCell(tiles, W - 1, ground, "B");
+
+  return { w: W, h: H, tiles, ground, nightSpawned: true, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map(), cakeBites: new Map(), jukebox: new Map() };
+}
+
+function endPortalFrame(tiles, x, ground) {
+  setCell(tiles, x, ground, "░");
+  setCell(tiles, x - 1, ground - 1, "▤");
+  setCell(tiles, x + 1, ground - 1, "▤");
+  setCell(tiles, x - 1, ground - 2, "▤");
+  setCell(tiles, x + 1, ground - 2, "▤");
+  setCell(tiles, x - 1, ground - 3, "▤");
+  setCell(tiles, x, ground - 3, "▤");
+  setCell(tiles, x + 1, ground - 3, "▤");
+  setCell(tiles, x, ground - 1, "▓");
+  setCell(tiles, x, ground - 2, "▓");
+}
+
+function buildEnd() {
+  const W = 78;
+  const H = 16;
+  const tiles = Array.from({ length: H }, () => Array(W).fill("."));
+  const ground = 10;
+
+  for (let x = 0; x < W; x++) setCell(tiles, x, H - 1, "B");
+  fillRow(tiles, ground, 16, 62, "░");
+  fillRow(tiles, ground + 1, 18, 60, "░");
+  fillRow(tiles, ground + 2, 22, 56, "░");
+  setCell(tiles, 22, ground - 1, "♣");
+  setCell(tiles, 23, ground - 1, "♣");
+  setCell(tiles, 23, ground - 2, "♣");
+  setCell(tiles, 52, ground - 1, "♣");
+  setCell(tiles, 53, ground - 1, "♣");
+  setCell(tiles, 54, ground - 1, "♣");
+  setCell(tiles, 54, ground - 2, "♣");
+  endPortalFrame(tiles, 38, ground);
   setCell(tiles, 0, ground, "B");
   setCell(tiles, W - 1, ground, "B");
 
@@ -1300,6 +1402,9 @@ function makeMob(kind, tx, ty) {
     "magma-cube": { hp: 8, speed: 45, dmg: 3, hw: 16, hh: 22, scale: 0.14, sheet: "magma-cube-sprites", h: 480 },
     drowned: { hp: 10, speed: 72, dmg: 3, hw: 12, hh: 50, scale: 0.17, sheet: "drowned-sprites", h: 520, aquatic: true },
     pillager: { hp: 8, speed: 85, dmg: 2, hw: 11, hh: 50, scale: 0.17, sheet: "pillager-sprites", h: 520 },
+    minecart: { hp: 8, speed: 150, dmg: 0, hw: 20, hh: 16, scale: 0.14, sheet: "minecart-sprites", h: 400, passive: true },
+    wither: { hp: 30, speed: 70, dmg: 6, hw: 16, hh: 52, scale: 0.16, sheet: "wither-sprites", h: 480, fly: true },
+    "ender-dragon": { hp: 40, speed: 80, dmg: 8, hw: 28, hh: 40, scale: 0.12, sheet: "ender-dragon-sprites", h: 480, fly: true },
   };
   return {
     kind,
@@ -1368,6 +1473,7 @@ function resetGame() {
   dimension = "overworld";
   dimKeep.overworld = null;
   dimKeep.nether = null;
+  dimKeep.end = null;
   world = buildWorld();
   player = makePlayer();
   mobs = [
@@ -1399,6 +1505,7 @@ function resetGame() {
     makeMob("snow-golem", 72, 10),
     makeMob("drowned", 16, 12),
     makeMob("pillager", 59, 10),
+    makeMob("minecart", 23, 8),
   ];
   drops = [
     makeDrop("diamond", TILE * 13.5, TILE * 9),
@@ -1427,6 +1534,10 @@ function resetGame() {
     makeDrop("fishing-rod", TILE * 15.2, TILE * 9),
     makeDrop("saddle", TILE * 41.4, TILE * 9),
     makeDrop("oak-boat", TILE * 14.4, TILE * 9),
+    makeDrop("lead", TILE * 9.2, TILE * 9, 2),
+    makeDrop("totem", TILE * 60.4, TILE * 9),
+    makeDrop("rail", TILE * 22.6, TILE * 7, 8),
+    makeDrop("minecart", TILE * 24.2, TILE * 7),
     makeDrop("iron-block", TILE * 74.4, TILE * 9, 2),
     makeDrop("glass", TILE * 63.2, TILE * 9, 6),
     makeDrop("egg", TILE * 8.6, TILE * 9, 2),
@@ -1721,6 +1832,29 @@ function tryBuildGolem(tx, ty) {
     clear(tx + 1, ty + 1);
     mobs.push(makeMob("iron-golem", tx, ty + 2));
     say("堆出了铁傀儡。");
+    return true;
+  }
+  return false;
+}
+
+function tryBuildWither(tx, ty) {
+  const at = (x, y) => world.tiles[y]?.[x];
+  const clear = (x, y) => setCell(world.tiles, x, y, ".");
+  const skull = (x, y) => at(x, y) === "☠";
+  const sand = (x, y) => at(x, y) === "^";
+  for (const cx of [tx - 1, tx, tx + 1]) {
+    if (!skull(cx - 1, ty) || !skull(cx, ty) || !skull(cx + 1, ty)) continue;
+    if (!sand(cx - 1, ty + 1) || !sand(cx, ty + 1) || !sand(cx + 1, ty + 1)) continue;
+    if (!sand(cx, ty + 2)) continue;
+    clear(cx - 1, ty);
+    clear(cx, ty);
+    clear(cx + 1, ty);
+    clear(cx - 1, ty + 1);
+    clear(cx, ty + 1);
+    clear(cx + 1, ty + 1);
+    clear(cx, ty + 2);
+    mobs.push(makeMob("wither", cx, ty + 2));
+    say("凋灵苏醒了！");
     return true;
   }
   return false;
@@ -2062,6 +2196,10 @@ function tryMineOrPlace() {
             item.count -= 1;
             return true;
           }
+          if (item.id === "wither-skull" && tryBuildWither(tx, ty)) {
+            item.count -= 1;
+            return true;
+          }
         }
         item.count -= 1;
         say(`放下了${ITEM_LABELS[item.id] ?? item.id}`);
@@ -2087,6 +2225,14 @@ function hurt(who, amount, dir) {
       player.vy = -220;
     }
     if (player.health <= 0) {
+      if (consumeTotem()) {
+        player.health = 10;
+        player.invuln = 2.5;
+        burstBits(player.x, player.y - 24, "#e8c44a");
+        burstBits(player.x, player.y - 18, "#5ad15a");
+        say("不死图腾救了你！", 4);
+        return;
+      }
       player.dead = true;
       player.anim = "death";
       player.frame = 0;
@@ -2138,6 +2284,9 @@ function hurt(who, amount, dir) {
       "snow-golem": "snowball",
       drowned: "rotten-flesh",
       pillager: "arrow",
+      minecart: "minecart",
+      wither: "nether-star",
+      "ender-dragon": "elytra",
     };
     if (who.kind !== "bat") drops.push(makeDrop(loot[who.kind] ?? "apple", who.x, who.y - 20));
     if (who.kind === "cow") drops.push(makeDrop("leather", who.x + 6, who.y - 16));
@@ -2155,8 +2304,14 @@ function hurt(who, amount, dir) {
     if (who.kind === "ghast") drops.push(makeDrop("gunpowder", who.x + 6, who.y - 16, 2));
     if (who.kind === "wither-skeleton") {
       drops.push(makeDrop("coal", who.x + 6, who.y - 16));
+      if (Math.random() < 0.15) drops.push(makeDrop("wither-skull", who.x - 8, who.y - 18));
       if (Math.random() < 0.12) drops.push(makeDrop("stone-sword", who.x - 8, who.y - 18));
     }
+    if (who.kind === "ender-dragon") {
+      drops.push(makeDrop("dragon-egg", who.x - 8, who.y - 18));
+      say("末影龙倒下了。鞘翅和龙蛋掉了出来。", 5);
+    }
+    if (who.leashed) drops.push(makeDrop("lead", who.x, who.y - 14));
     if (who.kind === "snow-golem") drops.push(makeDrop("snowball", who.x + 6, who.y - 16, 4));
     if (who.kind === "drowned" && Math.random() < 0.18) drops.push(makeDrop("trident", who.x - 8, who.y - 18));
     if (who.kind === "pillager" && Math.random() < 0.22) drops.push(makeDrop("crossbow", who.x - 8, who.y - 18));
@@ -2298,7 +2453,7 @@ function mountOnto(mob) {
   mob.stillT = 0;
   mob.hurtFlee = 0;
   mob.followT = 0;
-  say(mob.kind === "boat" ? "坐上了船。A/D 划，空格下来。" : "骑上了马。A/D 跑，空格跳，Shift 下来。", 3);
+  say(mob.kind === "boat" ? "坐上了船。A/D 划，空格下来。" : mob.kind === "minecart" ? "坐上了矿车。A/D 开，空格下来。" : "骑上了马。A/D 跑，空格跳，Shift 下来。", 3);
 }
 
 function dismount() {
@@ -2335,6 +2490,11 @@ function tryMount() {
     mountOnto(boat);
     return true;
   }
+  const cart = nearMob((mob) => mob.kind === "minecart" && !mob.mounted, 56);
+  if (cart) {
+    mountOnto(cart);
+    return true;
+  }
   const horse = nearMob((mob) => mob.kind === "horse" && mob.saddled && !mob.mounted, 56);
   if (horse) {
     mountOnto(horse);
@@ -2361,6 +2521,97 @@ function tryPlaceBoat() {
   return true;
 }
 
+function facingRail() {
+  return tileAt(player.x + player.face * 36, player.y - 8) === "═" || tileAt(player.x, player.y - 8) === "═" || tileAt(player.x + player.face * 28, player.y + 4) === "═";
+}
+
+function tryPlaceMinecart() {
+  const item = selectedItem();
+  if (item?.id !== "minecart" || item.count <= 0) return false;
+  if (!facingRail()) {
+    say("矿车要放在铁轨上。");
+    return true;
+  }
+  const tx = Math.floor((player.x + player.face * 36) / TILE);
+  const ty = Math.floor((player.y + 8) / TILE);
+  const cart = makeMob("minecart", tx, ty);
+  cart.x = player.x + player.face * 40;
+  cart.y = player.y;
+  mobs.push(cart);
+  item.count -= 1;
+  say("放下了矿车。靠近再用就能坐上去。");
+  return true;
+}
+
+const LEASHABLE = new Set(["pig", "cow", "sheep", "chicken", "wolf", "rabbit", "cat", "horse"]);
+
+function tryLead() {
+  const item = selectedItem();
+  const leashed = nearMob((mob) => mob.leashed, 80);
+  if (leashed && (item?.id === "lead" || item?.count <= 0)) {
+    leashed.leashed = false;
+    leashed.followT = 0;
+    if (!addItem("lead", 1)) spillItem("lead", 1);
+    say("解开了拴绳。");
+    return true;
+  }
+  if (item?.id !== "lead" || item.count <= 0) return false;
+  const target = nearMob((mob) => LEASHABLE.has(mob.kind) && !mob.leashed, 56);
+  if (!target) return false;
+  item.count -= 1;
+  target.leashed = true;
+  target.followT = 12;
+  const names = { pig: "猪", cow: "牛", chicken: "鸡", sheep: "羊", wolf: "狼", rabbit: "兔子", cat: "猫", horse: "马" };
+  say(`拴住了${names[target.kind] ?? target.kind}。`);
+  return true;
+}
+
+function consumeTotem() {
+  for (const slot of [selectedItem(), player.offhand]) {
+    if (slot?.id === "totem" && slot.count > 0) {
+      slot.count -= 1;
+      return true;
+    }
+  }
+  return false;
+}
+
+function hasElytra() {
+  const main = player.selected === OFFHAND_SLOT ? null : player.items[player.selected];
+  const off = player.offhand;
+  return (main?.id === "elytra" && main.count > 0) || (off?.id === "elytra" && off.count > 0);
+}
+
+function tryGlide(dt, jump) {
+  if (!hasElytra() || player.mount || player.grounded || player.inWater || player.inLava) return;
+  if (player.vy <= 40) return;
+  player.vy = Math.min(player.vy, 150);
+  player.vy *= 0.88;
+  if (jump) player.vx += player.face * 260 * dt;
+  player.vx = Math.max(-400, Math.min(400, player.vx));
+}
+
+function railAt(px, py) {
+  return tileAt(px, py) === "═";
+}
+
+function moveMinecart(body, dt) {
+  const on = railAt(body.x, body.y - 4) || railAt(body.x, body.y + 2);
+  if (!on) {
+    moveBody(body, dt);
+    return;
+  }
+  const ty = Math.floor((body.y - 4) / TILE);
+  body.y = (ty + 1) * TILE;
+  body.vy = 0;
+  body.grounded = true;
+  body.inWater = false;
+  const nx = body.x + body.vx * dt;
+  if ((railAt(nx, body.y - 4) || railAt(nx, ty * TILE + 8)) && !rectHitsSolid(nx - body.hw, body.y - body.hh, body.hw * 2, Math.max(4, body.hh - 6))) {
+    body.x = nx;
+  } else body.vx = 0;
+}
+
 function captureDim() {
   return {
     world,
@@ -2385,10 +2636,9 @@ function applyDim(snap) {
   brew = snap.brew ?? emptyFurnace();
 }
 
-function swapDimension() {
+function swapDimension(next) {
   if (player.mount) dismount();
   dimKeep[dimension] = captureDim();
-  const next = dimension === "overworld" ? "nether" : "overworld";
   if (!dimKeep[next]) {
     if (next === "nether") {
       world = buildNether();
@@ -2401,7 +2651,25 @@ function swapDimension() {
         makeMob("magma-cube", 22, 10),
         makeMob("magma-cube", 42, 10),
       ];
-      drops = [makeDrop("glowstone", TILE * 64.5, TILE * 8, 2), makeDrop("nether-wart", TILE * 22.5, TILE * 8, 3)];
+      drops = [
+        makeDrop("glowstone", TILE * 64.5, TILE * 8, 2),
+        makeDrop("nether-wart", TILE * 22.5, TILE * 8, 3),
+        makeDrop("wither-skull", TILE * 21.5, TILE * 8, 3),
+      ];
+      arrows = [];
+      particles = [];
+      chestItems = emptySlots(CHEST_SLOTS);
+      furnace = emptyFurnace();
+      brew = emptyFurnace();
+    } else if (next === "end") {
+      world = buildEnd();
+      mobs = [
+        makeMob("ender-dragon", 40, 5),
+        makeMob("enderman", 24, 10),
+        makeMob("enderman", 50, 10),
+        makeMob("enderman", 56, 10),
+      ];
+      drops = [makeDrop("ender-pearl", TILE * 26, TILE * 8, 2)];
       arrows = [];
       particles = [];
       chestItems = emptySlots(CHEST_SLOTS);
@@ -2419,17 +2687,27 @@ function swapDimension() {
   chestOpen = false;
   furnaceOpen = false;
   brewOpen = false;
-  say(dimension === "nether" ? "穿过了传送门。这里是下界。" : "回到了主世界。", 4);
+  say(dimension === "nether" ? "穿过了传送门。这里是下界。" : dimension === "end" ? "穿过了传送门。这里是末地。" : "回到了主世界。", 4);
+}
+
+function standingPortal() {
+  const tiles = [tileAt(player.x, player.y - 16), tileAt(player.x, player.y - 8), tileAt(player.x, player.y - 28)];
+  if (tiles.includes("@")) return "nether";
+  if (tiles.includes("▓")) return "end";
+  return null;
 }
 
 function updatePortal(dt) {
-  const standing = tileAt(player.x, player.y - 16) === "@" || tileAt(player.x, player.y - 8) === "@" || tileAt(player.x, player.y - 28) === "@";
-  if (!standing) {
+  const kind = standingPortal();
+  if (!kind) {
     player.portalT = 0;
     return;
   }
   player.portalT += dt;
-  if (player.portalT >= 1.35) swapDimension();
+  if (player.portalT >= 1.35) {
+    const dest = dimension === kind ? "overworld" : kind;
+    swapDimension(dest);
+  }
 }
 
 function firePlayerBow() {
@@ -2514,6 +2792,8 @@ function useSelected() {
   if (trySaddle()) return;
   if (tryMount()) return;
   if (tryPlaceBoat()) return;
+  if (tryPlaceMinecart()) return;
+  if (tryLead()) return;
   if (tryShear()) return;
   if (tryFlint()) return;
   if (tryHoe()) return;
@@ -2615,7 +2895,7 @@ function updatePlayer(dt) {
   const sprint = keys.has("control") && !sneak;
   const mount = player.mount && !player.mount.dead ? player.mount : null;
   if (player.mount && !mount) dismount();
-  const speed = player.inWater || mount?.kind === "boat" ? MOVE * 0.55 : sneak ? MOVE * 0.45 : sprint ? MOVE * 1.45 : mount?.kind === "horse" ? MOVE * 1.55 : MOVE;
+  const speed = player.inWater || mount?.kind === "boat" ? MOVE * 0.55 : sneak ? MOVE * 0.45 : sprint ? MOVE * 1.45 : mount?.kind === "horse" ? MOVE * 1.55 : mount?.kind === "minecart" ? MOVE * 1.35 : MOVE;
 
   if (mount) {
     if (sneak) {
@@ -2631,11 +2911,12 @@ function updatePlayer(dt) {
         if (mount.kind === "horse" && mount.grounded) {
           mount.vy = -JUMP * 0.9;
           mount.grounded = false;
-        } else if (mount.kind === "boat") dismount();
+        } else if (mount.kind === "boat" || mount.kind === "minecart") dismount();
       }
-      moveBody(mount, dt);
+      if (mount.kind === "minecart") moveMinecart(mount, dt);
+      else moveBody(mount, dt);
       player.x = mount.x;
-      player.y = mount.y - (mount.kind === "boat" ? 10 : 22);
+      player.y = mount.y - (mount.kind === "boat" || mount.kind === "minecart" ? 10 : 22);
       player.vx = mount.vx;
       player.vy = mount.vy;
       player.grounded = mount.grounded;
@@ -2660,6 +2941,7 @@ function updatePlayer(dt) {
   }
 
   if (!player.mount) moveBody(player, dt);
+  tryGlide(dt, jump);
 
   if (player.fireRes > 0) player.fireRes = Math.max(0, player.fireRes - dt);
   if (player.wither > 0) {
@@ -2761,6 +3043,7 @@ function updateMobs(dt) {
     const close = !player.dead && Math.abs(dx) < 420;
     if (mob.passive) {
       if (mob.mounted) continue;
+      if (mob.leashed && !player.dead) mob.followT = Math.max(mob.followT, 1.2);
       if (mob.loveT > 0) mob.loveT -= dt;
       if (mob.hurtFlee > 0) {
         mob.hurtFlee -= dt;
@@ -2800,6 +3083,11 @@ function updateMobs(dt) {
         mob.face = Math.sign(pond - mob.x) || mob.face;
         mob.vx = mob.face * mob.speed;
       }
+      if (mob.kind === "minecart") {
+        if (!mob.mounted) mob.vx *= 0.96;
+        moveMinecart(mob, dt);
+        continue;
+      }
       if (mob.kind === "chicken" && Math.random() < dt * 0.08) {
         drops.push(makeDrop("egg", mob.x, mob.y - 12));
         say("鸡下蛋了。", 1.5);
@@ -2832,6 +3120,10 @@ function updateMobs(dt) {
       steerBlaze(mob, dt, dx, close);
     } else if (mob.kind === "ghast") {
       steerGhast(mob, dt, dx, close);
+    } else if (mob.kind === "wither") {
+      steerWither(mob, dt, dx, close);
+    } else if (mob.kind === "ender-dragon") {
+      steerDragon(mob, dt, dx, close);
     } else if (mob.kind === "iron-golem") {
       steerGolem(mob, dt);
     } else if (mob.kind === "snow-golem") {
@@ -2849,9 +3141,9 @@ function updateMobs(dt) {
       }
     }
     moveBody(mob, dt);
-    if (mob.inLava && mob.kind !== "blaze" && mob.kind !== "magma-cube" && mob.kind !== "ghast") hurt(mob, 4, -mob.face);
+    if (mob.inLava && mob.kind !== "blaze" && mob.kind !== "magma-cube" && mob.kind !== "ghast" && mob.kind !== "wither" && mob.kind !== "ender-dragon") hurt(mob, 4, -mob.face);
     if (mob.kind === "snow-golem" && (dimension === "nether" || isRaining())) hurt(mob, 2, 0);
-    if (mob.kind !== "creeper" && mob.kind !== "skeleton" && mob.kind !== "pillager" && mob.kind !== "witch" && mob.kind !== "blaze" && mob.kind !== "ghast" && !mob.ally && !player.dead && Math.abs(mob.x - player.x) < mob.hw + player.hw + 4 && Math.abs(mob.y - player.y) < mob.hh) {
+    if (mob.kind !== "creeper" && mob.kind !== "skeleton" && mob.kind !== "pillager" && mob.kind !== "witch" && mob.kind !== "blaze" && mob.kind !== "ghast" && mob.kind !== "wither" && mob.kind !== "ender-dragon" && !mob.ally && !player.dead && Math.abs(mob.x - player.x) < mob.hw + player.hw + 4 && Math.abs(mob.y - player.y) < mob.hh) {
       hurt(player, mob.dmg, Math.sign(player.x - mob.x) || -1);
       if (mob.kind === "wither-skeleton") player.wither = Math.max(player.wither ?? 0, 5);
     }
@@ -3046,6 +3338,69 @@ function fireFireball(from) {
   });
 }
 
+function fireWitherSkull(from) {
+  const tx = player.x - from.x;
+  const ty = player.y - 24 - (from.y - 36);
+  const dist = Math.hypot(tx, ty) || 1;
+  const speed = 200;
+  arrows.push({
+    x: from.x + from.face * 16,
+    y: from.y - 32,
+    vx: (tx / dist) * speed,
+    vy: (ty / dist) * speed - 8,
+    life: 3.4,
+    gone: false,
+    from: "mob",
+    dmg: 6,
+    fireball: true,
+    witherSkull: true,
+  });
+}
+
+function steerWither(mob, dt, dx, close) {
+  if (mob.shootCd > 0) mob.shootCd -= dt;
+  const linedUp = close && Math.abs(mob.y - player.y) < 180;
+  if (!linedUp) {
+    mob.vx *= 0.85;
+    return;
+  }
+  mob.face = Math.sign(dx) || mob.face;
+  const dist = Math.abs(dx);
+  if (dist < 100) {
+    mob.vx = -mob.face * mob.speed;
+    return;
+  }
+  if (dist < 400 && mob.shootCd <= 0 && mob.hitT <= 0) {
+    mob.vx = 0;
+    fireWitherSkull(mob);
+    mob.shootCd = 1.7;
+    return;
+  }
+  mob.vx = mob.face * mob.speed * 0.55;
+}
+
+function steerDragon(mob, dt, dx, close) {
+  if (mob.shootCd > 0) mob.shootCd -= dt;
+  const linedUp = close && Math.abs(mob.y - player.y) < 200;
+  if (!linedUp) {
+    mob.vx *= 0.88;
+    return;
+  }
+  mob.face = Math.sign(dx) || mob.face;
+  const dist = Math.abs(dx);
+  if (dist < 120) {
+    mob.vx = -mob.face * mob.speed;
+    return;
+  }
+  if (dist < 420 && mob.shootCd <= 0 && mob.hitT <= 0) {
+    mob.vx = 0;
+    fireFireball(mob);
+    mob.shootCd = 1.9;
+    return;
+  }
+  mob.vx = mob.face * mob.speed * 0.6;
+}
+
 function steerGolem(mob, dt) {
   if (mob.shootCd > 0) mob.shootCd -= dt;
   let target = null;
@@ -3161,6 +3516,7 @@ function updateArrows(dt) {
     }
     if (!player.dead && Math.abs(shot.x - player.x) < (shot.fireball ? 22 : 14) && Math.abs(shot.y - (player.y - 22)) < (shot.fireball ? 36 : 28)) {
       hurt(player, shot.dmg ?? 2, Math.sign(shot.vx) || -1);
+      if (shot.witherSkull) player.wither = Math.max(player.wither ?? 0, 6);
       shot.gone = true;
     }
   }
@@ -3327,7 +3683,7 @@ function steveFrame() {
 }
 
 function deathFrames(kind) {
-  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" || kind === "rabbit" || kind === "villager" || kind === "cat" || kind === "bat" || kind === "squid" || kind === "witch" || kind === "iron-golem" || kind === "horse" || kind === "boat" || kind === "blaze" || kind === "magma-cube" || kind === "ghast" || kind === "snow-golem" || kind === "pillager" ? 8 : 12;
+  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" || kind === "rabbit" || kind === "villager" || kind === "cat" || kind === "bat" || kind === "squid" || kind === "witch" || kind === "iron-golem" || kind === "horse" || kind === "boat" || kind === "blaze" || kind === "magma-cube" || kind === "ghast" || kind === "snow-golem" || kind === "pillager" || kind === "minecart" || kind === "wither" || kind === "ender-dragon" ? 8 : 12;
 }
 
 function mobGone(mob) {
@@ -3378,6 +3734,10 @@ function drawSky() {
     g.addColorStop(0, "#4a1810");
     g.addColorStop(0.55, "#6a2414");
     g.addColorStop(1, "#2a1008");
+  } else if (dimension === "end") {
+    g.addColorStop(0, "#1a0828");
+    g.addColorStop(0.55, "#2a1040");
+    g.addColorStop(1, "#0c0618");
   } else {
     g.addColorStop(0, mixHex(rain ? "#6a8aaa" : "#8ec5ff", "#0b1630", dusk));
     g.addColorStop(0.55, mixHex(rain ? "#8aa3b8" : "#c7e4ff", "#1a2744", dusk));
@@ -3456,6 +3816,12 @@ function drawDrops() {
 function drawArrows() {
   for (const shot of arrows) {
     if (shot.fireball) {
+      if (shot.witherSkull) {
+        const skull = img("items/wither-skull.svg") ?? img("blocks/wither-skull.svg");
+        if (!skull) continue;
+        ctx.drawImage(skull, viewX(shot.x) - 16, viewY(shot.y) - 16, 32, 32);
+        continue;
+      }
       const pic = img(`blocks/fire-${1 + (Math.floor(time * 10) % 7)}.svg`);
       if (!pic) continue;
       const s = 40;
@@ -3482,6 +3848,20 @@ function drawMobs() {
     drawAnchored(mobSprite(mob), spec, viewX(mob.x), viewY(mob.y), mob.face);
     ctx.globalAlpha = 1;
   }
+}
+
+function drawLeads() {
+  ctx.save();
+  ctx.strokeStyle = "#c6a15b";
+  ctx.lineWidth = 2;
+  for (const mob of mobs) {
+    if (!mob.leashed || mob.dead) continue;
+    ctx.beginPath();
+    ctx.moveTo(viewX(player.x), viewY(player.y - 24));
+    ctx.lineTo(viewX(mob.x), viewY(mob.y - mob.hh * 0.45));
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 function drawParticles() {
@@ -4030,6 +4410,7 @@ function frame(ts) {
       drawDrops();
       drawArrows();
       drawMobs();
+      drawLeads();
       drawParticles();
       drawPlayer();
       drawHud();

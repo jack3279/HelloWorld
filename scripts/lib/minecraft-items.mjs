@@ -180,6 +180,23 @@ export const PLAY_ITEMS = [
   { id: "crossbow", file: "crossbow_standby.png", label: "Crossbow", title: "弩" },
   { id: "music-disc-13", file: "record_13.png", label: "Music disc 13", title: "唱片 13" },
   { id: "music-disc-cat", file: "record_cat.png", label: "Music disc Cat", title: "唱片 Cat" },
+  { id: "rail", file: "rail_normal.png", label: "Rail", title: "铁轨", base: BLOCKS_BASE },
+  { id: "minecart", file: "minecart_normal.png", label: "Minecart", title: "矿车" },
+  { id: "lead", file: "lead.png", label: "Lead", title: "拴绳" },
+  { id: "elytra", file: "elytra.png", label: "Elytra", title: "鞘翅" },
+  { id: "totem", file: "totem.png", label: "Totem of undying", title: "不死图腾" },
+  { id: "nether-star", file: "nether_star.png", label: "Nether star", title: "下界之星" },
+  {
+    id: "wither-skull",
+    file: "wither_skeleton.png",
+    label: "Wither skull",
+    title: "凋灵头颅",
+    base: "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/skulls",
+  },
+  { id: "end-stone", file: "end_stone.png", label: "End stone", title: "末地石", base: BLOCKS_BASE },
+  { id: "end-portal-frame", file: "endframe_side.png", label: "End portal frame", title: "末地传送门框架", base: BLOCKS_BASE },
+  { id: "chorus-plant", file: "chorus_plant.png", label: "Chorus plant", title: "紫颂植株", base: BLOCKS_BASE },
+  { id: "dragon-egg", file: "dragon_egg.png", label: "Dragon egg", title: "龙蛋", base: BLOCKS_BASE },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.

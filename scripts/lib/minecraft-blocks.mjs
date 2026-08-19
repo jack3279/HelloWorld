@@ -142,6 +142,19 @@ export const PLAY_BLOCKS = [
   { id: "potato-1", file: "potatoes_stage_1.png", label: "Potato 1", title: "马铃薯生长1" },
   { id: "potato-2", file: "potatoes_stage_2.png", label: "Potato 2", title: "马铃薯生长2" },
   { id: "potato-3", file: "potatoes_stage_3.png", label: "Potato ripe", title: "成熟马铃薯" },
+  { id: "rail", file: "rail_normal.png", label: "Rail", title: "铁轨" },
+  { id: "end-stone", file: "end_stone.png", label: "End stone", title: "末地石" },
+  { id: "end-portal", file: "end_portal.png", label: "End portal", title: "末地传送门" },
+  { id: "end-portal-frame", file: "endframe_side.png", label: "End portal frame", title: "末地传送门框架" },
+  { id: "chorus-plant", file: "chorus_plant.png", label: "Chorus plant", title: "紫颂植株" },
+  { id: "dragon-egg", file: "dragon_egg.png", label: "Dragon egg", title: "龙蛋" },
+  {
+    id: "wither-skull",
+    file: "wither_skeleton.png",
+    label: "Wither skull",
+    title: "凋灵头颅",
+    base: "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/skulls",
+  },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {
