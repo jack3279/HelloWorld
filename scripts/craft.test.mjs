@@ -111,6 +111,9 @@ describe("crafting recipes", () => {
     assert.equal(itemAsset("iron-ore"), "blocks/iron-ore.svg");
     assert.equal(itemAsset("gold-ore"), "blocks/gold-ore.svg");
     assert.equal(itemAsset("oak-sapling"), "blocks/oak-sapling.svg");
+    assert.equal(itemAsset("sugar-cane"), "blocks/sugar-cane.svg");
+    assert.equal(itemAsset("ice"), "blocks/ice.svg");
+    assert.equal(itemAsset("flint"), "items/flint.svg");
     assert.equal(itemAsset("diamond-hoe"), "items/diamond-hoe.svg");
   });
 
@@ -122,6 +125,31 @@ describe("crafting recipes", () => {
     const hoe = RECIPES.find((r) => r.id === "wooden-hoe");
     assert.ok(canCraft(wood, hoe));
     assert.deepEqual(craftOnce(wood, hoe), { id: "wooden-hoe", count: 1 });
+  });
+
+  it("crafts iron armor, cookies, and a flint and steel", () => {
+    const iron = [
+      { id: "iron-ingot", count: 5 },
+    ];
+    const helm = RECIPES.find((r) => r.id === "iron-helmet");
+    assert.ok(canCraft(iron, helm));
+    assert.deepEqual(craftOnce(iron, helm), { id: "iron-helmet", count: 1 });
+    const cookie = RECIPES.find((r) => r.id === "cookie");
+    const bag = [
+      { id: "wheat", count: 2 },
+      { id: "sugar", count: 1 },
+    ];
+    assert.ok(canCraft(bag, cookie));
+    const steel = RECIPES.find((r) => r.id === "flint-and-steel");
+    assert.deepEqual(steel.need, { "iron-ingot": 1, flint: 1 });
+  });
+
+  it("smelts sand to glass and logs to charcoal", () => {
+    const furnace = emptyFurnace();
+    furnace.slots[0] = { id: "sand", count: 1 };
+    furnace.slots[1] = { id: "charcoal", count: 1 };
+    furnaceTick(furnace, 4);
+    assert.equal(furnace.slots[2].id, "glass");
   });
 
   it("crafts a wooden pickaxe and maps bow-pulling icons", () => {

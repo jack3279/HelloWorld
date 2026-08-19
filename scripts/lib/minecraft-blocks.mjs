@@ -10,6 +10,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const BLOCKS_BASE =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/blocks";
+export const JAVA_BLOCKS_BASE =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/block";
 const CACHE = resolve(__dirname, "../../node_modules/.cache/minecraft-blocks");
 
 export const TILE = 16;
@@ -124,6 +126,7 @@ export const PLAY_BLOCKS = [
   { id: "wheat-7", file: "wheat_stage_7.png", label: "Wheat ripe", title: "成熟小麦" },
   { id: "door-oak-upper", file: "door_wood_upper.png", label: "Oak door top", title: "橡木门上" },
   { id: "farmland-dry", file: "farmland_dry.png", label: "Dry farmland", title: "干耕地" },
+  { id: "sugar-cane", file: "sugar_cane.png", label: "Sugar cane", title: "甘蔗", base: JAVA_BLOCKS_BASE },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {
@@ -145,7 +148,7 @@ export async function loadBlock(id) {
   try {
     buf = await readFile(cachePath);
   } catch {
-    const url = `${BLOCKS_BASE}/${block.file}`;
+    const url = `${block.base ?? BLOCKS_BASE}/${block.file}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`could not download ${url} (${res.status})`);
     buf = Buffer.from(await res.arrayBuffer());

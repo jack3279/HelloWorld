@@ -9,6 +9,16 @@
         <path fill="#4a3d37" stroke="#4a3d37" stroke-width=".6" stroke-linejoin="round" d="M78.1 406.7L121.4 431.7L115.15 442.53L71.85 417.53Z"/>
       </g>
     </g>
+    <g id="wool-hind-left" aria-label="Wool hind left">
+      <g class="face" data-face="nx">
+        <path fill="#efefef" d="M144.56 279.09L198.69 310.34L154.94 386.11L100.81 354.86Z"/>
+      </g>
+    </g>
+    <g id="wool-front-left" aria-label="Wool front left">
+      <g class="face" data-face="nx">
+        <path fill="#efefef" d="M288.31 310.34L342.44 279.09L386.19 354.86L332.06 386.11Z"/>
+      </g>
+    </g>
     <g id="leg-front-left" aria-label="Front left leg">
       <g class="face" data-face="nx">
         <path fill="#997e6c" d="M296.85 312.63L340.15 287.63L415.15 417.53L371.85 442.53Z"/>
@@ -77,11 +87,21 @@
         <path fill="#5a493d" stroke="#5a493d" stroke-width=".6" stroke-linejoin="round" d="M220.16 429.98L262.57 403.48L269.19 414.08L226.79 440.58Z"/>
       </g>
     </g>
+    <g id="wool-hind-right" aria-label="Wool hind right">
+      <g class="face" data-face="nx">
+        <path fill="#efefef" d="M138.69 311.38L191.69 278.26L238.06 352.47L185.05 385.59Z"/>
+      </g>
+    </g>
     <g id="leg-front-right" aria-label="Front right leg">
       <g class="face" data-face="nx">
         <path fill="#b8967d" d="M297.3 286.88L339.7 313.37L260.21 440.58L217.81 414.08Z"/>
         <path fill="#ececec" stroke="#ececec" stroke-width=".6" stroke-linejoin="round" d="M297.3 286.88L339.7 313.37L333.08 323.97L290.67 297.48ZM290.67 297.48L333.08 323.97L326.45 334.57L284.05 308.08ZM284.05 308.08L326.45 334.57L319.83 345.17L277.43 318.68ZM277.43 318.68L319.83 345.17L313.21 355.78L270.8 329.28Z"/>
         <path fill="#5a493d" stroke="#5a493d" stroke-width=".6" stroke-linejoin="round" d="M224.43 403.48L266.84 429.98L260.21 440.58L217.81 414.08Z"/>
+      </g>
+    </g>
+    <g id="wool-front-right" aria-label="Wool front right">
+      <g class="face" data-face="nx">
+        <path fill="#efefef" d="M295.31 278.26L348.31 311.38L301.95 385.59L248.94 352.47Z"/>
       </g>
     </g>
   </g>

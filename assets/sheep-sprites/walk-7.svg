@@ -16,6 +16,16 @@
         <path fill="#4a3d37" stroke="#4a3d37" stroke-width=".6" stroke-linejoin="round" d="M171.37 437.64L220.37 427.69L222.85 439.94L173.86 449.89Z"/>
       </g>
     </g>
+    <g id="wool-front-left" aria-label="Wool front left">
+      <g class="face" data-face="nx">
+        <path fill="#efefef" d="M289.12 285.57L350.37 298.01L332.95 383.76L271.7 371.32Z"/>
+      </g>
+    </g>
+    <g id="wool-hind-left" aria-label="Wool hind left">
+      <g class="face" data-face="nx">
+        <path fill="#efefef" d="M136.63 298.01L197.88 285.57L215.3 371.32L154.05 383.76Z"/>
+      </g>
+    </g>
     <g id="wool-body" aria-label="Wool body">
       <g class="face" data-face="back">
         <path fill="#fffffe" d="M378.11 205.3L378.11 206.74L134.5 198.49L134.5 197.05Z"/>
@@ -76,11 +86,21 @@
         <path fill="#5a493d" stroke="#5a493d" stroke-width=".6" stroke-linejoin="round" d="M114.9 426.98L163.77 437.59L161.12 449.8L112.25 439.2Z"/>
       </g>
     </g>
+    <g id="wool-hind-right" aria-label="Wool hind right">
+      <g class="face" data-face="nx">
+        <path fill="#efefef" d="M139.29 285.18L200.36 298.44L181.81 383.94L120.73 370.69Z"/>
+      </g>
+    </g>
     <g id="leg-front-right" aria-label="Front right leg">
       <g class="face" data-face="nx">
         <path fill="#b8967d" d="M294.07 303.22L342.93 292.61L374.75 439.2L325.88 449.8Z"/>
         <path fill="#ececec" stroke="#ececec" stroke-width=".6" stroke-linejoin="round" d="M294.07 303.22L342.93 292.61L345.58 304.83L296.72 315.43ZM296.72 315.43L345.58 304.83L348.23 317.04L299.37 327.65ZM299.37 327.65L348.23 317.04L350.89 329.26L302.02 339.86ZM302.02 339.86L350.89 329.26L353.54 341.47L304.67 352.08Z"/>
         <path fill="#5a493d" stroke="#5a493d" stroke-width=".6" stroke-linejoin="round" d="M323.23 437.59L372.1 426.98L374.75 439.2L325.88 449.8Z"/>
+      </g>
+    </g>
+    <g id="wool-front-right" aria-label="Wool front right">
+      <g class="face" data-face="nx">
+        <path fill="#efefef" d="M286.64 298.44L347.71 285.18L366.27 370.69L305.19 383.94Z"/>
       </g>
     </g>
   </g>

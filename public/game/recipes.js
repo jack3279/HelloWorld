@@ -25,16 +25,34 @@ export const RECIPES = [
   { id: "diamond-shovel", count: 1, need: { diamond: 1, stick: 2 } },
   { id: "shears", count: 1, need: { "iron-ingot": 2 } },
   { id: "bucket", count: 1, need: { "iron-ingot": 3 } },
+  { id: "iron-helmet", count: 1, need: { "iron-ingot": 5 } },
   { id: "iron-chestplate", count: 1, need: { "iron-ingot": 8 } },
+  { id: "iron-leggings", count: 1, need: { "iron-ingot": 7 } },
+  { id: "iron-boots", count: 1, need: { "iron-ingot": 4 } },
+  { id: "diamond-helmet", count: 1, need: { diamond: 5 } },
   { id: "diamond-chestplate", count: 1, need: { diamond: 8 } },
+  { id: "diamond-leggings", count: 1, need: { diamond: 7 } },
+  { id: "diamond-boots", count: 1, need: { diamond: 4 } },
+  { id: "gold-helmet", count: 1, need: { "gold-ingot": 5 } },
+  { id: "gold-chestplate", count: 1, need: { "gold-ingot": 8 } },
+  { id: "gold-leggings", count: 1, need: { "gold-ingot": 7 } },
+  { id: "gold-boots", count: 1, need: { "gold-ingot": 4 } },
   { id: "leather-helmet", count: 1, need: { leather: 5 } },
   { id: "leather-chestplate", count: 1, need: { leather: 8 } },
   { id: "leather-leggings", count: 1, need: { leather: 7 } },
   { id: "leather-boots", count: 1, need: { leather: 4 } },
   { id: "shield", count: 1, need: { "oak-planks": 6, "iron-ingot": 1 } },
   { id: "tnt", count: 1, need: { sand: 4, gunpowder: 5 } },
+  { id: "flint-and-steel", count: 1, need: { "iron-ingot": 1, flint: 1 } },
   { id: "golden-apple", count: 1, need: { apple: 1, "gold-ingot": 8 } },
   { id: "pumpkin-pie", count: 1, need: { pumpkin: 1, sugar: 1, egg: 1 } },
+  { id: "cookie", count: 8, need: { wheat: 2, sugar: 1 } },
+  { id: "sugar", count: 1, need: { "sugar-cane": 1 } },
+  { id: "ladder", count: 3, need: { stick: 7 } },
+  { id: "chest", count: 1, need: { "oak-planks": 8 } },
+  { id: "furnace", count: 1, need: { cobblestone: 8 } },
+  { id: "door-oak", count: 3, need: { "oak-planks": 6 } },
+  { id: "bed", count: 1, need: { "white-wool": 3, "oak-planks": 3 } },
 ];
 
 export const HOTBAR_SLOTS = 9;
@@ -49,10 +67,41 @@ export const SMELT = {
   "raw-chicken": { id: "cooked-chicken", n: 1 },
   "raw-mutton": { id: "cooked-mutton", n: 1 },
   potato: { id: "baked-potato", n: 1 },
+  sand: { id: "glass", n: 1 },
+  clay: { id: "bricks", n: 1 },
+  "oak-log": { id: "charcoal", n: 1 },
 };
-export const FURNACE_FUEL = { coal: 8 };
+export const FURNACE_FUEL = { coal: 8, charcoal: 8, "oak-planks": 4, "oak-log": 4 };
 export const HOE_IDS = new Set(["diamond-hoe", "wooden-hoe", "iron-hoe"]);
-export const BLOCK_FACE_ITEMS = new Set(["crafting-table", "iron-ore", "gold-ore", "oak-sapling", "white-wool", "tnt"]);
+export const BLOCK_FACE_ITEMS = new Set([
+  "crafting-table",
+  "iron-ore",
+  "gold-ore",
+  "oak-sapling",
+  "white-wool",
+  "tnt",
+  "glass",
+  "gravel",
+  "clay",
+  "ladder",
+  "chest",
+  "furnace",
+  "door-oak",
+  "copper-ore",
+  "redstone-ore",
+  "lapis-ore",
+  "emerald-ore",
+  "sandstone",
+  "stone-bricks",
+  "granite",
+  "diorite",
+  "andesite",
+  "snow",
+  "bricks",
+  "lily-pad",
+  "ice",
+  "sugar-cane",
+]);
 
 export function emptySlots(n) {
   return Array.from({ length: n }, () => ({ id: "", count: 0 }));

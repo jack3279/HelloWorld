@@ -9,11 +9,21 @@
         <path fill="#766d68" stroke="#766d68" stroke-width=".6" stroke-linejoin="round" d="M166.56 437.52L215.87 429.26L217.93 441.59L168.62 449.85Z"/>
       </g>
     </g>
+    <g id="wool-hind-left" aria-label="Wool hind left">
+      <g class="face" data-face="nx">
+        <path fill="#f3f3f3" d="M136.65 296.78L198.29 286.45L212.74 372.75L151.1 383.07Z"/>
+      </g>
+    </g>
     <g id="leg-front-left" aria-label="Front left leg">
       <g class="face" data-face="nx">
         <path fill="#b29e90" d="M294 292.81L343 302.75L313.17 449.75L264.16 439.81Z"/>
         <path fill="#d3d5d7" stroke="#d3d5d7" stroke-width=".6" stroke-linejoin="round" d="M294 292.81L343 302.75L340.51 315L291.51 305.06ZM291.51 305.06L340.51 315L338.03 327.25L289.03 317.31ZM289.03 317.31L338.03 327.25L335.54 339.5L286.54 329.56ZM286.54 329.56L335.54 339.5L333.06 351.75L284.05 341.81Z"/>
         <path fill="#766d68" stroke="#766d68" stroke-width=".6" stroke-linejoin="round" d="M266.65 427.56L315.65 437.5L313.17 449.75L264.16 439.81Z"/>
+      </g>
+    </g>
+    <g id="wool-front-left" aria-label="Wool front left">
+      <g class="face" data-face="nx">
+        <path fill="#f3f3f3" d="M289.12 285.44L350.37 297.87L332.96 383.62L271.71 371.19Z"/>
       </g>
     </g>
     <g id="wool-head" aria-label="Wool head">
@@ -90,6 +100,16 @@
         <path fill="#c9b09d" d="M144.41 304.48L192.59 291.08L232.78 435.59L184.61 448.99Z"/>
         <path fill="#f1f1f1" stroke="#f1f1f1" stroke-width=".6" stroke-linejoin="round" d="M144.41 304.48L192.59 291.08L195.94 303.12L147.76 316.52ZM147.76 316.52L195.94 303.12L199.28 315.17L151.11 328.56ZM151.11 328.56L199.28 315.17L202.63 327.21L154.46 340.61ZM154.46 340.61L202.63 327.21L205.98 339.25L157.81 352.65Z"/>
         <path fill="#83766d" stroke="#83766d" stroke-width=".6" stroke-linejoin="round" d="M181.26 436.95L229.43 423.55L232.78 435.59L184.61 448.99Z"/>
+      </g>
+    </g>
+    <g id="wool-hind-right" aria-label="Wool hind right">
+      <g class="face" data-face="nx">
+        <path fill="#f3f3f3" d="M136.72 300.13L196.93 283.38L220.38 367.68L160.16 384.43Z"/>
+      </g>
+    </g>
+    <g id="wool-front-right" aria-label="Wool front right">
+      <g class="face" data-face="nx">
+        <path fill="#f3f3f3" d="M290.58 282.42L350.18 301.22L323.86 384.67L264.25 365.86Z"/>
       </g>
     </g>
   </g>

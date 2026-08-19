@@ -155,6 +155,8 @@ export const PLAY_ITEMS = [
   { id: "leather-chestplate", file: "leather_chestplate.png", label: "Leather chestplate", title: "皮革胸甲", base: JAVA_ITEMS_BASE },
   { id: "leather-leggings", file: "leather_leggings.png", label: "Leather leggings", title: "皮革裤子", base: JAVA_ITEMS_BASE },
   { id: "leather-boots", file: "leather_boots.png", label: "Leather boots", title: "皮革靴子", base: JAVA_ITEMS_BASE },
+  { id: "flint", file: "flint.png", label: "Flint", title: "燧石" },
+  { id: "charcoal", file: "charcoal.png", label: "Charcoal", title: "木炭" },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.

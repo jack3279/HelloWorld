@@ -16,6 +16,16 @@
         <path fill="#4a3d37" stroke="#4a3d37" stroke-width=".6" stroke-linejoin="round" d="M143.5 437.63L193.5 437.63L193.5 450.13L143.5 450.13Z"/>
       </g>
     </g>
+    <g id="wool-hind-left" aria-label="Wool hind left">
+      <g class="face" data-face="nx">
+        <path fill="#efefef" d="M137.25 293.88L199.75 293.88L199.75 381.38L137.25 381.38Z"/>
+      </g>
+    </g>
+    <g id="wool-front-left" aria-label="Wool front left">
+      <g class="face" data-face="nx">
+        <path fill="#efefef" d="M287.25 293.88L349.75 293.88L349.75 381.38L287.25 381.38Z"/>
+      </g>
+    </g>
     <g id="wool-body" aria-label="Wool body">
       <g class="face" data-face="nx">
         <path fill="#f8f8f8" d="M378.16 210.95L371.95 329.54L128.53 316.78L134.75 198.19Z"/>
@@ -74,6 +84,16 @@
         <path fill="#b8967d" d="M143.5 300.13L193.5 300.13L193.5 450.13L143.5 450.13Z"/>
         <path fill="#ececec" stroke="#ececec" stroke-width=".6" stroke-linejoin="round" d="M143.5 300.13L193.5 300.13L193.5 312.63L143.5 312.63ZM143.5 312.63L193.5 312.63L193.5 325.13L143.5 325.13ZM143.5 325.13L193.5 325.13L193.5 337.63L143.5 337.63ZM143.5 337.63L193.5 337.63L193.5 350.13L143.5 350.13Z"/>
         <path fill="#5a493d" stroke="#5a493d" stroke-width=".6" stroke-linejoin="round" d="M143.5 437.63L193.5 437.63L193.5 450.13L143.5 450.13Z"/>
+      </g>
+    </g>
+    <g id="wool-front-right" aria-label="Wool front right">
+      <g class="face" data-face="nx">
+        <path fill="#efefef" d="M287.25 293.88L349.75 293.88L349.75 381.38L287.25 381.38Z"/>
+      </g>
+    </g>
+    <g id="wool-hind-right" aria-label="Wool hind right">
+      <g class="face" data-face="nx">
+        <path fill="#efefef" d="M137.25 293.88L199.75 293.88L199.75 381.38L137.25 381.38Z"/>
       </g>
     </g>
   </g>

@@ -101,6 +101,47 @@ await writeSampledClips({
 });
 console.log(`Wrote ${IDLE_FRAMES} idle frames, ${REST_FRAMES} rest frames, ${HURT_FRAMES} hurt, and ${DEATH_FRAMES} death`);
 
+const shornWalk = catalog().map((entry) => {
+  const baked = bake({ skin, pose: entry.pose, canvas: SPRITE, tolerance: TOLERANCE, model });
+  return { ...entry, id: `shorn-${entry.id}`, label: `Shorn ${entry.label}`, ...baked };
+});
+await writeFrames({
+  generator: "scripts/generate-sheep.mjs",
+  groupId: "sheep",
+  sprite: SPRITE,
+  frames: shornWalk,
+  outDir: resolve(__dirname, "../assets/sheep-sprites"),
+});
+const shornIdle = Array.from({ length: IDLE_FRAMES }, (_, i) => {
+  const baked = bake({ skin, pose: sampleIdle(i / IDLE_FRAMES), canvas: SPRITE, tolerance: TOLERANCE, model });
+  return { id: `shorn-idle-${i}`, label: `Shorn idle ${i + 1}/${IDLE_FRAMES}`, ...baked };
+});
+const shornRest = Array.from({ length: REST_FRAMES }, (_, i) => {
+  const baked = bake({ skin, pose: sampleRest(i / REST_FRAMES), canvas: SPRITE, tolerance: TOLERANCE, model });
+  return { id: `shorn-rest-${i}`, label: `Shorn rest ${i + 1}/${REST_FRAMES}`, ...baked };
+});
+await writeFrames({
+  generator: "scripts/generate-sheep.mjs",
+  groupId: "sheep",
+  sprite: SPRITE,
+  frames: [...shornIdle, ...shornRest],
+  outDir: resolve(__dirname, "../assets/sheep-sprites"),
+});
+await writeSampledClips({
+  generator: "scripts/generate-sheep.mjs",
+  groupId: "sheep",
+  sprite: SPRITE,
+  outDir: resolve(__dirname, "../assets/sheep-sprites"),
+  skin,
+  tolerance: TOLERANCE,
+  model,
+  sequences: [
+    { prefix: "shorn-hurt", label: "Shorn hurt", count: HURT_FRAMES, sample: sampleHurt },
+    { prefix: "shorn-death", label: "Shorn death", count: DEATH_FRAMES, sample: sampleDeath },
+  ],
+});
+console.log("Wrote shorn sheep frames without wool cuboids");
+
 const idle = idleSprites.map((frame) => ({ id: frame.id, shapes: frame.shapes }));
 await writeScene(
   resolve(ROOT, "public/projects/sheep/scene-1"),

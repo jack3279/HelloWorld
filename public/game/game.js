@@ -28,24 +28,55 @@ const MOVE = 210;
 const JUMP = 680;
 const MAX_FALL = 980;
 const DAY_LENGTH = 90;
-const FEED = { pig: "carrot", cow: "wheat", chicken: "wheat-seeds", sheep: "wheat", wolf: "bone" };
-const WHEAT_STAGE = { 0: { next: "1", wait: 9 }, 1: { next: "2", wait: 11 } };
+const FEED = { pig: "carrot", cow: "wheat", chicken: "wheat-seeds", sheep: "wheat", wolf: "bone", rabbit: "carrot" };
+const WHEAT_STAGE = {
+  0: { next: "1", wait: 5 },
+  1: { next: "2", wait: 5 },
+  2: { next: "3", wait: 5 },
+  3: { next: "4", wait: 5 },
+  4: { next: "5", wait: 6 },
+  5: { next: "6", wait: 6 },
+  6: { next: "7", wait: 6 },
+};
 const MINEABLE = {
-  s: { drop: "cobblestone", tool: "diamond-pickaxe" },
-  c: { drop: "cobblestone", tool: "diamond-pickaxe" },
-  x: { drop: "coal", tool: "diamond-pickaxe" },
-  i: { drop: "diamond", tool: "diamond-pickaxe" },
-  H: { drop: "iron-ore", tool: "diamond-pickaxe" },
-  R: { drop: "gold-ore", tool: "diamond-pickaxe" },
+  s: { drop: "cobblestone", tool: "pickaxe" },
+  c: { drop: "cobblestone", tool: "pickaxe" },
+  x: { drop: "coal", tool: "pickaxe" },
+  i: { drop: "diamond", tool: "pickaxe" },
+  H: { drop: "iron-ore", tool: "pickaxe" },
+  R: { drop: "gold-ore", tool: "pickaxe" },
+  J: { drop: "copper-ore", tool: "pickaxe" },
+  K: { drop: "redstone-dust", tool: "pickaxe" },
+  M: { drop: "lapis-ore", tool: "pickaxe" },
+  O: { drop: "emerald", tool: "pickaxe" },
+  Q: { drop: "granite", tool: "pickaxe" },
+  8: { drop: "diorite", tool: "pickaxe" },
+  X: { drop: "andesite", tool: "pickaxe" },
+  A: { drop: "sandstone", tool: "pickaxe" },
+  E: { drop: "stone-bricks", tool: "pickaxe" },
+  b: { drop: "bricks", tool: "pickaxe" },
+  m: { drop: "cobblestone", tool: "pickaxe" },
   d: { drop: "dirt" },
-  a: { drop: "dirt" },
-  o: { drop: "oak-log", tool: "diamond-axe" },
+  a: { drop: "sand", tool: "shovel" },
+  V: { drop: "gravel", tool: "shovel" },
+  "~": { drop: "snowball", tool: "shovel" },
+  q: { drop: "clay", tool: "shovel" },
+  o: { drop: "oak-log", tool: "axe" },
   L: { drop: "oak-sapling" },
   G: { drop: "wheat-seeds" },
   S: { drop: "oak-sapling" },
   u: { drop: "pumpkin" },
   e: { drop: "melon-slice" },
   y: { drop: "wheat" },
+  W: { drop: "white-wool" },
+  p: { drop: "oak-planks" },
+  j: { drop: "glass" },
+  Y: { drop: "sugar-cane" },
+  r: { drop: "wheat-seeds" },
+  9: { drop: "wheat-seeds" },
+  l: { drop: "lily-pad" },
+  h: { drop: "ladder" },
+  I: { drop: "ice" },
 };
 const PLACEABLE = {
   torch: "t",
@@ -55,9 +86,29 @@ const PLACEABLE = {
   "crafting-table": "T",
   "oak-sapling": "S",
   tnt: "N",
+  sand: "a",
+  gravel: "V",
+  glass: "j",
+  bricks: "b",
+  ladder: "h",
+  chest: "C",
+  furnace: "F",
+  "white-wool": "W",
+  "sugar-cane": "Y",
+  sandstone: "A",
+  "stone-bricks": "E",
+  granite: "Q",
+  diorite: "8",
+  andesite: "X",
+  snow: "~",
+  clay: "q",
+  ice: "I",
+  "door-oak": "D",
+  bed: "z",
 };
 const PICK_TOOLS = new Set(["diamond-pickaxe", "iron-pickaxe", "wooden-pickaxe"]);
 const AXE_TOOLS = new Set(["diamond-axe", "iron-axe", "wooden-axe"]);
+const SHOVEL_TOOLS = new Set(["wooden-shovel", "iron-shovel", "diamond-shovel"]);
 const SWORD_IDS = new Set(["diamond-sword", "iron-sword", "wooden-sword"]);
 const HELD_TOOLS = new Set([
   ...SWORD_IDS,
@@ -86,6 +137,14 @@ const ARMOR_GEAR = {
   "diamond-chestplate": { slot: "chest", pts: 8, mat: "diamond" },
   "diamond-leggings": { slot: "legs", pts: 6, mat: "diamond" },
   "diamond-boots": { slot: "boots", pts: 3, mat: "diamond" },
+  "gold-helmet": { slot: "helmet", pts: 2, mat: "gold" },
+  "gold-chestplate": { slot: "chest", pts: 5, mat: "gold" },
+  "gold-leggings": { slot: "legs", pts: 3, mat: "gold" },
+  "gold-boots": { slot: "boots", pts: 1, mat: "gold" },
+  "chainmail-helmet": { slot: "helmet", pts: 2, mat: "chainmail" },
+  "chainmail-chestplate": { slot: "chest", pts: 5, mat: "chainmail" },
+  "chainmail-leggings": { slot: "legs", pts: 4, mat: "chainmail" },
+  "chainmail-boots": { slot: "boots", pts: 1, mat: "chainmail" },
 };
 
 const STEVE = {
@@ -179,6 +238,40 @@ const ITEM_LABELS = {
   egg: "鸡蛋",
   "pumpkin-pie": "南瓜派",
   "diamond-chestplate": "钻石胸甲",
+  cookie: "曲奇",
+  flint: "燧石",
+  charcoal: "木炭",
+  glass: "玻璃",
+  gravel: "沙砾",
+  clay: "粘土",
+  ladder: "梯子",
+  chest: "箱子",
+  furnace: "熔炉",
+  "door-oak": "橡木门",
+  bed: "床",
+  "sugar-cane": "甘蔗",
+  "copper-ore": "铜矿石",
+  "redstone-dust": "红石粉",
+  "lapis-ore": "青金石矿",
+  "emerald-ore": "绿宝石矿",
+  sandstone: "砂岩",
+  "stone-bricks": "石砖",
+  granite: "花岗岩",
+  diorite: "闪长岩",
+  andesite: "安山岩",
+  snow: "雪块",
+  ice: "冰",
+  snowball: "雪球",
+  bricks: "砖块",
+  "lily-pad": "睡莲",
+  "gold-helmet": "金头盔",
+  "gold-chestplate": "金胸甲",
+  "gold-leggings": "金护腿",
+  "gold-boots": "金靴子",
+  "chainmail-helmet": "锁链头盔",
+  "chainmail-chestplate": "锁链胸甲",
+  "chainmail-leggings": "锁链护腿",
+  "chainmail-boots": "锁链靴子",
 };
 
 const FOOD = {
@@ -198,6 +291,9 @@ const FOOD = {
   "raw-chicken": { hunger: 2, health: 0 },
   "raw-mutton": { hunger: 2, health: 0 },
   "cooked-mutton": { hunger: 6, health: 3 },
+  "melon-slice": { hunger: 2, health: 1 },
+  cookie: { hunger: 2, health: 1 },
+  potato: { hunger: 1, health: 0 },
 };
 
 const BLOCKS = {
@@ -241,11 +337,32 @@ const BLOCKS = {
   z: "blocks/bed.svg",
   Z: "blocks/bed-head.svg",
   0: "blocks/wheat-0.svg",
-  1: "blocks/wheat-3.svg",
-  2: "blocks/wheat-7.svg",
+  1: "blocks/wheat-1.svg",
+  2: "blocks/wheat-2.svg",
+  3: "blocks/wheat-3.svg",
+  4: "blocks/wheat-4.svg",
+  5: "blocks/wheat-5.svg",
+  6: "blocks/wheat-6.svg",
+  7: "blocks/wheat-7.svg",
+  V: "blocks/gravel.svg",
+  A: "blocks/sandstone.svg",
+  E: "blocks/stone-bricks.svg",
+  J: "blocks/copper-ore.svg",
+  K: "blocks/redstone-ore.svg",
+  M: "blocks/lapis-ore.svg",
+  O: "blocks/emerald-ore.svg",
+  Q: "blocks/granite.svg",
+  8: "blocks/diorite.svg",
+  X: "blocks/andesite.svg",
+  "~": "blocks/snow.svg",
+  W: "blocks/white-wool.svg",
+  9: "blocks/vine.svg",
+  r: "blocks/red-mushroom.svg",
+  l: "blocks/lily-pad.svg",
+  Y: "blocks/sugar-cane.svg",
 };
 
-const SOLID = new Set("gdscpLabBTFimxIjuyenqHRN".split(""));
+const SOLID = new Set("gdscpLabBTFimxIjuyenqHRNVAEKJMOQ8X~Wl".split(""));
 
 const canvas = document.getElementById("game");
 const overlay = document.getElementById("overlay");
@@ -354,6 +471,21 @@ const MANIFEST = [
   ...range(8, (i) => `slime-sprites/idle-${i}.svg`),
   ...range(8, (i) => `slime-sprites/hurt-${i}.svg`),
   ...range(8, (i) => `slime-sprites/death-${i}.svg`),
+  ...range(8, (i) => `rabbit-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `rabbit-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `rabbit-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `rabbit-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `rabbit-sprites/death-${i}.svg`),
+  ...range(8, (i) => `villager-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `villager-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `villager-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `villager-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `villager-sprites/death-${i}.svg`),
+  ...range(8, (i) => `sheep-sprites/shorn-walk-${i * 2}.svg`),
+  ...range(8, (i) => `sheep-sprites/shorn-idle-${i}.svg`),
+  ...range(8, (i) => `sheep-sprites/shorn-rest-${i}.svg`),
+  ...range(8, (i) => `sheep-sprites/shorn-hurt-${i}.svg`),
+  ...range(8, (i) => `sheep-sprites/shorn-death-${i}.svg`),
   ...Object.keys(ITEM_LABELS).map((id) => itemAsset(id)),
   "hud/heart.svg",
   "hud/heart-half.svg",
@@ -378,6 +510,12 @@ const MANIFEST = [
   "steve-sprites/armor-leather.svg",
   "steve-sprites/armor-iron.svg",
   "steve-sprites/armor-diamond.svg",
+  "steve-sprites/armor-gold.svg",
+  "steve-sprites/armor-chainmail.svg",
+  ...["leather", "iron", "diamond", "gold", "chainmail"].flatMap((kind) => range(8, (i) => `steve-sprites/armor-${kind}-run-${i}.svg`)),
+  ...range(7, (i) => `blocks/fire-${i + 1}.svg`),
+  "blocks/tnt-primed.svg",
+  "items/xp-orb.svg",
   "blocks/chest-open.svg",
   "blocks/door-oak-open.svg",
   "blocks/door-oak-upper-open.svg",
@@ -437,10 +575,18 @@ function oreAt(x, y, ground) {
   if (y <= ground + 2) return "d";
   const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
   const h = n - Math.floor(n);
-  if (h < 0.05) return "x";
-  if (h < 0.1) return "H";
-  if (h < 0.13) return "R";
-  if (h < 0.145) return "i";
+  if (h < 0.04) return "x";
+  if (h < 0.08) return "H";
+  if (h < 0.11) return "R";
+  if (h < 0.125) return "i";
+  if (h < 0.145) return "J";
+  if (h < 0.16) return "K";
+  if (h < 0.17) return "M";
+  if (h < 0.178) return "O";
+  if (h < 0.22) return "Q";
+  if (h < 0.26) return "8";
+  if (h < 0.3) return "X";
+  if (h < 0.34) return "V";
   return "s";
 }
 
@@ -487,13 +633,12 @@ function buildWorld() {
   setCell(tiles, 15, ground + 3, "q");
   setCell(tiles, 47, ground - 1, "e");
   setCell(tiles, 49, ground - 1, "u");
-  setCell(tiles, 60, ground - 1, "y");
   setCell(tiles, 61, ground - 1, "y");
-  setCell(tiles, 60, ground - 2, "y");
+  setCell(tiles, 61, ground - 2, "y");
 
   setCell(tiles, 2, ground - 1, "0");
-  setCell(tiles, 3, ground - 1, "1");
-  setCell(tiles, 4, ground - 1, "2");
+  setCell(tiles, 3, ground - 1, "3");
+  setCell(tiles, 4, ground - 1, "7");
 
   setCell(tiles, 11, ground - 1, "f");
   setCell(tiles, 12, ground - 1, "G");
@@ -501,6 +646,21 @@ function buildWorld() {
   setCell(tiles, 29, ground - 1, "k");
   setCell(tiles, 38, ground - 1, "k");
   for (const gx of [5, 10, 21, 24, 27, 39, 45, 51, 58, 73]) setCell(tiles, gx, ground - 1, "G");
+
+  fillRow(tiles, ground, 28, 31, "a");
+  setCell(tiles, 28, ground - 1, "Y");
+  setCell(tiles, 28, ground - 2, "Y");
+  setCell(tiles, 30, ground - 1, "Y");
+  setCell(tiles, 16, ground - 1, "l");
+  setCell(tiles, 8, ground - 4, "9");
+  setCell(tiles, 48, ground - 4, "9");
+  setCell(tiles, 25, ground - 1, "r");
+  setCell(tiles, 72, ground, "~");
+  setCell(tiles, 73, ground, "~");
+  fillRow(tiles, ground - 1, 71, 73, "A");
+  setCell(tiles, 74, ground - 1, "E");
+  setCell(tiles, 69, ground - 1, "W");
+  fillRow(tiles, ground + 3, 8, 11, "V");
 
   setCell(tiles, 19, ground + 3, "x");
   setCell(tiles, 21, ground + 4, "H");
@@ -761,6 +921,8 @@ function makePlayer() {
     drawT: 0,
     bowHeld: false,
     shieldHeld: false,
+    xp: 0,
+    level: 0,
     swingKind: "sword",
     items: [
       { id: "diamond-sword", count: 1 },
@@ -789,6 +951,8 @@ function makeMob(kind, tx, ty) {
     sheep: { hp: 6, speed: 52, dmg: 0, hw: 14, hh: 36, scale: 0.16, sheet: "sheep-sprites", h: 480, passive: true },
     wolf: { hp: 8, speed: 95, dmg: 2, hw: 12, hh: 28, scale: 0.16, sheet: "wolf-sprites", h: 480, passive: true },
     slime: { hp: 6, speed: 40, dmg: 2, hw: 16, hh: 22, scale: 0.14, sheet: "slime-sprites", h: 480 },
+    rabbit: { hp: 3, speed: 88, dmg: 0, hw: 8, hh: 16, scale: 0.14, sheet: "rabbit-sprites", h: 480, passive: true },
+    villager: { hp: 10, speed: 48, dmg: 0, hw: 10, hh: 50, scale: 0.17, sheet: "villager-sprites", h: 520, passive: true },
   };
   return {
     kind,
@@ -821,8 +985,29 @@ function makeMob(kind, tx, ty) {
   };
 }
 
-function makeDrop(id, x, y, count = 1) {
-  return { id, x, y, vy: -180, count, bob: Math.random() * Math.PI * 2, gone: false };
+function spawnXp(x, y, n = 2) {
+  for (let i = 0; i < n; i++) {
+    drops.push({
+      id: "xp-orb",
+      x: x + (Math.random() - 0.5) * 18,
+      y: y,
+      vy: -140 - Math.random() * 80,
+      count: 1,
+      bob: Math.random() * Math.PI * 2,
+      gone: false,
+      xp: 4 + Math.floor(Math.random() * 5),
+    });
+  }
+}
+
+function addXp(amount) {
+  player.xp += amount;
+  while (player.xp >= 20) {
+    player.xp -= 20;
+    player.level += 1;
+    player.health = Math.min(20, player.health + 2);
+    say(`升级了！现在是 ${player.level} 级。`);
+  }
 }
 
 function resetGame() {
@@ -833,6 +1018,7 @@ function resetGame() {
     makeMob("pig", 10, 10),
     makeMob("chicken", 12, 10),
     makeMob("chicken", 14, 10),
+    makeMob("rabbit", 21, 10),
     makeMob("zombie", 18, 10),
     makeMob("skeleton", 27, 10),
     makeMob("slime", 31, 10),
@@ -844,6 +1030,7 @@ function resetGame() {
     makeMob("cow", 51, 10),
     makeMob("cow", 54, 10),
     makeMob("enderman", 56, 10),
+    makeMob("villager", 65, 10),
     makeMob("zombie", 50, 10),
   ];
   drops = [
@@ -853,6 +1040,8 @@ function resetGame() {
     makeDrop("golden-apple", TILE * 21, TILE * 9),
     makeDrop("potion-heal", TILE * 39, TILE * 9),
     makeDrop("iron-chestplate", TILE * 67, TILE * 9),
+    makeDrop("gold-helmet", TILE * 67.8, TILE * 9),
+    makeDrop("chainmail-boots", TILE * 64.8, TILE * 9),
     makeDrop("leather-helmet", TILE * 66.2, TILE * 9),
     makeDrop("leather-boots", TILE * 65.4, TILE * 9),
     makeDrop("shears", TILE * 61.5, TILE * 9),
@@ -904,7 +1093,7 @@ function throwSelected() {
 
 function refreshArmor() {
   const worn = {};
-  const mats = { leather: 0, iron: 0, diamond: 0 };
+  const mats = { leather: 0, iron: 0, gold: 0, chainmail: 0, diamond: 0 };
   let pts = 0;
   for (const it of player.items) {
     const gear = ARMOR_GEAR[it.id];
@@ -914,7 +1103,17 @@ function refreshArmor() {
     mats[gear.mat] += 1;
   }
   player.armor = Math.min(20, pts);
-  player.armorMat = mats.diamond ? "diamond" : mats.iron ? "iron" : mats.leather ? "leather" : null;
+  player.armorMat = mats.diamond
+    ? "diamond"
+    : mats.iron
+      ? "iron"
+      : mats.gold
+        ? "gold"
+        : mats.chainmail
+          ? "chainmail"
+          : mats.leather
+            ? "leather"
+            : null;
 }
 
 function addItem(id, count) {
@@ -1101,7 +1300,7 @@ function tryFeed() {
     mob.stillT = 0;
     mob.hurtFlee = 0;
     burstHearts(mob.x, mob.y);
-    const names = { pig: "猪", cow: "牛", chicken: "鸡", sheep: "羊", wolf: "狼" };
+    const names = { pig: "猪", cow: "牛", chicken: "鸡", sheep: "羊", wolf: "狼", rabbit: "兔子", villager: "村民" };
     say(`喂了${names[mob.kind] ?? mob.kind}。它跟着你。`);
     return true;
   }
@@ -1145,7 +1344,7 @@ function tryFarm() {
     say("种下了小麦。");
     return true;
   }
-  if (above === "2") {
+  if (above === "7") {
     setCell(world.tiles, tx, cropY, ".");
     if (!addItem("wheat", 1)) spillItem("wheat", 1);
     if (Math.random() < 0.7 && !addItem("wheat-seeds", 1)) spillItem("wheat-seeds", 1);
@@ -1251,8 +1450,9 @@ function updateHazards(dt) {
 
 function hasTool(spec, item) {
   if (!spec.tool) return true;
-  if (spec.tool === "diamond-pickaxe") return PICK_TOOLS.has(item?.id);
-  if (spec.tool === "diamond-axe") return AXE_TOOLS.has(item?.id) || item?.id === "shears";
+  if (spec.tool === "pickaxe") return PICK_TOOLS.has(item?.id);
+  if (spec.tool === "axe") return AXE_TOOLS.has(item?.id) || item?.id === "shears";
+  if (spec.tool === "shovel") return SHOVEL_TOOLS.has(item?.id);
   return item?.id === spec.tool;
 }
 
@@ -1281,16 +1481,17 @@ function tryMineOrPlace() {
     const spec = MINEABLE[t];
     if (spec) {
       if (!hasTool(spec, item)) {
-        say(spec.tool === "diamond-axe" ? "需要斧才能砍这个。" : "需要镐才能挖这个。");
+        say(spec.tool === "axe" ? "需要斧才能砍这个。" : spec.tool === "shovel" ? "需要铲才能挖这个。" : "需要镐才能挖这个。");
         return true;
       }
       if (spec.tool || HELD_TOOLS.has(item?.id)) {
         if (player.swingT > 0) return true;
         startToolSwing(item?.id === "diamond-sword" ? "sword" : "tool");
       }
-      setCell(world.tiles, cell.x, cell.y, t === "x" || t === "i" || t === "H" || t === "R" ? "s" : ".");
+      setCell(world.tiles, cell.x, cell.y, "xiHRJKMO".includes(t) ? "s" : ".");
       const extra = t === "L" && item?.id === "shears" ? 1 : 0;
       drops.push(makeDrop(spec.drop, cell.x * TILE + 24, cell.y * TILE + 8, 1 + extra));
+      if (t === "V" && Math.random() < 0.35) drops.push(makeDrop("flint", cell.x * TILE + 18, cell.y * TILE));
       burstBits(cell.x * TILE + 24, cell.y * TILE + 24, "#bbb");
       return true;
     }
@@ -1300,8 +1501,31 @@ function tryMineOrPlace() {
     const ty = Math.floor((player.y - 12) / TILE);
     if (world.tiles[ty]?.[tx] === ".") {
       const below = world.tiles[ty + 1]?.[tx];
-      if (below && (SOLID.has(below) || below === "n" || below === "g" || below === "d")) {
-        setCell(world.tiles, tx, ty, PLACEABLE[item.id]);
+      if (below && (SOLID.has(below) || below === "n" || below === "g" || below === "d" || below === "a")) {
+        if (item.id === "door-oak") {
+          if (world.tiles[ty - 1]?.[tx] !== ".") {
+            say("上面没有空间装门。");
+            return true;
+          }
+          setCell(world.tiles, tx, ty, "D");
+          setCell(world.tiles, tx, ty - 1, "U");
+        } else if (item.id === "bed") {
+          const nx = tx + player.face;
+          if (world.tiles[ty]?.[nx] !== ".") {
+            say("旁边没有空间放床。");
+            return true;
+          }
+          setCell(world.tiles, tx, ty, "z");
+          setCell(world.tiles, nx, ty, "Z");
+        } else if (item.id === "sugar-cane") {
+          if (below !== "a" && below !== "d" && below !== "g") {
+            say("甘蔗要种在沙或土上。");
+            return true;
+          }
+          setCell(world.tiles, tx, ty, "Y");
+        } else {
+          setCell(world.tiles, tx, ty, PLACEABLE[item.id]);
+        }
         item.count -= 1;
         say(`放下了${ITEM_LABELS[item.id] ?? item.id}`);
         return true;
@@ -1361,17 +1585,60 @@ function hurt(who, amount, dir) {
       sheep: "raw-mutton",
       wolf: "bone",
       slime: "slimeball",
+      rabbit: "raw-mutton",
+      villager: "emerald",
     };
     drops.push(makeDrop(loot[who.kind] ?? "apple", who.x, who.y - 20));
+    if (who.kind === "cow") drops.push(makeDrop("leather", who.x + 6, who.y - 16));
     if (who.kind === "skeleton") drops.push(makeDrop("arrow", who.x - 8, who.y - 18));
     if (who.kind === "chicken") drops.push(makeDrop("feather", who.x + 6, who.y - 16));
     if (who.kind === "sheep" && !who.sheared) drops.push(makeDrop("white-wool", who.x + 6, who.y - 16));
+    if (who.kind === "spider" && Math.random() < 0.4) drops.push(makeDrop("spider-eye", who.x + 6, who.y - 16));
     if (who.kind === "enderman" || Math.random() < 0.25) drops.push(makeDrop("diamond", who.x + 8, who.y - 24));
+    spawnXp(who.x, who.y - 18, who.kind === "villager" ? 3 : who.passive ? 2 : 4);
   }
 }
 
 function holdingBow() {
   return selectedItem()?.id === "bow" && selectedItem()?.count > 0;
+}
+
+function tryThrowPearl() {
+  const item = selectedItem();
+  if (item?.id !== "ender-pearl" || item.count <= 0) return false;
+  item.count -= 1;
+  arrows.push({
+    x: player.x + player.face * 18,
+    y: player.y - 28,
+    vx: player.face * 420,
+    vy: -80,
+    life: 1.6,
+    gone: false,
+    from: "player",
+    dmg: 0,
+    pearl: true,
+  });
+  say("扔出了末影珍珠。");
+  return true;
+}
+
+function tryThrowSnowball() {
+  const item = selectedItem();
+  if (item?.id !== "snowball" || item.count <= 0) return false;
+  item.count -= 1;
+  arrows.push({
+    x: player.x + player.face * 18,
+    y: player.y - 28,
+    vx: player.face * 380,
+    vy: -40,
+    life: 1.4,
+    gone: false,
+    from: "player",
+    dmg: 0,
+    snowball: true,
+  });
+  say("扔出了雪球。");
+  return true;
 }
 
 function firePlayerBow() {
@@ -1447,6 +1714,8 @@ function useSelected() {
   if (tryHoe()) return;
   if (tryBucket()) return;
   if (tryFarm()) return;
+  if (tryThrowPearl()) return;
+  if (tryThrowSnowball()) return;
   if (tryMineOrPlace()) return;
   const item = selectedItem();
   if (!item || item.count <= 0) return;
@@ -1523,7 +1792,9 @@ function updatePlayer(dt) {
   const left = keys.has("a") || keys.has("arrowleft") || hold.left;
   const right = keys.has("d") || keys.has("arrowright") || hold.right;
   const jump = keys.has(" ") || keys.has("w") || keys.has("arrowup") || hold.jump;
-  const speed = player.inWater ? MOVE * 0.55 : MOVE;
+  const sneak = keys.has("shift");
+  const sprint = keys.has("control") && !sneak;
+  const speed = player.inWater ? MOVE * 0.55 : sneak ? MOVE * 0.45 : sprint ? MOVE * 1.45 : MOVE;
 
   if (player.knockT > 0) {
     player.knockT -= dt;
@@ -1638,6 +1909,11 @@ function updateMobs(dt) {
       if (Math.abs(mob.vx) < 12) mob.stillT += dt;
       else mob.stillT = 0;
       if (mob.kind === "chicken" && mob.grounded && Math.abs(mob.vx) > 20 && Math.random() < 0.04) mob.vy = -220;
+      if (mob.kind === "rabbit" && mob.grounded && Math.abs(mob.vx) > 16 && Math.random() < 0.08) mob.vy = -280;
+      if (mob.kind === "chicken" && Math.random() < dt * 0.08) {
+        drops.push(makeDrop("egg", mob.x, mob.y - 12));
+        say("鸡下蛋了。", 1.5);
+      }
       moveBody(mob, dt);
       if (mob.inLava) hurt(mob, 4, -mob.face);
       continue;
@@ -1723,6 +1999,15 @@ function fireArrow(from) {
   });
 }
 
+function landPearl(shot) {
+  player.x = shot.x;
+  player.y = shot.y + 28;
+  unstick(player);
+  hurt(player, 5, 0);
+  burstBits(player.x, player.y - 24, "#5b2d82");
+  say("传送了。");
+}
+
 function updateArrows(dt) {
   for (const shot of arrows) {
     if (shot.gone) continue;
@@ -1730,19 +2015,29 @@ function updateArrows(dt) {
     shot.vy += 260 * dt;
     shot.x += shot.vx * dt;
     shot.y += shot.vy * dt;
-    if (shot.life <= 0 || solidAt(shot.x, shot.y)) {
-      shot.gone = true;
-      continue;
-    }
+    const stuck = shot.life <= 0 || solidAt(shot.x, shot.y);
     if (shot.from === "player") {
       for (const mob of mobs) {
         if (mob.dead) continue;
         if (Math.abs(shot.x - mob.x) < mob.hw + 8 && Math.abs(shot.y - (mob.y - mob.hh * 0.5)) < mob.hh * 0.6) {
-          hurt(mob, shot.dmg ?? 3, Math.sign(shot.vx) || player.face);
+          if (shot.pearl) landPearl(shot);
+          else if (shot.snowball) {
+            mob.vx = Math.sign(shot.vx) * 180;
+            mob.vy = -80;
+          } else hurt(mob, shot.dmg ?? 3, Math.sign(shot.vx) || player.face);
           shot.gone = true;
           break;
         }
       }
+      if (shot.gone) continue;
+      if (stuck) {
+        if (shot.pearl) landPearl(shot);
+        shot.gone = true;
+      }
+      continue;
+    }
+    if (stuck) {
+      shot.gone = true;
       continue;
     }
     if (!player.dead && Math.abs(shot.x - player.x) < 14 && Math.abs(shot.y - (player.y - 22)) < 28) {
@@ -1766,6 +2061,11 @@ function updateDrops(dt) {
     }
     drop.bob += dt * 3;
     if (player.dead || player.dropCd > 0 || Math.hypot(drop.x - player.x, drop.y - (player.y - 20)) >= 28) continue;
+    if (drop.id === "xp-orb") {
+      drop.gone = true;
+      addXp(drop.xp ?? 5);
+      continue;
+    }
     if (addItem(drop.id, drop.count)) {
       drop.gone = true;
       say(`捡到 ${ITEM_LABELS[drop.id] ?? drop.id}`);
@@ -1799,6 +2099,10 @@ function updateCrops(dt) {
       const spec = WHEAT_STAGE[t];
       if (spec && Math.random() < 1 / spec.wait) setCell(world.tiles, x, y, spec.next);
       if (t === "S" && Math.random() < 1 / 16) tree(world.tiles, x, y + 1);
+      if (t === "Y" && y > 0 && world.tiles[y - 1][x] === "." && Math.random() < 1 / 18) {
+        const below = world.tiles[y + 1]?.[x];
+        if (below === "a" || below === "d" || below === "g" || below === "Y") setCell(world.tiles, x, y - 1, "Y");
+      }
     }
   }
 }
@@ -1885,7 +2189,7 @@ function steveFrame() {
 }
 
 function deathFrames(kind) {
-  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" ? 8 : 12;
+  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" || kind === "rabbit" || kind === "villager" ? 8 : 12;
 }
 
 function mobGone(mob) {
@@ -1895,10 +2199,11 @@ function mobGone(mob) {
 }
 
 function mobSprite(mob) {
+  const prefix = mob.kind === "sheep" && mob.sheared ? `${mob.sheet}/shorn-` : `${mob.sheet}/`;
   if (mob.dead) {
     if (mob.kind === "creeper" && mob.exploded) return "creeper-sprites/swell-18.svg";
     const n = deathFrames(mob.kind);
-    return `${mob.sheet}/death-${Math.min(n - 1, Math.floor((mob.deathT ?? 0) * 10))}.svg`;
+    return `${prefix}death-${Math.min(n - 1, Math.floor((mob.deathT ?? 0) * 10))}.svg`;
   }
   if (mob.kind === "creeper" && mob.fuse > 0.12) {
     const frame = Math.min(18, Math.floor((mob.fuse / 1.35) * 10) * 2);
@@ -1909,17 +2214,17 @@ function mobSprite(mob) {
   }
   if (mob.hitT > 0) {
     const frame = Math.min(7, Math.floor((1 - mob.hitT / (8 / 12)) * 8));
-    return `${mob.sheet}/hurt-${frame}.svg`;
+    return `${prefix}hurt-${frame}.svg`;
   }
   if (mob.passive && Math.abs(mob.vx) < 14 && mob.hurtFlee <= 0) {
     const frame = Math.floor(mob.age * (mob.stillT > 4 ? 4 : 6)) % 8;
-    return `${mob.sheet}/${mob.stillT > 4 ? "rest" : "idle"}-${frame}.svg`;
+    return `${prefix}${mob.stillT > 4 ? "rest" : "idle"}-${frame}.svg`;
   }
   if (Math.abs(mob.vx) < 14 && (mob.fuse ?? 0) <= 0.12) {
     if (mob.kind === "skeleton") return "skeleton-sprites/draw-0.svg";
-    return `${mob.sheet}/idle-${Math.floor(mob.age * 6) % 8}.svg`;
+    return `${prefix}idle-${Math.floor(mob.age * 6) % 8}.svg`;
   }
-  return `${mob.sheet}/walk-${(Math.floor(mob.age * 10) % 8) * 2}.svg`;
+  return `${prefix}walk-${(Math.floor(mob.age * 10) % 8) * 2}.svg`;
 }
 
 function drawSky() {
@@ -1961,10 +2266,12 @@ function drawWorld() {
         drawTile(t === "U" ? "blocks/door-oak-upper-open.svg" : "blocks/door-oak-open.svg", dx, dy);
       } else if (t === "C" && chestOpen && player.atChest && Math.abs(x * TILE + 24 - player.x) < 80) {
         drawTile("blocks/chest-open.svg", dx, dy);
-      } else if (t === "N" && world.tntFuse.has(`${x},${y}`) && Math.floor(time * 16) % 2 === 0) {
-        ctx.globalAlpha = 0.55;
-        drawTile(BLOCKS[t], dx, dy);
-        ctx.globalAlpha = 1;
+      } else if (t === "N" && world.tntFuse.has(`${x},${y}`)) {
+        const primed = Math.floor(time * 16) % 2 === 0;
+        drawTile(primed ? "blocks/tnt-primed.svg" : BLOCKS[t], dx, dy);
+      } else if (t === "*") {
+        const f = 1 + (Math.floor(time * 10) % 7);
+        drawTile(`blocks/fire-${f}.svg`, dx, dy);
       } else if (BLOCKS[t]) drawTile(BLOCKS[t], dx, dy);
     }
   }
@@ -1980,7 +2287,8 @@ function drawDrops() {
 
 function drawArrows() {
   for (const shot of arrows) {
-    const pic = img("items/arrow.svg");
+    const rel = shot.pearl ? "items/ender-pearl.svg" : shot.snowball ? "items/snowball.svg" : "items/arrow.svg";
+    const pic = img(rel);
     if (!pic) continue;
     ctx.save();
     ctx.translate(viewX(shot.x), viewY(shot.y));
@@ -2023,7 +2331,11 @@ function drawPlayer() {
     player.anim === "sleep";
   drawAnchored(steveFrame(), combat ? STEVE.combat : STEVE.loco, viewX(player.x), viewY(player.y), player.face);
   if (!combat && player.armorMat) {
-    drawAnchored(`steve-sprites/armor-${player.armorMat}.svg`, STEVE.loco, viewX(player.x), viewY(player.y), player.face);
+    const rel =
+      player.anim === "run"
+        ? `steve-sprites/armor-${player.armorMat}-run-${player.frame}.svg`
+        : `steve-sprites/armor-${player.armorMat}.svg`;
+    drawAnchored(rel, STEVE.loco, viewX(player.x), viewY(player.y), player.face);
   }
   ctx.globalAlpha = 1;
   drawHeldItem();
@@ -2291,7 +2603,7 @@ function drawFurnacePanel() {
   ctx.fillText("熔炉", box.x + 18, box.y + 32);
   ctx.font = "13px sans-serif";
   ctx.fillStyle = "#ddd";
-  ctx.fillText("矿石/生肉放上面，煤炭放下面  ·  Esc 关闭", box.x + 18, box.y + 52);
+  ctx.fillText("矿石/生肉/沙子/粘土/原木放上面，煤炭或木炭放下面  ·  Esc 关闭", box.x + 18, box.y + 52);
 
   const originX = box.x + 18;
   const top = box.y + 88;
@@ -2344,9 +2656,9 @@ function drawHud() {
   }
 
   drawImage("hud/xp-bar.svg", barX, barY - 8, barW, 28);
-  const progress = Math.min(1, chestDiamonds() / GOAL_DIAMONDS);
+  const xpFill = Math.min(1, (player.xp ?? 0) / 20);
   ctx.fillStyle = "#7cf37c";
-  ctx.fillRect(barX + 28, barY + 4, (barW - 56) * progress, 6);
+  ctx.fillRect(barX + 28, barY + 4, (barW - 56) * xpFill, 6);
 
   drawImage("hud/hotbar.svg", barX, barY + 10, barW, 72);
   const slot = 36;
@@ -2383,7 +2695,7 @@ function drawHud() {
   ctx.textAlign = "left";
   ctx.font = "14px sans-serif";
   ctx.fillStyle = "#fff";
-  ctx.fillText(`箱子钻石 ${chestDiamonds()} / ${GOAL_DIAMONDS}   ${hourLabel()}`, 16, 28);
+  ctx.fillText(`箱子钻石 ${chestDiamonds()} / ${GOAL_DIAMONDS}   ${hourLabel()}   Lv ${player.level ?? 0}`, 16, 28);
   if (craftingOpen) drawCraftPanel();
   if (chestOpen) drawChestPanel();
   if (furnaceOpen) drawFurnacePanel();
@@ -2472,6 +2784,10 @@ const CODE_KEYS = {
   ArrowDown: "arrowdown",
   Escape: "escape",
   KeyQ: "q",
+  ShiftLeft: "shift",
+  ShiftRight: "shift",
+  ControlLeft: "control",
+  ControlRight: "control",
 };
 
 function bindKey(e) {

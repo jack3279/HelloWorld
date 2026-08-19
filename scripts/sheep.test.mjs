@@ -52,11 +52,15 @@ describe("generated sheep assets", () => {
       const svg = await readFile(resolve(ROOT, "assets/sheep-sprites", `walk-${i}.svg`), "utf8");
       assert.match(svg, /<svg /);
     }
-    for (const clip of ["idle", "rest", "hurt", "death"]) {
+    for (const clip of ["idle", "rest", "hurt", "death", "shorn-idle", "shorn-rest", "shorn-hurt", "shorn-death"]) {
       for (let i = 0; i < 8; i++) {
         const svg = await readFile(resolve(ROOT, "assets/sheep-sprites", `${clip}-${i}.svg`), "utf8");
         assert.match(svg, /<svg /);
       }
+    }
+    for (let i = 0; i < WALK_FRAMES; i++) {
+      const svg = await readFile(resolve(ROOT, "assets/sheep-sprites", `shorn-walk-${i}.svg`), "utf8");
+      assert.match(svg, /<svg /);
     }
   });
 

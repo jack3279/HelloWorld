@@ -45,6 +45,14 @@ export const CHEST_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/chest/normal.png";
 export const SHIELD_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/shield.png";
+export const RABBIT_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/rabbit/brown.png";
+export const RABBIT_SKIN_FALLBACK_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/rabbit/brown.png";
+export const VILLAGER_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/villager/villager.png";
+export const VILLAGER_SKIN_FALLBACK_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/villager/villager.png";
 export const LEATHER_ARMOR_1_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/cloth_1.png";
 export const LEATHER_ARMOR_2_URL =
@@ -57,6 +65,14 @@ export const DIAMOND_ARMOR_1_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/diamond_1.png";
 export const DIAMOND_ARMOR_2_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/diamond_2.png";
+export const GOLD_ARMOR_1_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/gold_1.png";
+export const GOLD_ARMOR_2_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/gold_2.png";
+export const CHAIN_ARMOR_1_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/chain_1.png";
+export const CHAIN_ARMOR_2_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/chain_2.png";
 const SKIN_URL = STEVE_SKIN_URL;
 const CACHE = resolve(__dirname, "../../node_modules/.cache/steve-skin.png");
 const ZOMBIE_CACHE = resolve(__dirname, "../../node_modules/.cache/zombie-skin.png");
@@ -73,12 +89,18 @@ const WOLF_CACHE = resolve(__dirname, "../../node_modules/.cache/wolf-skin.png")
 const SLIME_CACHE = resolve(__dirname, "../../node_modules/.cache/slime-skin.png");
 const CHEST_CACHE = resolve(__dirname, "../../node_modules/.cache/chest-entity.png");
 const SHIELD_CACHE = resolve(__dirname, "../../node_modules/.cache/shield-entity.png");
+const RABBIT_CACHE = resolve(__dirname, "../../node_modules/.cache/rabbit-skin.png");
+const VILLAGER_CACHE = resolve(__dirname, "../../node_modules/.cache/villager-skin.png");
 const LEATHER_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-leather-1.png");
 const LEATHER_ARMOR_2_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-leather-2.png");
 const IRON_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-iron-1.png");
 const IRON_ARMOR_2_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-iron-2.png");
 const DIAMOND_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-diamond-1.png");
 const DIAMOND_ARMOR_2_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-diamond-2.png");
+const GOLD_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-gold-1.png");
+const GOLD_ARMOR_2_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-gold-2.png");
+const CHAIN_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-chain-1.png");
+const CHAIN_ARMOR_2_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-chain-2.png");
 
 // ---------------------------------------------------------------- png decoding
 
@@ -275,8 +297,8 @@ export function normalizePlayerSkin(skin) {
 // cached, so repeat runs stay offline-friendly. Pass `{ url, cache }` for
 // another 64x64 (or classic 64x32) player-layout skin such as the zombie.
 export async function loadSkin(explicitPath, options = {}) {
-  const url = options.url ?? SKIN_URL;
-  const cache = options.cache ?? (url === ZOMBIE_SKIN_URL ? ZOMBIE_CACHE : CACHE);
+  const urls = options.urls ?? [options.url ?? SKIN_URL];
+  const cache = options.cache ?? (urls[0] === ZOMBIE_SKIN_URL ? ZOMBIE_CACHE : CACHE);
   const shouldNormalize = options.normalize ?? true;
   let decoded;
   if (explicitPath) decoded = decodeTexture(await readFile(explicitPath));
@@ -284,9 +306,19 @@ export async function loadSkin(explicitPath, options = {}) {
     try {
       decoded = decodeTexture(await readFile(cache));
     } catch {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`could not download ${url} (${res.status})`);
-      const buf = Buffer.from(await res.arrayBuffer());
+      let lastErr;
+      let buf;
+      for (const url of urls) {
+        const res = await fetch(url);
+        if (!res.ok) {
+          lastErr = new Error(`could not download ${url} (${res.status})`);
+          continue;
+        }
+        buf = Buffer.from(await res.arrayBuffer());
+        lastErr = null;
+        break;
+      }
+      if (!buf) throw lastErr ?? new Error("could not download skin");
       await mkdir(dirname(cache), { recursive: true });
       await writeFile(cache, buf);
       decoded = decodeTexture(buf);
@@ -351,6 +383,22 @@ export async function loadShieldSkin(explicitPath) {
   return loadSkin(explicitPath, { url: SHIELD_SKIN_URL, cache: SHIELD_CACHE, normalize: false });
 }
 
+export async function loadRabbitSkin(explicitPath) {
+  return loadSkin(explicitPath, {
+    urls: [RABBIT_SKIN_URL, RABBIT_SKIN_FALLBACK_URL],
+    cache: RABBIT_CACHE,
+    normalize: false,
+  });
+}
+
+export async function loadVillagerSkin(explicitPath) {
+  return loadSkin(explicitPath, {
+    urls: [VILLAGER_SKIN_URL, VILLAGER_SKIN_FALLBACK_URL],
+    cache: VILLAGER_CACHE,
+    normalize: false,
+  });
+}
+
 function tintLeatherArmor(skin) {
   const rgba = new Uint8Array(skin.rgba);
   const [tr, tg, tb] = [196, 112, 80];
@@ -376,6 +424,14 @@ export async function loadArmorLayer(kind, layer, explicitPath) {
     diamond: [
       { url: DIAMOND_ARMOR_1_URL, cache: DIAMOND_ARMOR_1_CACHE },
       { url: DIAMOND_ARMOR_2_URL, cache: DIAMOND_ARMOR_2_CACHE },
+    ],
+    gold: [
+      { url: GOLD_ARMOR_1_URL, cache: GOLD_ARMOR_1_CACHE },
+      { url: GOLD_ARMOR_2_URL, cache: GOLD_ARMOR_2_CACHE },
+    ],
+    chainmail: [
+      { url: CHAIN_ARMOR_1_URL, cache: CHAIN_ARMOR_1_CACHE },
+      { url: CHAIN_ARMOR_2_URL, cache: CHAIN_ARMOR_2_CACHE },
     ],
   }[kind];
   if (!spec) throw new Error(`unknown armor ${kind}`);
