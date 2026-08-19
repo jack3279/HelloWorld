@@ -80,6 +80,8 @@ describe("hotbar item catalog", () => {
     assert.ok(play.includes("oak-boat"));
     assert.ok(play.includes("blaze-rod"));
     assert.ok(play.includes("blaze-powder"));
+    assert.ok(play.includes("nether-wart"));
+    assert.ok(play.includes("ghast-tear"));
   });
 
   it("loads official 16×16 sprites", async () => {

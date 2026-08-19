@@ -38,6 +38,13 @@ const WHEAT_STAGE = {
   5: { next: "6", wait: 6 },
   6: { next: "7", wait: 6 },
 };
+const WART_STAGE = {
+  ":": { next: ";", wait: 6 },
+  ";": { next: "<", wait: 6 },
+  "<": { next: ">", wait: 8 },
+};
+const DOOR_SWING = 8;
+const OFFHAND_SLOT = 9;
 const MINEABLE = {
   s: { drop: "cobblestone", tool: "pickaxe" },
   c: { drop: "cobblestone", tool: "pickaxe" },
@@ -321,6 +328,8 @@ const ITEM_LABELS = {
   "oak-boat": "橡木船",
   "blaze-rod": "烈焰棒",
   "blaze-powder": "烈焰粉",
+  "nether-wart": "下界疣",
+  "ghast-tear": "恶魂之泪",
 };
 
 const FOOD = {
@@ -422,6 +431,10 @@ const BLOCKS = {
   "+": "blocks/nether-bricks.svg",
   "?": "blocks/magma.svg",
   "@": "blocks/nether-portal.svg",
+  ":": "blocks/nether-wart-0.svg",
+  ";": "blocks/nether-wart-1.svg",
+  "<": "blocks/nether-wart-2.svg",
+  ">": "blocks/nether-wart-3.svg",
 };
 
 const SOLID = new Set([..."gdscpLabBTFimxIjuyenqHRNVAEKJMOQ8X~Wl=!$", "#", "&", "^", "+", "?"]);
@@ -589,6 +602,15 @@ const MANIFEST = [
   ...range(8, (i) => `magma-cube-sprites/idle-${i}.svg`),
   ...range(8, (i) => `magma-cube-sprites/hurt-${i}.svg`),
   ...range(8, (i) => `magma-cube-sprites/death-${i}.svg`),
+  ...range(8, (i) => `ghast-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `ghast-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `ghast-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `ghast-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `ghast-sprites/death-${i}.svg`),
+  ...range(8, (i) => `door-sprites/swing-${i}.svg`),
+  "steve-sprites/shield-hold.svg",
+  "steve-sprites/shield-block.svg",
+  ...range(8, (i) => `steve-sprites/shield-hold-run-${i}.svg`),
   ...range(8, (i) => `sheep-sprites/shorn-walk-${i * 2}.svg`),
   ...range(8, (i) => `sheep-sprites/shorn-idle-${i}.svg`),
   ...range(8, (i) => `sheep-sprites/shorn-rest-${i}.svg`),
@@ -821,7 +843,7 @@ function buildWorld() {
   setCell(tiles, 0, ground, "B");
   setCell(tiles, W - 1, ground, "B");
 
-  return { w: W, h: H, tiles, ground, nightSpawned: false, cropT: 0, doorOpen: new Set(), tntFuse: new Map(), fireT: new Map() };
+  return { w: W, h: H, tiles, ground, nightSpawned: false, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map() };
 }
 
 function portalFrame(tiles, x, ground) {
@@ -870,12 +892,15 @@ function buildNether() {
   setCell(tiles, 64, ground - 3, "&");
   setCell(tiles, 18, ground - 1, "?");
   setCell(tiles, 48, ground - 1, "^");
+  setCell(tiles, 21, ground - 1, ":");
+  setCell(tiles, 22, ground - 1, ";");
+  setCell(tiles, 23, ground - 1, ">");
 
   portalFrame(tiles, 36, ground);
   setCell(tiles, 0, ground, "B");
   setCell(tiles, W - 1, ground, "B");
 
-  return { w: W, h: H, tiles, ground, nightSpawned: true, cropT: 0, doorOpen: new Set(), tntFuse: new Map(), fireT: new Map() };
+  return { w: W, h: H, tiles, ground, nightSpawned: true, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map() };
 }
 
 function tileAt(px, py) {
@@ -885,8 +910,18 @@ function tileAt(px, py) {
   return world.tiles[y][x];
 }
 
+function doorState(tx) {
+  if (!world.doorOpen.has(tx)) world.doorOpen.set(tx, { open: false, t: 0 });
+  return world.doorOpen.get(tx);
+}
+
 function doorClosedAt(tx) {
-  return world && !world.doorOpen.has(tx);
+  return (world?.doorOpen.get(tx)?.t ?? 0) < 0.55;
+}
+
+function doorFrame(t) {
+  const u = t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2;
+  return Math.min(DOOR_SWING - 1, Math.max(0, Math.round(u * (DOOR_SWING - 1))));
 }
 
 function tileIsSolid(t, tx) {
@@ -1118,6 +1153,7 @@ function makePlayer() {
     armor: 0,
     armorMat: null,
     selected: 0,
+    lastHotbar: 0,
     sleeping: 0,
     hungerT: 0,
     drawT: 0,
@@ -1129,6 +1165,7 @@ function makePlayer() {
     fishT: 0,
     portalT: 0,
     mount: null,
+    offhand: { id: "shield", count: 1 },
     items: [
       { id: "diamond-sword", count: 1 },
       { id: "bow", count: 1 },
@@ -1166,6 +1203,7 @@ function makeMob(kind, tx, ty) {
     horse: { hp: 12, speed: 130, dmg: 0, hw: 16, hh: 44, scale: 0.16, sheet: "horse-sprites", h: 520, passive: true },
     boat: { hp: 8, speed: 110, dmg: 0, hw: 22, hh: 16, scale: 0.14, sheet: "boat-sprites", h: 400, passive: true, aquatic: true },
     blaze: { hp: 10, speed: 70, dmg: 3, hw: 12, hh: 44, scale: 0.16, sheet: "blaze-sprites", h: 480, fly: true },
+    ghast: { hp: 14, speed: 55, dmg: 4, hw: 22, hh: 50, scale: 0.15, sheet: "ghast-sprites", h: 480, fly: true },
     "magma-cube": { hp: 8, speed: 45, dmg: 3, hw: 16, hh: 22, scale: 0.14, sheet: "magma-cube-sprites", h: 480 },
   };
   return {
@@ -1307,7 +1345,25 @@ function resetGame() {
 }
 
 function selectedItem() {
+  if (player.selected === OFFHAND_SLOT) return player.offhand;
   return player.items[player.selected];
+}
+
+function hasShield() {
+  const main = player.selected === OFFHAND_SLOT ? null : player.items[player.selected];
+  const off = player.offhand;
+  return (main?.id === "shield" && main.count > 0) || (off?.id === "shield" && off.count > 0);
+}
+
+function swapOffhand() {
+  if (!player || player.dead || win || uiOpen()) return;
+  const i = player.selected === OFFHAND_SLOT ? (player.lastHotbar ?? 0) : player.selected;
+  const hand = player.items[i] ?? { id: "", count: 0 };
+  const off = player.offhand ?? { id: "", count: 0 };
+  player.items[i] = { id: off.id, count: off.count };
+  player.offhand = { id: hand.id, count: hand.count };
+  if (ARMOR_GEAR[hand.id] || ARMOR_GEAR[off.id]) refreshArmor();
+  say("切换了副手。");
 }
 
 function throwSelected() {
@@ -1443,9 +1499,9 @@ function tryToggleDoor() {
   for (const cell of frontCell()) {
     const t = world.tiles[cell.y]?.[cell.x];
     if (t !== "D" && t !== "U") continue;
-    if (world.doorOpen.has(cell.x)) world.doorOpen.delete(cell.x);
-    else world.doorOpen.add(cell.x);
-    say(world.doorOpen.has(cell.x) ? "打开了门。" : "关上了门。");
+    const st = doorState(cell.x);
+    st.open = !st.open;
+    say(st.open ? "打开了门。" : "关上了门。");
     return true;
   }
   return false;
@@ -1581,12 +1637,26 @@ function tryFarm() {
     say("种下了小麦。");
     return true;
   }
+  if (item?.id === "nether-wart" && item.count > 0 && soil === "^" && (above === "." || above === "G" || above === "f" || above === "P")) {
+    setCell(world.tiles, tx, cropY, ":");
+    item.count -= 1;
+    say("种下了下界疣。");
+    return true;
+  }
   if (above === "7") {
     setCell(world.tiles, tx, cropY, ".");
     if (!addItem("wheat", 1)) spillItem("wheat", 1);
     if (Math.random() < 0.7 && !addItem("wheat-seeds", 1)) spillItem("wheat-seeds", 1);
     burstBits(tx * TILE + 24, cropY * TILE + 24, "#c6b34a");
     say("收割了小麦。");
+    return true;
+  }
+  if (above === ">") {
+    setCell(world.tiles, tx, cropY, ".");
+    const n = 2 + (Math.random() < 0.5 ? 1 : 0);
+    if (!addItem("nether-wart", n)) spillItem("nether-wart", n);
+    burstBits(tx * TILE + 24, cropY * TILE + 24, "#8a2a3a");
+    say("收割了下界疣。");
     return true;
   }
   return false;
@@ -1832,6 +1902,7 @@ function hurt(who, amount, dir) {
       horse: "leather",
       boat: "oak-boat",
       blaze: "blaze-rod",
+      ghast: "ghast-tear",
       "magma-cube": "slimeball",
     };
     if (who.kind !== "bat") drops.push(makeDrop(loot[who.kind] ?? "apple", who.x, who.y - 20));
@@ -1847,6 +1918,7 @@ function hurt(who, amount, dir) {
     }
     if (who.kind === "iron-golem") drops.push(makeDrop("iron-ingot", who.x + 8, who.y - 16, 2));
     if (who.kind === "magma-cube" && Math.random() < 0.5) drops.push(makeDrop("coal", who.x + 6, who.y - 16));
+    if (who.kind === "ghast") drops.push(makeDrop("gunpowder", who.x + 6, who.y - 16, 2));
     if (player.mount === who) dismount();
     spawnXp(who.x, who.y - 18, who.kind === "villager" ? 3 : who.passive ? 2 : 4);
   }
@@ -2031,10 +2103,11 @@ function swapDimension() {
       mobs = [
         makeMob("blaze", 48, 6),
         makeMob("blaze", 28, 7),
+        makeMob("ghast", 18, 5),
         makeMob("magma-cube", 22, 10),
         makeMob("magma-cube", 42, 10),
       ];
-      drops = [makeDrop("glowstone", TILE * 64.5, TILE * 8, 2)];
+      drops = [makeDrop("glowstone", TILE * 64.5, TILE * 8, 2), makeDrop("nether-wart", TILE * 22.5, TILE * 8, 3)];
       arrows = [];
       particles = [];
       chestItems = emptySlots(CHEST_SLOTS);
@@ -2118,7 +2191,9 @@ function pressUse(down) {
     player.bowHeld = true;
     return;
   }
-  if (selectedItem()?.id === "shield") {
+  const using = selectedItem();
+  const busy = using?.count > 0 && using.id !== "shield" && !SWORD_IDS.has(using.id);
+  if (hasShield() && !busy) {
     player.shieldHeld = true;
     say("举起了盾。");
     return;
@@ -2308,7 +2383,7 @@ function updatePlayer(dt) {
     player.bowHeld = false;
     player.drawT = 0;
   }
-  if (selectedItem()?.id !== "shield") player.shieldHeld = false;
+  if (!hasShield()) player.shieldHeld = false;
 
   if (player.fishT > 0) {
     if (selectedItem()?.id !== "fishing-rod") player.fishT = 0;
@@ -2402,7 +2477,7 @@ function updateMobs(dt) {
         say("鸡下蛋了。", 1.5);
       }
       moveBody(mob, dt);
-      if (mob.inLava && mob.kind !== "blaze" && mob.kind !== "magma-cube") hurt(mob, 4, -mob.face);
+      if (mob.inLava && mob.kind !== "blaze" && mob.kind !== "magma-cube" && mob.kind !== "ghast") hurt(mob, 4, -mob.face);
       continue;
     }
     if (mob.kind === "creeper" && close && Math.abs(dx) < 72 && Math.abs(mob.y - player.y) < 56) {
@@ -2424,6 +2499,8 @@ function updateMobs(dt) {
       steerWitch(mob, dt, dx, close);
     } else if (mob.kind === "blaze") {
       steerBlaze(mob, dt, dx, close);
+    } else if (mob.kind === "ghast") {
+      steerGhast(mob, dt, dx, close);
     } else if (mob.kind === "iron-golem") {
       steerGolem(mob, dt);
     } else {
@@ -2439,8 +2516,8 @@ function updateMobs(dt) {
       }
     }
     moveBody(mob, dt);
-    if (mob.inLava && mob.kind !== "blaze" && mob.kind !== "magma-cube") hurt(mob, 4, -mob.face);
-    if (mob.kind !== "creeper" && mob.kind !== "skeleton" && mob.kind !== "witch" && mob.kind !== "blaze" && !mob.ally && !player.dead && Math.abs(mob.x - player.x) < mob.hw + player.hw + 4 && Math.abs(mob.y - player.y) < mob.hh) {
+    if (mob.inLava && mob.kind !== "blaze" && mob.kind !== "magma-cube" && mob.kind !== "ghast") hurt(mob, 4, -mob.face);
+    if (mob.kind !== "creeper" && mob.kind !== "skeleton" && mob.kind !== "witch" && mob.kind !== "blaze" && mob.kind !== "ghast" && !mob.ally && !player.dead && Math.abs(mob.x - player.x) < mob.hw + player.hw + 4 && Math.abs(mob.y - player.y) < mob.hh) {
       hurt(player, mob.dmg, Math.sign(player.x - mob.x) || -1);
     }
   }
@@ -2555,6 +2632,46 @@ function steerBlaze(mob, dt, dx, close) {
   mob.vx = mob.face * mob.speed * 0.65;
 }
 
+function steerGhast(mob, dt, dx, close) {
+  if (mob.shootCd > 0) mob.shootCd -= dt;
+  const linedUp = close && Math.abs(mob.y - player.y) < 160;
+  if (!linedUp) {
+    mob.vx *= 0.85;
+    return;
+  }
+  mob.face = Math.sign(dx) || mob.face;
+  const dist = Math.abs(dx);
+  if (dist < 110) {
+    mob.vx = -mob.face * mob.speed;
+    return;
+  }
+  if (dist < 380 && mob.shootCd <= 0 && mob.hitT <= 0) {
+    mob.vx = 0;
+    fireFireball(mob);
+    mob.shootCd = 2.1;
+    return;
+  }
+  mob.vx = mob.face * mob.speed * 0.5;
+}
+
+function fireFireball(from) {
+  const tx = player.x - from.x;
+  const ty = player.y - 24 - (from.y - 36);
+  const dist = Math.hypot(tx, ty) || 1;
+  const speed = 220;
+  arrows.push({
+    x: from.x + from.face * 18,
+    y: from.y - 36,
+    vx: (tx / dist) * speed,
+    vy: (ty / dist) * speed - 10,
+    life: 3.2,
+    gone: false,
+    from: "mob",
+    dmg: 5,
+    fireball: true,
+  });
+}
+
 function steerGolem(mob, dt) {
   if (mob.shootCd > 0) mob.shootCd -= dt;
   let target = null;
@@ -2600,7 +2717,7 @@ function updateArrows(dt) {
   for (const shot of arrows) {
     if (shot.gone) continue;
     shot.life -= dt;
-    shot.vy += 260 * dt;
+    shot.vy += (shot.fireball ? 36 : 260) * dt;
     shot.x += shot.vx * dt;
     shot.y += shot.vy * dt;
     const stuck = shot.life <= 0 || solidAt(shot.x, shot.y);
@@ -2628,7 +2745,7 @@ function updateArrows(dt) {
       shot.gone = true;
       continue;
     }
-    if (!player.dead && Math.abs(shot.x - player.x) < 14 && Math.abs(shot.y - (player.y - 22)) < 28) {
+    if (!player.dead && Math.abs(shot.x - player.x) < (shot.fireball ? 22 : 14) && Math.abs(shot.y - (player.y - 22)) < (shot.fireball ? 36 : 28)) {
       hurt(player, shot.dmg ?? 2, Math.sign(shot.vx) || -1);
       shot.gone = true;
     }
@@ -2684,7 +2801,7 @@ function updateCrops(dt) {
   for (let y = 0; y < world.h; y++) {
     for (let x = 0; x < world.w; x++) {
       const t = world.tiles[y][x];
-      const spec = WHEAT_STAGE[t];
+      const spec = WHEAT_STAGE[t] ?? WART_STAGE[t];
       if (spec && Math.random() < 1 / spec.wait) setCell(world.tiles, x, y, spec.next);
       if (t === "S" && Math.random() < 1 / 16) tree(world.tiles, x, y + 1);
       if (t === "Y" && y > 0 && world.tiles[y - 1][x] === "." && Math.random() < 1 / 18) {
@@ -2692,6 +2809,16 @@ function updateCrops(dt) {
         if (below === "a" || below === "d" || below === "g" || below === "Y") setCell(world.tiles, x, y - 1, "Y");
       }
     }
+  }
+}
+
+function updateDoors(dt) {
+  if (!world?.doorOpen) return;
+  const speed = 1 / 0.32;
+  for (const st of world.doorOpen.values()) {
+    const target = st.open ? 1 : 0;
+    if (st.t < target) st.t = Math.min(target, st.t + dt * speed);
+    else if (st.t > target) st.t = Math.max(target, st.t - dt * speed);
   }
 }
 
@@ -2778,7 +2905,7 @@ function steveFrame() {
 }
 
 function deathFrames(kind) {
-  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" || kind === "rabbit" || kind === "villager" || kind === "cat" || kind === "bat" || kind === "squid" || kind === "witch" || kind === "iron-golem" || kind === "horse" || kind === "boat" || kind === "blaze" || kind === "magma-cube" ? 8 : 12;
+  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" || kind === "rabbit" || kind === "villager" || kind === "cat" || kind === "bat" || kind === "squid" || kind === "witch" || kind === "iron-golem" || kind === "horse" || kind === "boat" || kind === "blaze" || kind === "magma-cube" || kind === "ghast" ? 8 : 12;
 }
 
 function mobGone(mob) {
@@ -2879,8 +3006,10 @@ function drawWorld() {
       if (t === "v") drawTile(lavaFrame, dx, dy);
       else if (t === "w") drawTile(waterFrame, dx, dy);
       else if (t === "F" && furnace.burn > 0) drawTile("blocks/furnace-on.svg", dx, dy);
-      else if ((t === "D" || t === "U") && world.doorOpen.has(x)) {
-        drawTile(t === "U" ? "blocks/door-oak-upper-open.svg" : "blocks/door-oak-open.svg", dx, dy);
+      else if (t === "U" && world.tiles[y + 1]?.[x] === "D") continue;
+      else if (t === "D") {
+        const spec = { w: 256, h: 512, ax: 128, ay: 496, scale: TILE / 16 };
+        drawAnchored(`door-sprites/swing-${doorFrame(world.doorOpen.get(x)?.t ?? 0)}.svg`, spec, dx + TILE / 2, dy + TILE, 1);
       } else if (t === "C" && chestOpen && player.atChest && Math.abs(x * TILE + 24 - player.x) < 80) {
         drawTile("blocks/chest-open.svg", dx, dy);
       } else if (t === "N" && world.tntFuse.has(`${x},${y}`)) {
@@ -2904,6 +3033,13 @@ function drawDrops() {
 
 function drawArrows() {
   for (const shot of arrows) {
+    if (shot.fireball) {
+      const pic = img(`blocks/fire-${1 + (Math.floor(time * 10) % 7)}.svg`);
+      if (!pic) continue;
+      const s = 40;
+      ctx.drawImage(pic, viewX(shot.x) - s / 2, viewY(shot.y) - s / 2, s, s);
+      continue;
+    }
     const rel = shot.pearl ? "items/ender-pearl.svg" : shot.snowball ? "items/snowball.svg" : shot.potion ? "items/potion-heal.svg" : "items/arrow.svg";
     const pic = img(rel);
     if (!pic) continue;
@@ -2959,8 +3095,17 @@ function drawPlayer() {
 }
 
 function drawHeldItem() {
+  const combat = player.anim === "swing" || player.anim === "hurt" || player.anim === "death" || player.anim === "sleep";
+  if (hasShield() && !player.dead && !combat && player.anim !== "eat") {
+    const rel = player.shieldHeld
+      ? "steve-sprites/shield-block.svg"
+      : player.anim === "run"
+        ? `steve-sprites/shield-hold-run-${player.frame}.svg`
+        : "steve-sprites/shield-hold.svg";
+    drawAnchored(rel, STEVE.loco, viewX(player.x), viewY(player.y), player.face);
+  }
   const id = heldOverlayId();
-  if (!id) return;
+  if (!id || id === "shield") return;
   let rel = itemAsset(id);
   if (id === "bow" && player.drawT > 0) {
     const frame = player.drawT < 0.4 ? 0 : player.drawT < 0.75 ? 1 : 2;
@@ -2970,14 +3115,13 @@ function drawHeldItem() {
   if (!pic) return;
   const swing = player.swingT > 0 && player.swingKind === "tool";
   const drawing = id === "bow" && player.drawT > 0;
-  let rot = id === "bow" ? -0.15 : id === "shield" ? -0.05 : 0.35;
+  let rot = id === "bow" ? -0.15 : 0.35;
   if (swing) rot = -1.15 * Math.sin((1 - player.swingT / (10 / 12)) * Math.PI);
   if (drawing) rot = -0.4 - player.drawT * 0.5;
-  if (id === "shield" && player.shieldHeld) rot = -0.35;
   ctx.save();
   ctx.translate(viewX(player.x), viewY(player.y));
   ctx.scale(player.face, 1);
-  ctx.translate(id === "bow" ? 10 : id === "shield" ? 16 : 12, id === "bow" ? -26 : id === "shield" ? -24 : -22);
+  ctx.translate(id === "bow" ? 10 : 12, id === "bow" ? -26 : -22);
   ctx.rotate(rot);
   const size = id === "bow" ? 36 : 30;
   ctx.drawImage(pic, -size * 0.2, -size * 0.85, size, size);
@@ -3280,6 +3424,19 @@ function drawHud() {
   drawImage("hud/hotbar.svg", barX, barY + 10, barW, 72);
   const slot = 36;
   const origin = barX + 22;
+  const offX = origin - 50;
+  const offY = barY + 26;
+  drawImage("hud/hotbar-slot.svg", offX - 4, barY + 22, 36, 36);
+  const off = player.offhand;
+  if (off && off.count > 0) drawImage(itemAsset(off.id), offX, offY, 28, 28);
+  if (off && off.count > 1) {
+    ctx.fillStyle = "#111";
+    ctx.font = "bold 12px sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(String(off.count), offX + 29, offY + 29);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(String(off.count), offX + 28, offY + 28);
+  }
   for (let i = 0; i < 9; i++) {
     const it = player.items[i];
     const sx = origin + i * 38;
@@ -3294,7 +3451,8 @@ function drawHud() {
       ctx.fillText(String(it.count), sx + 28, sy + 28);
     }
   }
-  drawImage("hud/selected-slot.svg", origin + player.selected * 38 - 8, barY + 18, slot + 8, slot + 8);
+  if (player.selected === OFFHAND_SLOT) drawImage("hud/selected-slot.svg", offX - 8, barY + 18, slot + 8, slot + 8);
+  else drawImage("hud/selected-slot.svg", origin + player.selected * 38 - 8, barY + 18, slot + 8, slot + 8);
 
   const label = ITEM_LABELS[selectedItem()?.id] ?? "";
   if (label && selectedItem()?.count > 0) {
@@ -3364,6 +3522,7 @@ function frame(ts) {
       updateArrows(dt);
       updateDrops(dt);
       updateCrops(dt);
+      updateDoors(dt);
       updateHazards(dt);
       furnaceTick(furnace, dt);
       updateParticles(dt);
@@ -3402,6 +3561,7 @@ const CODE_KEYS = {
   ArrowDown: "arrowdown",
   Escape: "escape",
   KeyQ: "q",
+  KeyF: "f",
   ShiftLeft: "shift",
   ShiftRight: "shift",
   ControlLeft: "control",
@@ -3511,10 +3671,17 @@ window.addEventListener("keydown", (e) => {
   }
   if (e.code.startsWith("Digit")) {
     const n = Number(e.code.slice(5));
-    if (n >= 1 && n <= 9 && player) player.selected = n - 1;
+    if (n >= 1 && n <= 9 && player) {
+      player.selected = n - 1;
+      player.lastHotbar = n - 1;
+    } else if (n === 0 && player) player.selected = OFFHAND_SLOT;
   } else if (key >= "1" && key <= "9" && player) {
     player.selected = Number(key) - 1;
+    player.lastHotbar = player.selected;
+  } else if (key === "0" && player) {
+    player.selected = OFFHAND_SLOT;
   }
+  if (key === "f" && mode === "play" && !uiOpen() && !e.repeat) swapOffhand();
   if ((key === "j" || key === "e") && !e.repeat) pressUse(true);
   if (key === "q" && mode === "play" && !uiOpen()) throwSelected();
   if (key === "r" && mode === "play") resetGame();

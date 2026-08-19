@@ -77,6 +77,10 @@ export const BLAZE_SKIN_FALLBACK_URL =
   "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/blaze.png";
 export const MAGMA_CUBE_SKIN_URL =
   "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/slime/magmacube.png";
+export const GHAST_SKIN_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/ghast/ghast.png";
+export const GHAST_SKIN_FALLBACK_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/ghast/ghast.png";
 export const NETHERITE_ARMOR_1_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/netherite_1.png";
 export const NETHERITE_ARMOR_2_URL =
@@ -128,6 +132,7 @@ const HORSE_CACHE = resolve(__dirname, "../../node_modules/.cache/horse-skin.png
 const BOAT_CACHE = resolve(__dirname, "../../node_modules/.cache/boat-oak-skin.png");
 const BLAZE_CACHE = resolve(__dirname, "../../node_modules/.cache/blaze-skin.png");
 const MAGMA_CUBE_CACHE = resolve(__dirname, "../../node_modules/.cache/magma-cube-skin.png");
+const GHAST_CACHE = resolve(__dirname, "../../node_modules/.cache/ghast-skin.png");
 const NETHERITE_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-netherite-1.png");
 const NETHERITE_ARMOR_2_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-netherite-2.png");
 const LEATHER_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-leather-1.png");
@@ -484,6 +489,29 @@ export async function loadBlazeSkin(explicitPath) {
 
 export async function loadMagmaCubeSkin(explicitPath) {
   return loadSkin(explicitPath, { url: MAGMA_CUBE_SKIN_URL, cache: MAGMA_CUBE_CACHE, normalize: false });
+}
+
+export async function loadGhastSkin(explicitPath) {
+  const skin = await loadSkin(explicitPath, {
+    urls: [GHAST_SKIN_URL, GHAST_SKIN_FALLBACK_URL],
+    cache: GHAST_CACHE,
+    normalize: false,
+  });
+  if (skin.width >= 128 && skin.height >= 64) return downscaleNearest(skin, 2);
+  return skin;
+}
+
+function downscaleNearest(skin, factor) {
+  const width = Math.floor(skin.width / factor);
+  const height = Math.floor(skin.height / factor);
+  const rgba = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const si = ((y * factor) * skin.width + x * factor) * 4;
+      rgba.set(skin.rgba.subarray(si, si + 4), (y * width + x) * 4);
+    }
+  }
+  return { width, height, rgba };
 }
 
 function tintLeatherArmor(skin) {

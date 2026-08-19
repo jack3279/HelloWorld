@@ -167,6 +167,8 @@ export const PLAY_ITEMS = [
   { id: "oak-boat", file: "boat_oak.png", label: "Oak boat", title: "橡木船" },
   { id: "blaze-rod", file: "blaze_rod.png", label: "Blaze rod", title: "烈焰棒" },
   { id: "blaze-powder", file: "blaze_powder.png", label: "Blaze powder", title: "烈焰粉" },
+  { id: "nether-wart", file: "nether_wart.png", label: "Nether wart", title: "下界疣" },
+  { id: "ghast-tear", file: "ghast_tear.png", label: "Ghast tear", title: "恶魂之泪" },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.

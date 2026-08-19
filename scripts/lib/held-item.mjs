@@ -3,7 +3,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { decodePng } from "./steve-model.mjs";
+import { boxUv, decodePng, loadShieldSkin } from "./steve-model.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export const ITEMS_BASE =
@@ -171,4 +171,45 @@ export async function skeletonDrawExtras(pull) {
   const extras = [await bowExtra(pull)];
   if (pull >= 0.4) extras.push(await arrowExtra());
   return extras;
+}
+
+// Thin in X so a side-view (yaw 90) reads the 12×22 wooden face on ±X.
+// Parented to the far (left) arm — Java off-hand.
+export function shieldPlateUv() {
+  return {
+    nx: { x: 1, y: 1, w: 12, h: 22 },
+    px: { x: 1, y: 1, w: 12, h: 22 },
+    front: { x: 0, y: 1, w: 1, h: 22 },
+    back: { x: 13, y: 1, w: 1, h: 22 },
+    top: { x: 1, y: 0, w: 12, h: 1 },
+    bottom: { x: 1, y: 23, w: 12, h: 1 },
+  };
+}
+
+export function shieldParts() {
+  return [
+    {
+      id: "shield-plate",
+      label: "Shield plate",
+      parent: "arm-left",
+      min: [7.1, 1.5, -7],
+      max: [8.1, 23.5, 5],
+      pivot: [7.6, 12, -0.5],
+      uv: shieldPlateUv(),
+    },
+    {
+      id: "shield-handle",
+      label: "Shield handle",
+      parent: "arm-left",
+      min: [6.2, 9.5, -1],
+      max: [7.2, 15.5, 5],
+      pivot: [6.7, 12.5, 1],
+      uv: boxUv(26, 0, 2, 6, 6),
+    },
+  ];
+}
+
+export async function shieldExtras() {
+  const skin = await loadShieldSkin();
+  return shieldParts().map((part) => ({ part, skin, tolerance: { default: 8 } }));
 }

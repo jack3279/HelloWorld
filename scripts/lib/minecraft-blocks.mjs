@@ -128,6 +128,10 @@ export const PLAY_BLOCKS = [
   { id: "farmland-dry", file: "farmland_dry.png", label: "Dry farmland", title: "干耕地" },
   { id: "sugar-cane", file: "sugar_cane.png", label: "Sugar cane", title: "甘蔗", base: JAVA_BLOCKS_BASE },
   { id: "nether-portal", file: "portal.png", label: "Nether portal", title: "下界传送门" },
+  { id: "nether-wart-0", file: "nether_wart_stage_0.png", label: "Nether wart sprout", title: "下界疣幼苗" },
+  { id: "nether-wart-1", file: "nether_wart_stage_1.png", label: "Nether wart 1", title: "下界疣生长1" },
+  { id: "nether-wart-2", file: "nether_wart_stage_2.png", label: "Nether wart 2", title: "下界疣生长2" },
+  { id: "nether-wart-3", file: "nether_wart_stage_2.png", label: "Nether wart ripe", title: "成熟下界疣" },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {
