@@ -38,7 +38,8 @@ describe("chicken pose", () => {
     const passing = walkFrame(0.25);
     assert.ok(passing.parts["leg-right"].pitch < 0, "right leg steps forward");
     assert.ok(passing.parts["leg-left"].pitch > 0, "left leg steps back");
-    assert.ok(passing.parts["wing-right"].pitch > idleA().parts["wing-right"].pitch);
+    const flapping = walkFrame(0.125);
+    assert.ok(flapping.parts["wing-right"].pitch > idleA().parts["wing-right"].pitch);
     for (let i = 0; i < IDLE_FRAMES; i++) {
       assert.equal(sampleIdle(i / IDLE_FRAMES).parts.head.yaw, -45);
     }

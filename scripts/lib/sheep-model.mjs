@@ -5,7 +5,7 @@
 import { boxUv } from "./steve-model.mjs";
 
 const LEG_UV = boxUv(0, 16, 4, 12, 4);
-const WOOL_LEG_UV = boxUv(0, 48, 4, 6, 4);
+const WOOL_LEG_UV = boxUv(0, 16, 4, 6, 4);
 
 function inflate(min, max, n) {
   return {
@@ -79,7 +79,7 @@ export const SHEEP_WOOL = [
     parent: "head",
     ...woolHead,
     pivot: [0, 18, 8],
-    uv: boxUv(0, 32, 6, 6, 6),
+    uv: boxUv(0, 0, 6, 6, 6),
   },
   {
     id: "wool-body",
@@ -87,7 +87,7 @@ export const SHEEP_WOOL = [
     parent: "body",
     ...woolBody,
     pivot: [0, 19, -2],
-    uv: boxUv(28, 40, 8, 16, 6),
+    uv: boxUv(28, 8, 8, 16, 6),
   },
   {
     id: "wool-front-right",
