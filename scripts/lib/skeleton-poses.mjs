@@ -136,8 +136,8 @@ function aimPose(raise, aim) {
       head: { ...FACE, pitch: 6 + aim * 0.4, yaw: -45 },
       "arm-left": limb(FAR, { pitch: -8 - 78 * raise, roll: -4 }),
       "arm-right": limb(NEAR, { pitch: 10 - 52 * raise + aim, roll: 8 * raise }),
-      "held-bow": { pitch: -12 * raise, roll: 6 * raise, yaw: 0 },
-      "held-arrow": { pitch: -8 * raise, roll: 0, yaw: 0 },
+      "held-bow": { pitch: -8 - 70 * raise, roll: 0, yaw: 180 },
+      "held-arrow": { pitch: -6 - 74 * raise, roll: 0, yaw: 180 },
     },
   };
 }

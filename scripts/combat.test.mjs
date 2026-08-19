@@ -69,4 +69,19 @@ describe("held items", () => {
     const body = parts.find((p) => p.id === "torso");
     assert.ok(body.faces.every((f) => !f.sparse), "body cubes keep a solid base fill");
   });
+
+  it("points the idle sword in front of Steve", async () => {
+    const { buildFigure, loadSkin, makeProjector, boundsOf } = await import("./lib/steve-model.mjs");
+    const { swordExtra } = await import("./lib/held-item.mjs");
+    const { idleA } = await import("./lib/steve-poses.mjs");
+    const pose = {
+      ...idleA(),
+      parts: { ...idleA().parts, "held-sword": { pitch: 40, roll: 0, yaw: 0 } },
+    };
+    const { parts } = buildFigure({ skin: await loadSkin(), pose, extras: [await swordExtra()] });
+    const project = makeProjector({ scale: 6.6, originX: 168, originY: 308 });
+    const sword = boundsOf(parts.filter((p) => p.id === "held-sword"), project);
+    const torso = boundsOf(parts.filter((p) => p.id === "torso"), project);
+    assert.ok((sword.minX + sword.maxX) / 2 > (torso.minX + torso.maxX) / 2, "blade sits in front");
+  });
 });

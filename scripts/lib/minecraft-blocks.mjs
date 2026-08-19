@@ -117,6 +117,7 @@ export const PLAY_BLOCKS = [
   { id: "wheat-0", file: "wheat_stage_0.png", label: "Wheat sprout", title: "麦苗" },
   { id: "wheat-3", file: "wheat_stage_3.png", label: "Wheat growing", title: "小麦生长" },
   { id: "wheat-7", file: "wheat_stage_7.png", label: "Wheat ripe", title: "成熟小麦" },
+  { id: "door-oak-upper", file: "door_wood_upper.png", label: "Oak door top", title: "橡木门上" },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {

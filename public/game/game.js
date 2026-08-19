@@ -110,6 +110,7 @@ const BLOCKS = {
   b: "blocks/bricks.svg",
   B: "blocks/bedrock.svg",
   D: "blocks/door-oak.svg",
+  U: "blocks/door-oak-upper.svg",
   f: "blocks/dandelion.svg",
   P: "blocks/poppy.svg",
   G: "blocks/tall-grass.svg",
@@ -349,11 +350,11 @@ function buildWorld() {
     setCell(tiles, 70, y, "p");
   }
   fillRow(tiles, ground - 4, 62, 70, "p");
-  setCell(tiles, 62, ground - 2, "j");
+  setCell(tiles, 62, ground - 1, "D");
+  setCell(tiles, 62, ground - 2, "U");
   setCell(tiles, 70, ground - 2, "j");
   setCell(tiles, 63, ground - 1, "F");
   setCell(tiles, 64, ground - 1, "T");
-  setCell(tiles, 65, ground - 1, "D");
   setCell(tiles, 68, ground - 1, "C");
   setCell(tiles, 66, ground - 1, "z");
   setCell(tiles, 67, ground - 1, "Z");
@@ -493,6 +494,7 @@ function makePlayer() {
     swingT: 0,
     hurtT: 0,
     knockT: 0,
+    dropCd: 0,
     eatT: 0,
     dead: false,
     inWater: false,
@@ -599,6 +601,21 @@ function resetGame() {
 
 function selectedItem() {
   return player.items[player.selected];
+}
+
+function throwSelected() {
+  if (!player || player.dead || win || craftingOpen) return;
+  const item = selectedItem();
+  if (!item || item.count <= 0) {
+    say("这一格是空的。");
+    return;
+  }
+  item.count -= 1;
+  const toss = makeDrop(item.id, player.x + player.face * 42, player.y - 30);
+  toss.vy = -240;
+  drops.push(toss);
+  player.dropCd = 0.55;
+  say(`扔掉了${ITEM_LABELS[item.id] ?? item.id}`);
 }
 
 function addItem(id, count) {
@@ -957,6 +974,7 @@ function updatePlayer(dt) {
   }
   if (player.hurtT > 0) player.hurtT -= dt;
   if (player.invuln > 0) player.invuln -= dt;
+  if (player.dropCd > 0) player.dropCd -= dt;
 
   player.hungerT += dt;
   if (player.hungerT > 9) {
@@ -1148,7 +1166,7 @@ function updateDrops(dt) {
       drop.vy = 0;
     }
     drop.bob += dt * 3;
-    if (player.dead || Math.hypot(drop.x - player.x, drop.y - (player.y - 20)) >= 28) continue;
+    if (player.dead || player.dropCd > 0 || Math.hypot(drop.x - player.x, drop.y - (player.y - 20)) >= 28) continue;
     if (addItem(drop.id, drop.count)) {
       drop.gone = true;
       say(`捡到 ${ITEM_LABELS[drop.id] ?? drop.id}`);
@@ -1242,8 +1260,15 @@ function drawAnchored(rel, spec, x, y, face) {
   ctx.restore();
 }
 
+function holdingSword() {
+  return selectedItem()?.id === "diamond-sword" && selectedItem()?.count > 0;
+}
+
 function steveFrame() {
-  if (player.anim === "idle") return `steve-sprites/${player.frame === 0 ? "idle-a" : "idle-b"}.svg`;
+  if (player.anim === "idle") {
+    if (holdingSword()) return "steve-sprites/swing-0.svg";
+    return `steve-sprites/${player.frame === 0 ? "idle-a" : "idle-b"}.svg`;
+  }
   if (player.anim === "run") return `steve-sprites/run-${player.frame}.svg`;
   if (player.anim === "jump") return `steve-sprites/${["jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"][player.frame]}.svg`;
   if (player.anim === "swing") return `steve-sprites/swing-${player.frame}.svg`;
@@ -1285,6 +1310,7 @@ function mobSprite(mob) {
     return `${mob.sheet}/${mob.stillT > 4 ? "rest" : "idle"}-${frame}.svg`;
   }
   if (Math.abs(mob.vx) < 14 && (mob.fuse ?? 0) <= 0.12) {
+    if (mob.kind === "skeleton") return "skeleton-sprites/draw-0.svg";
     return `${mob.sheet}/idle-${Math.floor(mob.age * 6) % 8}.svg`;
   }
   return `${mob.sheet}/walk-${(Math.floor(mob.age * 10) % 8) * 2}.svg`;
@@ -1373,7 +1399,12 @@ function drawParticles() {
 
 function drawPlayer() {
   if (player.invuln > 0 && Math.floor(time * 16) % 2 === 0 && !player.dead) ctx.globalAlpha = 0.45;
-  const combat = player.anim === "swing" || player.anim === "hurt" || player.anim === "death" || player.anim === "sleep";
+  const combat =
+    player.anim === "swing" ||
+    player.anim === "hurt" ||
+    player.anim === "death" ||
+    player.anim === "sleep" ||
+    (player.anim === "idle" && holdingSword());
   drawAnchored(steveFrame(), combat ? STEVE.combat : STEVE.loco, viewX(player.x), viewY(player.y), player.face);
   ctx.globalAlpha = 1;
 }
@@ -1684,6 +1715,7 @@ window.addEventListener("keydown", (e) => {
     player.selected = Number(key) - 1;
   }
   if (key === "j" || key === "e") useSelected();
+  if (key === "q" && mode === "play" && !craftingOpen) throwSelected();
   if (key === "r" && mode === "play") resetGame();
 });
 
@@ -1721,6 +1753,7 @@ for (const btn of document.querySelectorAll("#touch button")) {
     if (dir) hold[dir] = on;
     if (act === "jump") hold.jump = on;
     if (act === "use" && on) useSelected();
+    if (act === "drop" && on) throwSelected();
   };
   btn.addEventListener("pointerdown", (e) => {
     e.preventDefault();

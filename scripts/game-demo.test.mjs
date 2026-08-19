@@ -26,6 +26,9 @@ describe("html game demo", () => {
     assert.match(game, /from "\.\/recipes\.js"/);
     assert.match(game, /tryAddItem/);
     assert.match(game, /捡不了/);
+    assert.match(game, /function throwSelected/);
+    assert.match(game, /setCell\(tiles, 62, ground - 1, "D"\)/);
+    assert.match(html, /扔掉快捷栏/);
     assert.match(game, /tryOpenTable|craftingOpen/);
     assert.match(game, /imageSmoothingEnabled = false/);
     assert.match(game, /BLOCK_SRC_PAD = 56/);

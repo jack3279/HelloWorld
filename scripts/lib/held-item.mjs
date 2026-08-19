@@ -45,7 +45,23 @@ export function punchAlpha(skin, cutoff = ALPHA_CUTOFF) {
   return { width: skin.width, height: skin.height, rgba };
 }
 
-export async function loadItemTexture(file) {
+function flipRgbaU(skin) {
+  const { width, height, rgba } = skin;
+  const out = new Uint8Array(rgba.length);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const src = (y * width + x) * 4;
+      const dst = (y * width + (width - 1 - x)) * 4;
+      out[dst] = rgba[src];
+      out[dst + 1] = rgba[src + 1];
+      out[dst + 2] = rgba[src + 2];
+      out[dst + 3] = rgba[src + 3];
+    }
+  }
+  return { width, height, rgba: out };
+}
+
+export async function loadItemTexture(file, { flipU = true } = {}) {
   const cachePath = resolve(CACHE, file);
   let buf;
   try {
@@ -58,7 +74,8 @@ export async function loadItemTexture(file) {
     await mkdir(dirname(cachePath), { recursive: true });
     await writeFile(cachePath, buf);
   }
-  return punchAlpha(decodePng(buf));
+  const skin = punchAlpha(decodePng(buf));
+  return flipU ? flipRgbaU(skin) : skin;
 }
 
 export function heldSlab({
@@ -84,7 +101,7 @@ export function heldSlab({
   };
 }
 
-// Diamond sword in Steve's near (right) hand. Handle at the wrist, blade up the arm.
+// Diamond sword in Steve's near (right) hand. Handle at the wrist, blade pointing the way he faces.
 export function swordPart() {
   return heldSlab({
     id: "held-sword",
