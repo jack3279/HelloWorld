@@ -28,7 +28,7 @@ const MOVE = 210;
 const JUMP = 680;
 const MAX_FALL = 980;
 const DAY_LENGTH = 90;
-const FEED = { pig: "carrot", cow: "wheat", chicken: "wheat-seeds", sheep: "wheat", wolf: "bone", rabbit: "carrot", cat: "raw-cod" };
+const FEED = { pig: "carrot", cow: "wheat", chicken: "wheat-seeds", sheep: "wheat", wolf: "bone", rabbit: "carrot", cat: "raw-cod", horse: "wheat" };
 const WHEAT_STAGE = {
   0: { next: "1", wait: 5 },
   1: { next: "2", wait: 5 },
@@ -81,6 +81,11 @@ const MINEABLE = {
   $: { drop: "obsidian", tool: "pickaxe" },
   "%": { drop: "brown-mushroom" },
   r: { drop: "red-mushroom" },
+  "#": { drop: "netherrack", tool: "pickaxe" },
+  "&": { drop: "glowstone", tool: "pickaxe" },
+  "^": { drop: "soul-sand", tool: "shovel" },
+  "+": { drop: "nether-bricks", tool: "pickaxe" },
+  "?": { drop: "magma", tool: "pickaxe" },
 };
 const PLACEABLE = {
   torch: "t",
@@ -114,6 +119,11 @@ const PLACEABLE = {
   obsidian: "$",
   "red-mushroom": "r",
   "brown-mushroom": "%",
+  netherrack: "#",
+  "soul-sand": "^",
+  glowstone: "&",
+  magma: "?",
+  "nether-bricks": "+",
 };
 const PICK_TOOLS = new Set(["diamond-pickaxe", "iron-pickaxe", "wooden-pickaxe"]);
 const AXE_TOOLS = new Set(["diamond-axe", "iron-axe", "wooden-axe"]);
@@ -302,6 +312,15 @@ const ITEM_LABELS = {
   obsidian: "黑曜石",
   "red-mushroom": "红蘑菇",
   "brown-mushroom": "棕蘑菇",
+  netherrack: "下界岩",
+  "soul-sand": "灵魂沙",
+  glowstone: "荧石",
+  magma: "岩浆块",
+  "nether-bricks": "下界砖",
+  "nether-portal": "下界传送门",
+  "oak-boat": "橡木船",
+  "blaze-rod": "烈焰棒",
+  "blaze-powder": "烈焰粉",
 };
 
 const FOOD = {
@@ -397,9 +416,15 @@ const BLOCKS = {
   "!": "blocks/noteblock.svg",
   $: "blocks/obsidian.svg",
   "%": "blocks/brown-mushroom.svg",
+  "#": "blocks/netherrack.svg",
+  "&": "blocks/glowstone.svg",
+  "^": "blocks/soul-sand.svg",
+  "+": "blocks/nether-bricks.svg",
+  "?": "blocks/magma.svg",
+  "@": "blocks/nether-portal.svg",
 };
 
-const SOLID = new Set("gdscpLabBTFimxIjuyenqHRNVAEKJMOQ8X~Wl=!$".split(""));
+const SOLID = new Set([..."gdscpLabBTFimxIjuyenqHRNVAEKJMOQ8X~Wl=!$", "#", "&", "^", "+", "?"]);
 
 const canvas = document.getElementById("game");
 const overlay = document.getElementById("overlay");
@@ -417,6 +442,8 @@ let viewH = 540;
 let last = 0;
 let mode = "boot";
 let world;
+let dimension = "overworld";
+const dimKeep = { overworld: null, nether: null };
 let player;
 let mobs = [];
 let drops = [];
@@ -543,6 +570,25 @@ const MANIFEST = [
   ...range(8, (i) => `iron-golem-sprites/rest-${i}.svg`),
   ...range(8, (i) => `iron-golem-sprites/hurt-${i}.svg`),
   ...range(8, (i) => `iron-golem-sprites/death-${i}.svg`),
+  ...range(8, (i) => `horse-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `horse-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `horse-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `horse-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `horse-sprites/death-${i}.svg`),
+  ...range(8, (i) => `boat-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `boat-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `boat-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `boat-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `boat-sprites/death-${i}.svg`),
+  ...range(8, (i) => `blaze-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `blaze-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `blaze-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `blaze-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `blaze-sprites/death-${i}.svg`),
+  ...range(8, (i) => `magma-cube-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `magma-cube-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `magma-cube-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `magma-cube-sprites/death-${i}.svg`),
   ...range(8, (i) => `sheep-sprites/shorn-walk-${i * 2}.svg`),
   ...range(8, (i) => `sheep-sprites/shorn-idle-${i}.svg`),
   ...range(8, (i) => `sheep-sprites/shorn-rest-${i}.svg`),
@@ -721,12 +767,24 @@ function buildWorld() {
   setCell(tiles, 48, ground - 4, "9");
   setCell(tiles, 25, ground - 1, "r");
   setCell(tiles, 26, ground - 1, "%");
+  setCell(tiles, 36, ground, "s");
+  setCell(tiles, 35, ground - 1, "$");
+  setCell(tiles, 37, ground - 1, "$");
+  setCell(tiles, 35, ground - 2, "$");
+  setCell(tiles, 37, ground - 2, "$");
+  setCell(tiles, 35, ground - 3, "$");
+  setCell(tiles, 37, ground - 3, "$");
+  setCell(tiles, 35, ground - 4, "$");
+  setCell(tiles, 36, ground - 4, "$");
+  setCell(tiles, 37, ground - 4, "$");
+  setCell(tiles, 36, ground - 1, "@");
+  setCell(tiles, 36, ground - 2, "@");
+  setCell(tiles, 36, ground - 3, "@");
   setCell(tiles, 72, ground, "~");
   setCell(tiles, 73, ground, "~");
   fillRow(tiles, ground - 1, 71, 73, "A");
   setCell(tiles, 74, ground - 1, "E");
   setCell(tiles, 69, ground - 1, "W");
-  setCell(tiles, 31, ground - 1, "$");
   fillRow(tiles, ground + 3, 8, 11, "V");
 
   setCell(tiles, 19, ground + 3, "x");
@@ -764,6 +822,60 @@ function buildWorld() {
   setCell(tiles, W - 1, ground, "B");
 
   return { w: W, h: H, tiles, ground, nightSpawned: false, cropT: 0, doorOpen: new Set(), tntFuse: new Map(), fireT: new Map() };
+}
+
+function portalFrame(tiles, x, ground) {
+  setCell(tiles, x, ground, "#");
+  setCell(tiles, x - 1, ground - 1, "$");
+  setCell(tiles, x + 1, ground - 1, "$");
+  setCell(tiles, x - 1, ground - 2, "$");
+  setCell(tiles, x + 1, ground - 2, "$");
+  setCell(tiles, x - 1, ground - 3, "$");
+  setCell(tiles, x + 1, ground - 3, "$");
+  setCell(tiles, x - 1, ground - 4, "$");
+  setCell(tiles, x, ground - 4, "$");
+  setCell(tiles, x + 1, ground - 4, "$");
+  setCell(tiles, x, ground - 1, "@");
+  setCell(tiles, x, ground - 2, "@");
+  setCell(tiles, x, ground - 3, "@");
+}
+
+function buildNether() {
+  const W = 78;
+  const H = 16;
+  const tiles = Array.from({ length: H }, () => Array(W).fill("."));
+  const ground = 10;
+
+  for (let x = 0; x < W; x++) {
+    setCell(tiles, x, H - 1, "B");
+    for (let y = ground; y < H - 1; y++) setCell(tiles, x, y, "#");
+    if (x % 11 === 3) setCell(tiles, x, 1, "&");
+    if (x % 13 === 7) setCell(tiles, x, 2, "&");
+  }
+
+  fillRow(tiles, ground, 12, 16, ".");
+  fillRow(tiles, ground + 1, 12, 16, "v");
+  fillRow(tiles, ground + 2, 12, 16, "v");
+  fillRow(tiles, ground + 3, 12, 16, "#");
+
+  fillRow(tiles, ground, 52, 56, ".");
+  fillRow(tiles, ground + 1, 52, 56, "v");
+  fillRow(tiles, ground + 2, 52, 56, "v");
+  fillRow(tiles, ground + 3, 52, 56, "#");
+
+  fillRow(tiles, ground, 20, 24, "^");
+  fillRow(tiles, ground, 40, 44, "?");
+  fillRow(tiles, ground - 1, 62, 68, "+");
+  fillRow(tiles, ground - 2, 63, 67, "+");
+  setCell(tiles, 64, ground - 3, "&");
+  setCell(tiles, 18, ground - 1, "?");
+  setCell(tiles, 48, ground - 1, "^");
+
+  portalFrame(tiles, 36, ground);
+  setCell(tiles, 0, ground, "B");
+  setCell(tiles, W - 1, ground, "B");
+
+  return { w: W, h: H, tiles, ground, nightSpawned: true, cropT: 0, doorOpen: new Set(), tntFuse: new Map(), fireT: new Map() };
 }
 
 function tileAt(px, py) {
@@ -1015,6 +1127,8 @@ function makePlayer() {
     level: 0,
     swingKind: "sword",
     fishT: 0,
+    portalT: 0,
+    mount: null,
     items: [
       { id: "diamond-sword", count: 1 },
       { id: "bow", count: 1 },
@@ -1049,6 +1163,10 @@ function makeMob(kind, tx, ty) {
     squid: { hp: 5, speed: 40, dmg: 0, hw: 12, hh: 28, scale: 0.14, sheet: "squid-sprites", h: 520, passive: true, aquatic: true },
     witch: { hp: 10, speed: 80, dmg: 3, hw: 11, hh: 52, scale: 0.16, sheet: "witch-sprites", h: 560 },
     "iron-golem": { hp: 20, speed: 55, dmg: 5, hw: 16, hh: 62, scale: 0.18, sheet: "iron-golem-sprites", h: 560, ally: true },
+    horse: { hp: 12, speed: 130, dmg: 0, hw: 16, hh: 44, scale: 0.16, sheet: "horse-sprites", h: 520, passive: true },
+    boat: { hp: 8, speed: 110, dmg: 0, hw: 22, hh: 16, scale: 0.14, sheet: "boat-sprites", h: 400, passive: true, aquatic: true },
+    blaze: { hp: 10, speed: 70, dmg: 3, hw: 12, hh: 44, scale: 0.16, sheet: "blaze-sprites", h: 480, fly: true },
+    "magma-cube": { hp: 8, speed: 45, dmg: 3, hw: 16, hh: 22, scale: 0.14, sheet: "magma-cube-sprites", h: 480 },
   };
   return {
     kind,
@@ -1079,6 +1197,8 @@ function makeMob(kind, tx, ty) {
     loveT: 0,
     sheared: false,
     angry: false,
+    saddled: false,
+    mounted: false,
   };
 }
 
@@ -1112,6 +1232,9 @@ function addXp(amount) {
 }
 
 function resetGame() {
+  dimension = "overworld";
+  dimKeep.overworld = null;
+  dimKeep.nether = null;
   world = buildWorld();
   player = makePlayer();
   mobs = [
@@ -1138,6 +1261,8 @@ function resetGame() {
     makeMob("bat", 45, 6),
     makeMob("squid", 16, 12),
     makeMob("zombie", 50, 10),
+    makeMob("horse", 42, 10),
+    makeMob("boat", 16, 11),
   ];
   drops = [
     makeDrop("diamond", TILE * 13.5, TILE * 9),
@@ -1160,6 +1285,8 @@ function resetGame() {
     makeDrop("bread", TILE * 4.5, TILE * 9, 2),
     makeDrop("netherite-chestplate", TILE * 66.8, TILE * 9),
     makeDrop("fishing-rod", TILE * 15.2, TILE * 9),
+    makeDrop("saddle", TILE * 41.4, TILE * 9),
+    makeDrop("oak-boat", TILE * 14.4, TILE * 9),
   ];
   particles = [];
   arrows = [];
@@ -1175,7 +1302,7 @@ function resetGame() {
   win = false;
   demo = null;
   hold.left = hold.right = hold.jump = hold.use = false;
-  message = "向东走。喂猫、钓鱼、下雨天回家。剪羊毛、点火、举盾。把 5 颗钻石放进箱子。";
+  message = "向东走。套鞍骑马、坐船、走进传送门去下界。喂猫、钓鱼、下雨天回家。把 5 颗钻石放进箱子。";
   messageT = 5;
 }
 
@@ -1410,7 +1537,7 @@ function tryFeed() {
     mob.stillT = 0;
     mob.hurtFlee = 0;
     burstHearts(mob.x, mob.y);
-    const names = { pig: "猪", cow: "牛", chicken: "鸡", sheep: "羊", wolf: "狼", rabbit: "兔子", villager: "村民" };
+    const names = { pig: "猪", cow: "牛", chicken: "鸡", sheep: "羊", wolf: "狼", rabbit: "兔子", villager: "村民", cat: "猫", horse: "马" };
     say(`喂了${names[mob.kind] ?? mob.kind}。它跟着你。`);
     return true;
   }
@@ -1664,6 +1791,7 @@ function hurt(who, amount, dir) {
       player.anim = "death";
       player.frame = 0;
       player.age = 0;
+      if (player.mount) dismount();
       say("你死了。按 R 重来。", 8);
     }
     return;
@@ -1701,6 +1829,10 @@ function hurt(who, amount, dir) {
       squid: "ink-sac",
       witch: "redstone-dust",
       "iron-golem": "iron-ingot",
+      horse: "leather",
+      boat: "oak-boat",
+      blaze: "blaze-rod",
+      "magma-cube": "slimeball",
     };
     if (who.kind !== "bat") drops.push(makeDrop(loot[who.kind] ?? "apple", who.x, who.y - 20));
     if (who.kind === "cow") drops.push(makeDrop("leather", who.x + 6, who.y - 16));
@@ -1714,6 +1846,8 @@ function hurt(who, amount, dir) {
       drops.push(makeDrop("stick", who.x - 6, who.y - 14));
     }
     if (who.kind === "iron-golem") drops.push(makeDrop("iron-ingot", who.x + 8, who.y - 16, 2));
+    if (who.kind === "magma-cube" && Math.random() < 0.5) drops.push(makeDrop("coal", who.x + 6, who.y - 16));
+    if (player.mount === who) dismount();
     spawnXp(who.x, who.y - 18, who.kind === "villager" ? 3 : who.passive ? 2 : 4);
   }
 }
@@ -1787,6 +1921,148 @@ function tryNoteblock() {
   return false;
 }
 
+function nearMob(pred, range = 52) {
+  for (const mob of mobs) {
+    if (mob.dead) continue;
+    if (pred && !pred(mob)) continue;
+    if (Math.hypot(mob.x - player.x, mob.y - player.y) <= range) return mob;
+  }
+  return null;
+}
+
+function mountOnto(mob) {
+  player.mount = mob;
+  mob.mounted = true;
+  mob.stillT = 0;
+  mob.hurtFlee = 0;
+  mob.followT = 0;
+  say(mob.kind === "boat" ? "坐上了船。A/D 划，空格下来。" : "骑上了马。A/D 跑，空格跳，Shift 下来。", 3);
+}
+
+function dismount() {
+  const mount = player.mount;
+  if (!mount) return;
+  mount.mounted = false;
+  mount.vx = 0;
+  player.mount = null;
+  player.y = mount.y - 4;
+  player.vy = -80;
+  say("下来了。");
+}
+
+function trySaddle() {
+  const item = selectedItem();
+  if (item?.id !== "saddle" || item.count <= 0) return false;
+  const horse = nearMob((mob) => mob.kind === "horse" && !mob.saddled);
+  if (!horse) return false;
+  item.count -= 1;
+  horse.saddled = true;
+  say("给马上了鞍。再用一次就能骑。");
+  return true;
+}
+
+function tryMount() {
+  if (player.mount) return false;
+  const blocking = frontCell().some((cell) => {
+    const t = world.tiles[cell.y]?.[cell.x];
+    return t && t !== "." && (MINEABLE[t] || t === "C" || t === "T" || t === "F" || t === "D" || t === "U");
+  });
+  if (blocking) return false;
+  const boat = nearMob((mob) => mob.kind === "boat" && !mob.mounted, 56);
+  if (boat) {
+    mountOnto(boat);
+    return true;
+  }
+  const horse = nearMob((mob) => mob.kind === "horse" && mob.saddled && !mob.mounted, 56);
+  if (horse) {
+    mountOnto(horse);
+    return true;
+  }
+  return false;
+}
+
+function tryPlaceBoat() {
+  const item = selectedItem();
+  if (item?.id !== "oak-boat" || item.count <= 0) return false;
+  if (!facingWater() && tileAt(player.x, player.y + 8) !== "w") {
+    say("船要放在水上。");
+    return true;
+  }
+  const tx = Math.floor((player.x + player.face * 36) / TILE);
+  const ty = Math.floor((player.y + 8) / TILE);
+  const boat = makeMob("boat", tx, ty);
+  boat.y = player.y;
+  boat.x = player.x + player.face * 40;
+  mobs.push(boat);
+  item.count -= 1;
+  say("放下了橡木船。靠近再用就能坐上去。");
+  return true;
+}
+
+function captureDim() {
+  return {
+    world,
+    mobs,
+    drops,
+    arrows,
+    particles,
+    chestItems,
+    furnace,
+  };
+}
+
+function applyDim(snap) {
+  world = snap.world;
+  mobs = snap.mobs;
+  drops = snap.drops;
+  arrows = snap.arrows;
+  particles = snap.particles;
+  chestItems = snap.chestItems;
+  furnace = snap.furnace;
+}
+
+function swapDimension() {
+  if (player.mount) dismount();
+  dimKeep[dimension] = captureDim();
+  const next = dimension === "overworld" ? "nether" : "overworld";
+  if (!dimKeep[next]) {
+    if (next === "nether") {
+      world = buildNether();
+      mobs = [
+        makeMob("blaze", 48, 6),
+        makeMob("blaze", 28, 7),
+        makeMob("magma-cube", 22, 10),
+        makeMob("magma-cube", 42, 10),
+      ];
+      drops = [makeDrop("glowstone", TILE * 64.5, TILE * 8, 2)];
+      arrows = [];
+      particles = [];
+      chestItems = emptySlots(CHEST_SLOTS);
+      furnace = emptyFurnace();
+    }
+  } else applyDim(dimKeep[next]);
+  dimension = next;
+  player.x = TILE * 38.5;
+  player.y = TILE * 10;
+  player.vx = 0;
+  player.vy = 0;
+  player.portalT = 0;
+  craftingOpen = false;
+  chestOpen = false;
+  furnaceOpen = false;
+  say(dimension === "nether" ? "穿过了传送门。这里是下界。" : "回到了主世界。", 4);
+}
+
+function updatePortal(dt) {
+  const standing = tileAt(player.x, player.y - 16) === "@" || tileAt(player.x, player.y - 8) === "@" || tileAt(player.x, player.y - 28) === "@";
+  if (!standing) {
+    player.portalT = 0;
+    return;
+  }
+  player.portalT += dt;
+  if (player.portalT >= 1.35) swapDimension();
+}
+
 function firePlayerBow() {
   const charge = player.drawT;
   player.drawT = 0;
@@ -1855,6 +2131,9 @@ function useSelected() {
   if (player.sleeping > 0 || player.eatT > 0) return;
   if (uiOpen()) return;
   if (tryFeed()) return;
+  if (trySaddle()) return;
+  if (tryMount()) return;
+  if (tryPlaceBoat()) return;
   if (tryShear()) return;
   if (tryFlint()) return;
   if (tryHoe()) return;
@@ -1942,9 +2221,37 @@ function updatePlayer(dt) {
   const jump = keys.has(" ") || keys.has("w") || keys.has("arrowup") || hold.jump;
   const sneak = keys.has("shift");
   const sprint = keys.has("control") && !sneak;
-  const speed = player.inWater ? MOVE * 0.55 : sneak ? MOVE * 0.45 : sprint ? MOVE * 1.45 : MOVE;
+  const mount = player.mount && !player.mount.dead ? player.mount : null;
+  if (player.mount && !mount) dismount();
+  const speed = player.inWater || mount?.kind === "boat" ? MOVE * 0.55 : sneak ? MOVE * 0.45 : sprint ? MOVE * 1.45 : mount?.kind === "horse" ? MOVE * 1.55 : MOVE;
 
-  if (player.knockT > 0) {
+  if (mount) {
+    if (sneak) {
+      dismount();
+    } else {
+      if (player.knockT > 0) player.knockT -= dt;
+      else {
+        mount.vx = (right ? speed : 0) - (left ? speed : 0);
+        if (left) mount.face = player.face = -1;
+        if (right) mount.face = player.face = 1;
+      }
+      if (jump && player.eatT <= 0) {
+        if (mount.kind === "horse" && mount.grounded) {
+          mount.vy = -JUMP * 0.9;
+          mount.grounded = false;
+        } else if (mount.kind === "boat") dismount();
+      }
+      moveBody(mount, dt);
+      player.x = mount.x;
+      player.y = mount.y - (mount.kind === "boat" ? 10 : 22);
+      player.vx = mount.vx;
+      player.vy = mount.vy;
+      player.grounded = mount.grounded;
+      player.inWater = mount.inWater;
+      player.inLava = mount.inLava;
+      player.face = mount.face;
+    }
+  } else if (player.knockT > 0) {
     player.knockT -= dt;
   } else if (player.swingT <= 0 && player.eatT <= 0) {
     player.vx = (right ? speed : 0) - (left ? speed : 0);
@@ -1955,17 +2262,23 @@ function updatePlayer(dt) {
   }
 
   const onLadder = tileAt(player.x, player.y - 8) === "h" || tileAt(player.x, player.y - 24) === "h";
-  if (jump && player.eatT <= 0 && (player.grounded || player.inWater || onLadder)) {
+  if (!player.mount && jump && player.eatT <= 0 && (player.grounded || player.inWater || onLadder)) {
     player.vy = player.inWater || onLadder ? -420 : -JUMP;
     player.grounded = false;
   }
 
-  moveBody(player, dt);
+  if (!player.mount) moveBody(player, dt);
 
   if (player.inLava) hurt(player, 3, -player.face);
   const foot = tileAt(player.x, player.y - 4);
   if (foot === "*") hurt(player, 2, -player.face);
+  if (foot === "?") hurt(player, 2, -player.face);
+  if (foot === "^") {
+    player.vx *= 0.45;
+    if (player.mount) player.mount.vx *= 0.45;
+  }
   if (tileAt(player.x, player.y - 8) === "k") hurt(player, 1, -player.face);
+  updatePortal(dt);
 
   if (player.swingT > 0) {
     player.swingT -= dt;
@@ -2044,6 +2357,7 @@ function updateMobs(dt) {
     const dx = player.x - mob.x;
     const close = !player.dead && Math.abs(dx) < 420;
     if (mob.passive) {
+      if (mob.mounted) continue;
       if (mob.loveT > 0) mob.loveT -= dt;
       if (mob.hurtFlee > 0) {
         mob.hurtFlee -= dt;
@@ -2078,12 +2392,17 @@ function updateMobs(dt) {
         mob.face = Math.sign(pond - mob.x) || mob.face;
         mob.vx = mob.face * mob.speed;
       }
+      if (mob.kind === "boat" && !mob.inWater) {
+        const pond = 15.5 * TILE;
+        mob.face = Math.sign(pond - mob.x) || mob.face;
+        mob.vx = mob.face * mob.speed;
+      }
       if (mob.kind === "chicken" && Math.random() < dt * 0.08) {
         drops.push(makeDrop("egg", mob.x, mob.y - 12));
         say("鸡下蛋了。", 1.5);
       }
       moveBody(mob, dt);
-      if (mob.inLava) hurt(mob, 4, -mob.face);
+      if (mob.inLava && mob.kind !== "blaze" && mob.kind !== "magma-cube") hurt(mob, 4, -mob.face);
       continue;
     }
     if (mob.kind === "creeper" && close && Math.abs(dx) < 72 && Math.abs(mob.y - player.y) < 56) {
@@ -2103,6 +2422,8 @@ function updateMobs(dt) {
       steerSkeleton(mob, dt, dx, close);
     } else if (mob.kind === "witch") {
       steerWitch(mob, dt, dx, close);
+    } else if (mob.kind === "blaze") {
+      steerBlaze(mob, dt, dx, close);
     } else if (mob.kind === "iron-golem") {
       steerGolem(mob, dt);
     } else {
@@ -2112,13 +2433,14 @@ function updateMobs(dt) {
         mob.vx = mob.face * mob.speed * (mob.inWater ? 0.55 : 1);
         if (mob.kind === "spider" && mob.grounded && Math.abs(dx) < 90 && Math.random() < 0.02) mob.vy = -520;
         if (mob.kind === "slime" && mob.grounded && Math.random() < 0.06) mob.vy = -420;
+        if (mob.kind === "magma-cube" && mob.grounded && Math.random() < 0.07) mob.vy = -440;
       } else {
         mob.vx *= 0.8;
       }
     }
     moveBody(mob, dt);
-    if (mob.inLava) hurt(mob, 4, -mob.face);
-    if (mob.kind !== "creeper" && mob.kind !== "skeleton" && mob.kind !== "witch" && !mob.ally && !player.dead && Math.abs(mob.x - player.x) < mob.hw + player.hw + 4 && Math.abs(mob.y - player.y) < mob.hh) {
+    if (mob.inLava && mob.kind !== "blaze" && mob.kind !== "magma-cube") hurt(mob, 4, -mob.face);
+    if (mob.kind !== "creeper" && mob.kind !== "skeleton" && mob.kind !== "witch" && mob.kind !== "blaze" && !mob.ally && !player.dead && Math.abs(mob.x - player.x) < mob.hw + player.hw + 4 && Math.abs(mob.y - player.y) < mob.hh) {
       hurt(player, mob.dmg, Math.sign(player.x - mob.x) || -1);
     }
   }
@@ -2209,6 +2531,28 @@ function steerWitch(mob, dt, dx, close) {
     return;
   }
   mob.vx = mob.face * mob.speed * 0.7;
+}
+
+function steerBlaze(mob, dt, dx, close) {
+  if (mob.shootCd > 0) mob.shootCd -= dt;
+  const linedUp = close && Math.abs(mob.y - player.y) < 120;
+  if (!linedUp) {
+    mob.vx *= 0.85;
+    return;
+  }
+  mob.face = Math.sign(dx) || mob.face;
+  const dist = Math.abs(dx);
+  if (dist < 70) {
+    mob.vx = -mob.face * mob.speed;
+    return;
+  }
+  if (dist < 320 && mob.shootCd <= 0 && mob.hitT <= 0) {
+    mob.vx = 0;
+    fireArrow(mob);
+    mob.shootCd = 1.25;
+    return;
+  }
+  mob.vx = mob.face * mob.speed * 0.65;
 }
 
 function steerGolem(mob, dt) {
@@ -2325,7 +2669,7 @@ function updateClock(dt) {
   clock = (clock + dt * (24 / DAY_LENGTH)) % 24;
   if (!wasNight && isNight()) {
     say("天黑了。关上门，回房子里睡觉。", 4);
-    if (world && !world.nightSpawned) {
+    if (world && !world.nightSpawned && dimension === "overworld") {
       world.nightSpawned = true;
       mobs.push(makeMob("zombie", 22, 10));
       mobs.push(makeMob("spider", 38, 10));
@@ -2434,7 +2778,7 @@ function steveFrame() {
 }
 
 function deathFrames(kind) {
-  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" || kind === "rabbit" || kind === "villager" || kind === "cat" || kind === "bat" || kind === "squid" || kind === "witch" || kind === "iron-golem" ? 8 : 12;
+  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" || kind === "rabbit" || kind === "villager" || kind === "cat" || kind === "bat" || kind === "squid" || kind === "witch" || kind === "iron-golem" || kind === "horse" || kind === "boat" || kind === "blaze" || kind === "magma-cube" ? 8 : 12;
 }
 
 function mobGone(mob) {
@@ -2473,7 +2817,7 @@ function mobSprite(mob) {
 }
 
 function isRaining() {
-  return (clock >= 11 && clock < 15) || (clock >= 20 && clock < 23);
+  return dimension === "overworld" && ((clock >= 11 && clock < 15) || (clock >= 20 && clock < 23));
 }
 
 function drawSky() {
@@ -2481,9 +2825,15 @@ function drawSky() {
   const dusk = clock >= 17 && clock < 19 ? (clock - 17) / 2 : clock >= 5 && clock < 7 ? 1 - (clock - 5) / 2 : night ? 1 : 0;
   const rain = isRaining();
   const g = ctx.createLinearGradient(0, 0, 0, viewH);
-  g.addColorStop(0, mixHex(rain ? "#6a8aaa" : "#8ec5ff", "#0b1630", dusk));
-  g.addColorStop(0.55, mixHex(rain ? "#8aa3b8" : "#c7e4ff", "#1a2744", dusk));
-  g.addColorStop(1, mixHex(rain ? "#c5d4b0" : "#e7f4c8", "#1c2a18", dusk));
+  if (dimension === "nether") {
+    g.addColorStop(0, "#4a1810");
+    g.addColorStop(0.55, "#6a2414");
+    g.addColorStop(1, "#2a1008");
+  } else {
+    g.addColorStop(0, mixHex(rain ? "#6a8aaa" : "#8ec5ff", "#0b1630", dusk));
+    g.addColorStop(0.55, mixHex(rain ? "#8aa3b8" : "#c7e4ff", "#1a2744", dusk));
+    g.addColorStop(1, mixHex(rain ? "#c5d4b0" : "#e7f4c8", "#1c2a18", dusk));
+  }
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, viewW, viewH);
 }

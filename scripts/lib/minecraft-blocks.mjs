@@ -127,6 +127,7 @@ export const PLAY_BLOCKS = [
   { id: "door-oak-upper", file: "door_wood_upper.png", label: "Oak door top", title: "橡木门上" },
   { id: "farmland-dry", file: "farmland_dry.png", label: "Dry farmland", title: "干耕地" },
   { id: "sugar-cane", file: "sugar_cane.png", label: "Sugar cane", title: "甘蔗", base: JAVA_BLOCKS_BASE },
+  { id: "nether-portal", file: "portal.png", label: "Nether portal", title: "下界传送门" },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {

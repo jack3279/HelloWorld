@@ -164,6 +164,9 @@ export const PLAY_ITEMS = [
   { id: "ink-sac", file: "ink_sac.png", label: "Ink sac", title: "墨囊", base: JAVA_ITEMS_BASE },
   { id: "bowl", file: "bowl.png", label: "Bowl", title: "碗" },
   { id: "mushroom-stew", file: "mushroom_stew.png", label: "Mushroom stew", title: "蘑菇煲" },
+  { id: "oak-boat", file: "boat_oak.png", label: "Oak boat", title: "橡木船" },
+  { id: "blaze-rod", file: "blaze_rod.png", label: "Blaze rod", title: "烈焰棒" },
+  { id: "blaze-powder", file: "blaze_powder.png", label: "Blaze powder", title: "烈焰粉" },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.

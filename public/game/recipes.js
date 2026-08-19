@@ -58,6 +58,8 @@ export const RECIPES = [
   { id: "mushroom-stew", count: 1, need: { bowl: 1, "red-mushroom": 1, "brown-mushroom": 1 } },
   { id: "bookshelf", count: 1, need: { "oak-planks": 6 } },
   { id: "noteblock", count: 1, need: { "oak-planks": 8, "redstone-dust": 1 } },
+  { id: "oak-boat", count: 1, need: { "oak-planks": 5 } },
+  { id: "blaze-powder", count: 2, need: { "blaze-rod": 1 } },
 ];
 
 export const HOTBAR_SLOTS = 9;
@@ -112,6 +114,12 @@ export const BLOCK_FACE_ITEMS = new Set([
   "obsidian",
   "red-mushroom",
   "brown-mushroom",
+  "netherrack",
+  "soul-sand",
+  "glowstone",
+  "magma",
+  "nether-bricks",
+  "nether-portal",
 ]);
 
 export function emptySlots(n) {

@@ -77,6 +77,9 @@ describe("hotbar item catalog", () => {
     assert.ok(play.includes("leather-leggings"));
     assert.ok(play.includes("leather-boots"));
     assert.ok(play.includes("leather-chestplate"));
+    assert.ok(play.includes("oak-boat"));
+    assert.ok(play.includes("blaze-rod"));
+    assert.ok(play.includes("blaze-powder"));
   });
 
   it("loads official 16×16 sprites", async () => {

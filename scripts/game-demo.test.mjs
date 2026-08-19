@@ -56,6 +56,16 @@ describe("html game demo", () => {
     assert.match(game, /makeMob\("squid"/);
     assert.match(game, /makeMob\("witch"/);
     assert.match(game, /makeMob\("iron-golem"/);
+    assert.match(game, /makeMob\("horse"/);
+    assert.match(game, /makeMob\("boat"/);
+    assert.match(game, /makeMob\("blaze"/);
+    assert.match(game, /makeMob\("magma-cube"/);
+    assert.match(game, /function buildNether/);
+    assert.match(game, /function swapDimension/);
+    assert.match(game, /function tryMount/);
+    assert.match(game, /function trySaddle/);
+    assert.match(game, /function tryPlaceBoat/);
+    assert.match(game, /function updatePortal/);
     assert.match(game, /function tryFish/);
     assert.match(game, /function drawRain/);
     assert.match(game, /function isRaining/);
@@ -97,7 +107,7 @@ describe("html game demo", () => {
   it("preloads existing repo art instead of inventing new sprites", async () => {
     const src = await readFile(resolve(ROOT, "public/game/game.js"), "utf8");
     const rels = new Set();
-    for (const match of src.matchAll(/["']((?:blocks|items|hud|steve-sprites|zombie-sprites|skeleton-sprites|spider-sprites|enderman-sprites|creeper-sprites|pig-sprites|cow-sprites|chicken-sprites|sheep-sprites|wolf-sprites|slime-sprites|rabbit-sprites|villager-sprites|cat-sprites|bat-sprites|squid-sprites|witch-sprites|iron-golem-sprites|lava-sprites|water-sprites)\/[a-z0-9-]+\.svg)["']/g)) {
+    for (const match of src.matchAll(/["']((?:blocks|items|hud|steve-sprites|zombie-sprites|skeleton-sprites|spider-sprites|enderman-sprites|creeper-sprites|pig-sprites|cow-sprites|chicken-sprites|sheep-sprites|wolf-sprites|slime-sprites|rabbit-sprites|villager-sprites|cat-sprites|bat-sprites|squid-sprites|witch-sprites|iron-golem-sprites|horse-sprites|boat-sprites|blaze-sprites|magma-cube-sprites|lava-sprites|water-sprites)\/[a-z0-9-]+\.svg)["']/g)) {
       rels.add(match[1]);
     }
     const steve = ["idle-a", "idle-b", ...Array.from({ length: 8 }, (_, i) => `run-${i}`), "jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"];
@@ -107,13 +117,13 @@ describe("html game demo", () => {
     for (let i = 0; i < 12; i++) rels.add(`steve-sprites/death-${i}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`steve-sprites/sleep-${i}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`steve-sprites/eat-${i}.svg`);
-    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem"]) {
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze", "magma-cube"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/walk-${i * 2}.svg`);
     }
-    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem"]) {
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze", "magma-cube"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/idle-${i}.svg`);
     }
-    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem"]) {
+    for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper", "pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze", "magma-cube"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/hurt-${i}.svg`);
     }
     for (const mob of ["zombie", "skeleton", "spider", "enderman", "creeper"]) {
@@ -121,10 +131,10 @@ describe("html game demo", () => {
     }
     for (let i = 0; i < 12; i++) rels.add(`skeleton-sprites/draw-${i}.svg`);
     rels.add("items/arrow.svg");
-    for (const mob of ["pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem"]) {
+    for (const mob of ["pig", "cow", "chicken", "sheep", "wolf", "slime", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze", "magma-cube"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/death-${i}.svg`);
     }
-    for (const mob of ["pig", "cow", "chicken", "sheep", "wolf", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem"]) {
+    for (const mob of ["pig", "cow", "chicken", "sheep", "wolf", "rabbit", "villager", "cat", "bat", "squid", "witch", "iron-golem", "horse", "boat", "blaze"]) {
       for (let i = 0; i < 8; i++) rels.add(`${mob}-sprites/rest-${i}.svg`);
     }
     for (let i = 0; i < 10; i++) rels.add(`creeper-sprites/swell-${i * 2}.svg`);
@@ -174,6 +184,13 @@ describe("html game demo", () => {
     assert.ok(existsSync(resolve(ROOT, "assets/squid-sprites/idle-0.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/witch-sprites/idle-0.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/iron-golem-sprites/idle-0.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/horse-sprites/idle-0.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/boat-sprites/idle-0.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blaze-sprites/idle-0.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/magma-cube-sprites/idle-0.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/items/oak-boat.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/items/blaze-rod.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/nether-portal.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/steve-sprites/armor-netherite.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/items/fishing-rod.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/blocks/bookshelf.svg")));

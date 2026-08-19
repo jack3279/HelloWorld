@@ -149,6 +149,12 @@ describe("crafting recipes", () => {
     assert.deepEqual(rod.need, { stick: 3, string: 2 });
     const stew = RECIPES.find((r) => r.id === "mushroom-stew");
     assert.deepEqual(stew.need, { bowl: 1, "red-mushroom": 1, "brown-mushroom": 1 });
+    const boat = RECIPES.find((r) => r.id === "oak-boat");
+    assert.deepEqual(boat.need, { "oak-planks": 5 });
+    const powder = RECIPES.find((r) => r.id === "blaze-powder");
+    assert.deepEqual(powder.need, { "blaze-rod": 1 });
+    assert.equal(itemAsset("netherrack"), "blocks/netherrack.svg");
+    assert.equal(itemAsset("oak-boat"), "items/oak-boat.svg");
   });
 
   it("smelts sand to glass and logs to charcoal", () => {
