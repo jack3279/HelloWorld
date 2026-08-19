@@ -10,16 +10,15 @@ import {
   createQuadrupedPoses,
 } from "./quadruped-poses.mjs";
 
-const base = createQuadrupedPoses({ scale: 18, h: 480, originY: 452 });
+const base = createQuadrupedPoses({ scale: 12, h: 480, originY: 452, originX: 328 });
 
 function decorate(pose) {
   const bodyPitch = pose.parts.body?.pitch ?? BODY_REST_PITCH;
   const wag = (pose.root?.x ?? 0) * 30 + (pose.root?.y ?? 0) * 20;
-  pose.parts.snout = { ...FACE, pitch: pose.parts.head?.pitch ?? FACE.pitch };
   pose.parts["ear-right"] = { pitch: 8, roll: -10 };
   pose.parts["ear-left"] = { pitch: 8, roll: 10 };
-  pose.parts.tail1 = { pitch: bodyPitch - 18 + wag, yaw: -8 };
-  pose.parts.tail2 = { pitch: bodyPitch + 28 + wag * 0.6, yaw: -4 };
+  pose.parts.tail1 = { pitch: bodyPitch - 10 + wag, yaw: -6 };
+  pose.parts.tail2 = { pitch: bodyPitch + 12 + wag * 0.6, yaw: -4 };
   return pose;
 }
 

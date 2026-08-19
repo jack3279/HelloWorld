@@ -78,6 +78,7 @@ describe("wolf pose", () => {
   });
 });
 
+
 describe("generated wolf assets", () => {
   it("writes a side-view SVG with muzzle, mane, and tail", async () => {
     const svg = await readFile(resolve(ROOT, "assets/wolf-side.svg"), "utf8");
@@ -85,6 +86,23 @@ describe("generated wolf assets", () => {
     assert.match(svg, /id="mane"/);
     assert.match(svg, /id="tail"/);
     assert.doesNotMatch(svg, /NaN|undefined/);
+  });
+
+  it("keeps the pitched torso overlapping the head in the idle sprite", async () => {
+    const svg = await readFile(resolve(ROOT, "assets/wolf-sprites/idle-0.svg"), "utf8");
+    function box(id) {
+      const start = svg.indexOf(`id="${id}"`);
+      const next = svg.indexOf(`<g id="`, start + 8);
+      const chunk = svg.slice(start, next === -1 ? undefined : next);
+      const xs = [];
+      for (const path of chunk.matchAll(/\bd="([^"]+)"/g)) {
+        const nums = [...path[1].matchAll(/-?\d+(?:\.\d+)?/g)].map(Number);
+        for (let i = 0; i + 1 < nums.length; i += 2) xs.push(nums[i]);
+      }
+      return [Math.min(...xs), Math.max(...xs)];
+    }
+    assert.ok(overlap(box("body"), box("head")) > 0, "body meets head");
+    assert.ok(overlap(box("body"), box("leg-front-right")) > 0, "body meets front leg");
   });
 
   it("writes walk, idle, rest, hurt, and death frames", async () => {

@@ -38,7 +38,7 @@ describe("cat model", () => {
     assert.ok(ids.includes("tail1"));
     assert.ok(ids.includes("tail2"));
     assert.equal(CAT_MODEL.find((p) => p.id === "snout").parent, "head");
-    assert.equal(CAT_MODEL.find((p) => p.id === "tail2").parent, "tail1");
+    assert.equal(CAT_MODEL.find((p) => p.id === "tail2").parent, undefined);
     const front = CAT_MODEL.find((p) => p.id === "leg-front-right");
     assert.ok(front.max[1] - front.min[1] >= 9.5, "front legs are 10 tall");
     const body = CAT_MODEL.find((p) => p.id === "body");
@@ -84,6 +84,25 @@ describe("cat pose", () => {
     assert.ok(overlap(bodyZ, headZ) > 0, `body z ${bodyZ} vs head ${headZ}`);
     assert.ok(overlap(bodyY, frontY) > 0, `body y ${bodyY} vs front leg ${frontY}`);
   });
+
+  it("does not copy the 45° face yaw onto the parented muzzle", () => {
+    assert.equal(idleA().parts.snout, undefined);
+  });
+
+  it("pitches both tail cuboids onto the rump instead of parenting one through the other", () => {
+    const pose = idleA();
+    const body = CAT_MODEL.find((p) => p.id === "body");
+    const tail1 = CAT_MODEL.find((p) => p.id === "tail1");
+    const tail2 = CAT_MODEL.find((p) => p.id === "tail2");
+    const bodyZ = pitchedSpan(body, pose.parts.body.pitch, 2);
+    const tail1Z = pitchedSpan(tail1, pose.parts.tail1.pitch, 2);
+    const tail2Z = pitchedSpan(tail2, pose.parts.tail2.pitch, 2);
+    const tail1Y = pitchedSpan(tail1, pose.parts.tail1.pitch, 1);
+    const tail2Y = pitchedSpan(tail2, pose.parts.tail2.pitch, 1);
+    assert.ok(overlap(bodyZ, tail1Z) > -0.5, `body z ${bodyZ} vs tail1 ${tail1Z}`);
+    assert.ok(overlap(tail1Z, tail2Z) > 0, `tail1 z ${tail1Z} vs tail2 ${tail2Z}`);
+    assert.ok(overlap(tail1Y, tail2Y) > 0, `tail1 y ${tail1Y} vs tail2 ${tail2Y}`);
+  });
 });
 
 describe("generated cat assets", () => {
@@ -102,6 +121,38 @@ describe("generated cat assets", () => {
         assert.match(frame, /<svg /);
       }
     }
+  });
+
+  it("keeps the two-segment tail inside the 512×480 frame and on the rump", async () => {
+    const svg = await readFile(resolve(ROOT, "assets/cat-sprites/idle-0.svg"), "utf8");
+    function box(id) {
+      const start = svg.indexOf(`id="${id}"`);
+      assert.ok(start >= 0, id);
+      const next = svg.indexOf(`<g id="`, start + 8);
+      const chunk = svg.slice(start, next === -1 ? undefined : next);
+      const xs = [];
+      const ys = [];
+      for (const path of chunk.matchAll(/\bd="([^"]+)"/g)) {
+        const nums = [...path[1].matchAll(/-?\d+(?:\.\d+)?/g)].map(Number);
+        for (let i = 0; i + 1 < nums.length; i += 2) {
+          xs.push(nums[i]);
+          ys.push(nums[i + 1]);
+        }
+      }
+      return { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) };
+    }
+    const tail1 = box("tail1");
+    const tail2 = box("tail2");
+    const body = box("body");
+    for (const [name, b] of [
+      ["tail1", tail1],
+      ["tail2", tail2],
+    ]) {
+      assert.ok(b.minX > -4 && b.maxX < 516, `${name} x ${b.minX}..${b.maxX}`);
+      assert.ok(b.minY > 120 && b.maxY < 480, `${name} y ${b.minY}..${b.maxY}`);
+    }
+    assert.ok(overlap([tail1.minX, tail1.maxX], [body.minX, body.maxX]) > 0, "tail1 meets body");
+    assert.ok(overlap([tail1.minX, tail1.maxX], [tail2.minX, tail2.maxX]) > 0, "tail segments meet");
   });
 
   it("ships idle, walk, and rest flipbooks", async () => {

@@ -22,8 +22,8 @@ export const TOLERANCE = { default: 28, head: 18 };
 
 const FAR_NEAR = { FAR, NEAR };
 
-export function createQuadrupedPoses({ scale = 14, h = 480, originY = 452 } = {}) {
-  const SPRITE = { w: 512, h, scale, originX: 256, originY };
+export function createQuadrupedPoses({ scale = 14, h = 480, originY = 452, originX = 256 } = {}) {
+  const SPRITE = { w: 512, h, scale, originX, originY };
 
   function pose(parts, extra = {}) {
     return { view: SIDE_VIEW, root: extra.root ?? {}, parts, swell: 0, flash: extra.flash ?? 0 };

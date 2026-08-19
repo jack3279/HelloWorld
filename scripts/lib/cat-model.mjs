@@ -2,7 +2,8 @@
 // Z negated so the animal faces +z. Body is stored unrotated (4×16×6) from
 // origin y=−1; poses apply the vanilla 90° rest pitch. Head, muzzle, and ears
 // stay on the root so that pitch does not flip the face. Front legs are 10
-// tall; hind legs are 6.
+// tall; hind legs are 6. Tail cuboids are world-space like the body — tail2
+// is a sibling, not a child, so the rest pitch does not swing it twice.
 import { boxUv } from "./steve-model.mjs";
 
 const LEG_FRONT_UV = boxUv(40, 0, 2, 10, 2);
@@ -96,7 +97,6 @@ export const CAT_MODEL = [
   {
     id: "tail2",
     label: "Tail tip",
-    parent: "tail1",
     min: [-0.5, 1, -17],
     max: [0.5, 9, -16],
     pivot: [0, 9, -16],
