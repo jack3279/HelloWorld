@@ -66,6 +66,8 @@ export const RECIPES = [
   { id: "cake", count: 1, need: { wheat: 3, sugar: 1, egg: 1 } },
   { id: "brewing-stand", count: 1, need: { "blaze-rod": 1, cobblestone: 3 } },
   { id: "enchanting-table", count: 1, need: { obsidian: 4, diamond: 2, bookshelf: 1 } },
+  { id: "jukebox", count: 1, need: { "oak-planks": 8, diamond: 1 } },
+  { id: "crossbow", count: 1, need: { stick: 3, string: 2, "iron-ingot": 1 } },
 ];
 
 export const HOTBAR_SLOTS = 9;
@@ -135,6 +137,7 @@ export const BLOCK_FACE_ITEMS = new Set([
   "iron-block",
   "brewing-stand",
   "enchanting-table",
+  "jukebox",
 ]);
 
 export function emptySlots(n) {

@@ -134,6 +134,14 @@ export const PLAY_BLOCKS = [
   { id: "nether-wart-3", file: "nether_wart_stage_2.png", label: "Nether wart ripe", title: "成熟下界疣" },
   { id: "brewing-stand", file: "brewing_stand.png", label: "Brewing stand", title: "酿造台" },
   { id: "cake", file: "cake_side.png", label: "Cake", title: "蛋糕" },
+  { id: "carrot-0", file: "carrots_stage_0.png", label: "Carrot sprout", title: "胡萝卜幼苗" },
+  { id: "carrot-1", file: "carrots_stage_1.png", label: "Carrot 1", title: "胡萝卜生长1" },
+  { id: "carrot-2", file: "carrots_stage_2.png", label: "Carrot 2", title: "胡萝卜生长2" },
+  { id: "carrot-3", file: "carrots_stage_3.png", label: "Carrot ripe", title: "成熟胡萝卜" },
+  { id: "potato-0", file: "potatoes_stage_0.png", label: "Potato sprout", title: "马铃薯幼苗" },
+  { id: "potato-1", file: "potatoes_stage_1.png", label: "Potato 1", title: "马铃薯生长1" },
+  { id: "potato-2", file: "potatoes_stage_2.png", label: "Potato 2", title: "马铃薯生长2" },
+  { id: "potato-3", file: "potatoes_stage_3.png", label: "Potato ripe", title: "成熟马铃薯" },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {

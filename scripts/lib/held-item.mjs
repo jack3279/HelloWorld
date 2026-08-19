@@ -19,6 +19,8 @@ export const ITEM_FILES = {
   "bow-1": "bow_pulling_1.png",
   "bow-2": "bow_pulling_2.png",
   arrow: "arrow.png",
+  trident: "trident.png",
+  crossbow: "crossbow_standby.png",
 };
 
 export function itemSlabUv(size = 16) {
@@ -184,6 +186,30 @@ export async function skeletonDrawExtras(pull) {
   const extras = [await bowExtra(pull)];
   if (pull >= 0.4) extras.push(await arrowExtra());
   return extras;
+}
+
+export function tridentPart() {
+  return { ...swordPart(), id: "held-trident", label: "Trident" };
+}
+
+export async function tridentExtra() {
+  return {
+    part: tridentPart(),
+    skin: await loadItemTexture(ITEM_FILES.trident),
+    tolerance: { default: 4 },
+  };
+}
+
+export function crossbowPart() {
+  return { ...bowPart(), id: "held-crossbow", label: "Crossbow" };
+}
+
+export async function crossbowExtra() {
+  return {
+    part: crossbowPart(),
+    skin: await loadItemTexture(ITEM_FILES.crossbow),
+    tolerance: { default: 4 },
+  };
 }
 
 // Thin in X so a side-view (yaw 90) reads the 12×22 wooden face on ±X.

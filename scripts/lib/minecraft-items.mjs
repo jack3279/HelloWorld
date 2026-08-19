@@ -176,6 +176,10 @@ export const PLAY_ITEMS = [
   { id: "iron-block", file: "iron_block.png", label: "Iron block", title: "铁块", base: BLOCKS_BASE },
   { id: "brewing-stand", file: "brewing_stand.png", label: "Brewing stand", title: "酿造台", base: BLOCKS_BASE },
   { id: "enchanting-table", file: "enchanting_table_top.png", label: "Enchanting table", title: "附魔台", base: BLOCKS_BASE },
+  { id: "trident", file: "trident.png", label: "Trident", title: "三叉戟" },
+  { id: "crossbow", file: "crossbow_standby.png", label: "Crossbow", title: "弩" },
+  { id: "music-disc-13", file: "record_13.png", label: "Music disc 13", title: "唱片 13" },
+  { id: "music-disc-cat", file: "record_cat.png", label: "Music disc Cat", title: "唱片 Cat" },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.

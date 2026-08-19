@@ -45,6 +45,20 @@ const WART_STAGE = {
   ";": { next: "<", wait: 6 },
   "<": { next: ">", wait: 8 },
 };
+const CARROT_STAGE = {
+  "-": { next: "_", wait: 5 },
+  _: { next: "/", wait: 6 },
+  "/": { next: ",", wait: 6 },
+};
+const POTATO_STAGE = {
+  "'": { next: "|", wait: 5 },
+  "|": { next: "]", wait: 6 },
+  "]": { next: '"', wait: 6 },
+};
+const DISC_SONGS = {
+  "music-disc-13": "13",
+  "music-disc-cat": "Cat",
+};
 const DOOR_SWING = 8;
 const OFFHAND_SLOT = 9;
 const MINEABLE = {
@@ -99,6 +113,7 @@ const MINEABLE = {
   "{": { drop: "brewing-stand", tool: "pickaxe" },
   "}": { drop: "enchanting-table", tool: "pickaxe" },
   "[": { drop: "cake" },
+  ")": { drop: "jukebox", tool: "axe" },
 };
 const PLACEABLE = {
   torch: "t",
@@ -141,6 +156,7 @@ const PLACEABLE = {
   "brewing-stand": "{",
   "enchanting-table": "}",
   cake: "[",
+  jukebox: ")",
 };
 const PICK_TOOLS = new Set(["diamond-pickaxe", "iron-pickaxe", "wooden-pickaxe"]);
 const AXE_TOOLS = new Set(["diamond-axe", "iron-axe", "wooden-axe"]);
@@ -159,6 +175,8 @@ const HELD_TOOLS = new Set([
   "wooden-shovel",
   "iron-shovel",
   "diamond-shovel",
+  "trident",
+  "crossbow",
 ]);
 
 const ARMOR_GEAR = {
@@ -347,6 +365,11 @@ const ITEM_LABELS = {
   "iron-block": "铁块",
   "brewing-stand": "酿造台",
   "enchanting-table": "附魔台",
+  jukebox: "唱片机",
+  trident: "三叉戟",
+  crossbow: "弩",
+  "music-disc-13": "唱片 13",
+  "music-disc-cat": "唱片 Cat",
 };
 
 const FOOD = {
@@ -457,9 +480,18 @@ const BLOCKS = {
   "{": "blocks/brewing-stand.svg",
   "}": "blocks/enchanting-table.svg",
   "[": "blocks/cake.svg",
+  ")": "blocks/jukebox.svg",
+  "-": "blocks/carrot-0.svg",
+  _: "blocks/carrot-1.svg",
+  "/": "blocks/carrot-2.svg",
+  ",": "blocks/carrot-3.svg",
+  "'": "blocks/potato-0.svg",
+  "|": "blocks/potato-1.svg",
+  "]": "blocks/potato-2.svg",
+  '"': "blocks/potato-3.svg",
 };
 
-const SOLID = new Set([..."gdscpLabBTFimxIjuyenqHRNVAEKJMOQ8X~Wl=!$", "#", "&", "^", "+", "?", "(", "{", "}"]);
+const SOLID = new Set([..."gdscpLabBTFimxIjuyenqHRNVAEKJMOQ8X~Wl=!$", "#", "&", "^", "+", "?", "(", "{", "}", ")"]);
 
 const canvas = document.getElementById("game");
 const overlay = document.getElementById("overlay");
@@ -640,6 +672,14 @@ const MANIFEST = [
   ...range(8, (i) => `snow-golem-sprites/rest-${i}.svg`),
   ...range(8, (i) => `snow-golem-sprites/hurt-${i}.svg`),
   ...range(8, (i) => `snow-golem-sprites/death-${i}.svg`),
+  ...range(8, (i) => `drowned-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `drowned-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `drowned-sprites/hurt-${i}.svg`),
+  ...range(12, (i) => `drowned-sprites/death-${i}.svg`),
+  ...range(8, (i) => `pillager-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `pillager-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `pillager-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `pillager-sprites/death-${i}.svg`),
   ...range(8, (i) => `door-sprites/swing-${i}.svg`),
   "steve-sprites/shield-hold.svg",
   "steve-sprites/shield-block.svg",
@@ -791,7 +831,8 @@ function buildWorld() {
   tree(tiles, 8, ground);
   tree(tiles, 48, ground);
 
-  fillRow(tiles, ground, 2, 4, "n");
+  fillRow(tiles, ground, 2, 5, "n");
+  setCell(tiles, 7, ground, "n");
   setCell(tiles, 6, ground - 1, "u");
   setCell(tiles, 9, ground - 1, "u");
   setCell(tiles, 13, ground, "I");
@@ -805,13 +846,15 @@ function buildWorld() {
   setCell(tiles, 2, ground - 1, "0");
   setCell(tiles, 3, ground - 1, "3");
   setCell(tiles, 4, ground - 1, "7");
+  setCell(tiles, 5, ground - 1, "-");
+  setCell(tiles, 7, ground - 1, "'");
 
   setCell(tiles, 11, ground - 1, "f");
   setCell(tiles, 12, ground - 1, "G");
   setCell(tiles, 20, ground - 1, "P");
   setCell(tiles, 29, ground - 1, "k");
   setCell(tiles, 38, ground - 1, "k");
-  for (const gx of [5, 10, 21, 24, 27, 39, 45, 51, 58, 73]) setCell(tiles, gx, ground - 1, "G");
+  for (const gx of [10, 21, 24, 27, 39, 45, 51, 58, 73]) setCell(tiles, gx, ground - 1, "G");
 
   fillRow(tiles, ground, 28, 31, "a");
   setCell(tiles, 28, ground - 1, "Y");
@@ -862,6 +905,7 @@ function buildWorld() {
   setCell(tiles, 62, ground - 2, "U");
   setCell(tiles, 70, ground - 2, "j");
   setCell(tiles, 63, ground - 1, "F");
+  setCell(tiles, 63, ground - 2, ")");
   setCell(tiles, 64, ground - 1, "T");
   setCell(tiles, 65, ground - 1, "=");
   setCell(tiles, 65, ground - 2, "}");
@@ -883,7 +927,7 @@ function buildWorld() {
   setCell(tiles, 0, ground, "B");
   setCell(tiles, W - 1, ground, "B");
 
-  return { w: W, h: H, tiles, ground, nightSpawned: false, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map(), cakeBites: new Map() };
+  return { w: W, h: H, tiles, ground, nightSpawned: false, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map(), cakeBites: new Map(), jukebox: new Map() };
 }
 
 function portalFrame(tiles, x, ground) {
@@ -940,7 +984,7 @@ function buildNether() {
   setCell(tiles, 0, ground, "B");
   setCell(tiles, W - 1, ground, "B");
 
-  return { w: W, h: H, tiles, ground, nightSpawned: true, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map(), cakeBites: new Map() };
+  return { w: W, h: H, tiles, ground, nightSpawned: true, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map(), cakeBites: new Map(), jukebox: new Map() };
 }
 
 function tileAt(px, py) {
@@ -1184,6 +1228,7 @@ function makePlayer() {
     hurtT: 0,
     knockT: 0,
     dropCd: 0,
+    tridentCd: 0,
     eatT: 0,
     dead: false,
     air: 12,
@@ -1253,6 +1298,8 @@ function makeMob(kind, tx, ty) {
     "wither-skeleton": { hp: 10, speed: 80, dmg: 4, hw: 12, hh: 54, scale: 0.18, sheet: "wither-skeleton-sprites", h: 520 },
     "snow-golem": { hp: 8, speed: 60, dmg: 0, hw: 12, hh: 44, scale: 0.16, sheet: "snow-golem-sprites", h: 480, ally: true },
     "magma-cube": { hp: 8, speed: 45, dmg: 3, hw: 16, hh: 22, scale: 0.14, sheet: "magma-cube-sprites", h: 480 },
+    drowned: { hp: 10, speed: 72, dmg: 3, hw: 12, hh: 50, scale: 0.17, sheet: "drowned-sprites", h: 520, aquatic: true },
+    pillager: { hp: 8, speed: 85, dmg: 2, hw: 11, hh: 50, scale: 0.17, sheet: "pillager-sprites", h: 520 },
   };
   return {
     kind,
@@ -1350,6 +1397,8 @@ function resetGame() {
     makeMob("horse", 42, 10),
     makeMob("boat", 16, 11),
     makeMob("snow-golem", 72, 10),
+    makeMob("drowned", 16, 12),
+    makeMob("pillager", 59, 10),
   ];
   drops = [
     makeDrop("diamond", TILE * 13.5, TILE * 9),
@@ -1369,6 +1418,10 @@ function resetGame() {
     makeDrop("iron-ingot", TILE * 64.2, TILE * 9, 4),
     makeDrop("apple", TILE * 69, TILE * 9, 2),
     makeDrop("carrot", TILE * 8, TILE * 9, 4),
+    makeDrop("potato", TILE * 7.4, TILE * 9, 4),
+    makeDrop("music-disc-13", TILE * 63.4, TILE * 8),
+    makeDrop("music-disc-cat", TILE * 64.6, TILE * 8),
+    makeDrop("trident", TILE * 15.8, TILE * 9),
     makeDrop("bread", TILE * 4.5, TILE * 9, 2),
     makeDrop("netherite-chestplate", TILE * 66.8, TILE * 9),
     makeDrop("fishing-rod", TILE * 15.2, TILE * 9),
@@ -1781,6 +1834,18 @@ function tryFarm() {
     say("种下了下界疣。");
     return true;
   }
+  if (item?.id === "carrot" && item.count > 0 && soil === "n" && (above === "." || above === "G" || above === "f" || above === "P")) {
+    setCell(world.tiles, tx, cropY, "-");
+    item.count -= 1;
+    say("种下了胡萝卜。");
+    return true;
+  }
+  if (item?.id === "potato" && item.count > 0 && soil === "n" && (above === "." || above === "G" || above === "f" || above === "P")) {
+    setCell(world.tiles, tx, cropY, "'");
+    item.count -= 1;
+    say("种下了马铃薯。");
+    return true;
+  }
   if (above === "7") {
     setCell(world.tiles, tx, cropY, ".");
     if (!addItem("wheat", 1)) spillItem("wheat", 1);
@@ -1795,6 +1860,22 @@ function tryFarm() {
     if (!addItem("nether-wart", n)) spillItem("nether-wart", n);
     burstBits(tx * TILE + 24, cropY * TILE + 24, "#8a2a3a");
     say("收割了下界疣。");
+    return true;
+  }
+  if (above === ",") {
+    setCell(world.tiles, tx, cropY, ".");
+    const n = 1 + Math.floor(Math.random() * 3);
+    if (!addItem("carrot", n)) spillItem("carrot", n);
+    burstBits(tx * TILE + 24, cropY * TILE + 24, "#d9782a");
+    say("收割了胡萝卜。");
+    return true;
+  }
+  if (above === '"') {
+    setCell(world.tiles, tx, cropY, ".");
+    const n = 1 + Math.floor(Math.random() * 3);
+    if (!addItem("potato", n)) spillItem("potato", n);
+    burstBits(tx * TILE + 24, cropY * TILE + 24, "#c6b34a");
+    say("收割了马铃薯。");
     return true;
   }
   return false;
@@ -1936,6 +2017,13 @@ function tryMineOrPlace() {
       setCell(world.tiles, cell.x, cell.y, "xiHRJKMO".includes(t) ? "s" : ".");
       const extra = t === "L" && item?.id === "shears" ? 1 : 0;
       drops.push(makeDrop(spec.drop, cell.x * TILE + 24, cell.y * TILE + 8, 1 + extra));
+      if (t === ")") {
+        const disc = world.jukebox?.get(`${cell.x},${cell.y}`);
+        if (disc) {
+          drops.push(makeDrop(disc, cell.x * TILE + 18, cell.y * TILE));
+          world.jukebox.delete(`${cell.x},${cell.y}`);
+        }
+      }
       if (t === "V" && Math.random() < 0.35) drops.push(makeDrop("flint", cell.x * TILE + 18, cell.y * TILE));
       burstBits(cell.x * TILE + 24, cell.y * TILE + 24, "#bbb");
       return true;
@@ -2048,6 +2136,8 @@ function hurt(who, amount, dir) {
       "wither-skeleton": "bone",
       "magma-cube": "slimeball",
       "snow-golem": "snowball",
+      drowned: "rotten-flesh",
+      pillager: "arrow",
     };
     if (who.kind !== "bat") drops.push(makeDrop(loot[who.kind] ?? "apple", who.x, who.y - 20));
     if (who.kind === "cow") drops.push(makeDrop("leather", who.x + 6, who.y - 16));
@@ -2068,13 +2158,16 @@ function hurt(who, amount, dir) {
       if (Math.random() < 0.12) drops.push(makeDrop("stone-sword", who.x - 8, who.y - 18));
     }
     if (who.kind === "snow-golem") drops.push(makeDrop("snowball", who.x + 6, who.y - 16, 4));
+    if (who.kind === "drowned" && Math.random() < 0.18) drops.push(makeDrop("trident", who.x - 8, who.y - 18));
+    if (who.kind === "pillager" && Math.random() < 0.22) drops.push(makeDrop("crossbow", who.x - 8, who.y - 18));
     if (player.mount === who) dismount();
     spawnXp(who.x, who.y - 18, who.kind === "villager" ? 3 : who.passive ? 2 : 4);
   }
 }
 
 function holdingBow() {
-  return selectedItem()?.id === "bow" && selectedItem()?.count > 0;
+  const id = selectedItem()?.id;
+  return (id === "bow" || id === "crossbow") && selectedItem()?.count > 0;
 }
 
 function tryThrowPearl() {
@@ -2115,6 +2208,29 @@ function tryThrowSnowball() {
   return true;
 }
 
+function tryThrowTrident() {
+  const item = selectedItem();
+  if (item?.id !== "trident" || item.count <= 0) return false;
+  if ((player.tridentCd ?? 0) > 0) {
+    say("三叉戟还没收回来。");
+    return true;
+  }
+  player.tridentCd = 1.15;
+  arrows.push({
+    x: player.x + player.face * 18,
+    y: player.y - 28,
+    vx: player.face * 440,
+    vy: -50,
+    life: 1.8,
+    gone: false,
+    from: "player",
+    dmg: 5,
+    trident: true,
+  });
+  say("掷出了三叉戟。");
+  return true;
+}
+
 function facingWater() {
   const fx = player.x + player.face * 40;
   return tileAt(fx, player.y - 8) === "w" || tileAt(fx, player.y + 8) === "w" || tileAt(player.x, player.y + 10) === "w";
@@ -2138,6 +2254,31 @@ function tryNoteblock() {
     burstBits(cell.x * TILE + 24, cell.y * TILE + 8, "#f2d36b");
     say("叮。");
     return true;
+  }
+  return false;
+}
+
+function tryJukebox() {
+  for (const cell of frontCell()) {
+    if (world.tiles[cell.y]?.[cell.x] !== ")") continue;
+    if (!world.jukebox) world.jukebox = new Map();
+    const key = `${cell.x},${cell.y}`;
+    const playing = world.jukebox.get(key);
+    if (playing) {
+      if (!addItem(playing, 1)) spillItem(playing, 1);
+      world.jukebox.delete(key);
+      say("取出了唱片。");
+      return true;
+    }
+    const item = selectedItem();
+    if (item && DISC_SONGS[item.id] && item.count > 0) {
+      world.jukebox.set(key, item.id);
+      item.count -= 1;
+      burstBits(cell.x * TILE + 24, cell.y * TILE + 8, "#8ec8e8");
+      say(`正在播放《${DISC_SONGS[item.id]}》。`, 4);
+      return true;
+    }
+    return false;
   }
   return false;
 }
@@ -2300,6 +2441,7 @@ function firePlayerBow() {
     say("没有箭。");
     return;
   }
+  const cross = selectedItem()?.id === "crossbow";
   const speed = 260 + charge * 240;
   arrows.push({
     x: player.x + player.face * 22,
@@ -2309,9 +2451,9 @@ function firePlayerBow() {
     life: 2.5,
     gone: false,
     from: "player",
-    dmg: 2 + Math.round(charge * 4),
+    dmg: cross ? 3 + Math.round(charge * 5) : 2 + Math.round(charge * 4),
   });
-  say("射出一支箭。");
+  say(cross ? "弩射出一支箭。" : "射出一支箭。");
 }
 
 function pressUse(down) {
@@ -2379,8 +2521,10 @@ function useSelected() {
   if (tryFarm()) return;
   if (tryThrowPearl()) return;
   if (tryThrowSnowball()) return;
+  if (tryThrowTrident()) return;
   if (tryFish()) return;
   if (tryNoteblock()) return;
+  if (tryJukebox()) return;
   if (tryMineOrPlace()) return;
   const item = selectedItem();
   if (!item || item.count <= 0) return;
@@ -2546,6 +2690,7 @@ function updatePlayer(dt) {
   if (player.hurtT > 0) player.hurtT -= dt;
   if (player.invuln > 0) player.invuln -= dt;
   if (player.dropCd > 0) player.dropCd -= dt;
+  if (player.tridentCd > 0) player.tridentCd -= dt;
 
   player.hungerT += dt;
   if (player.hungerT > 9) {
@@ -2677,8 +2822,10 @@ function updateMobs(dt) {
         say("苦力怕爆炸了！");
         continue;
       }
-    } else if (mob.kind === "skeleton") {
+    } else if (mob.kind === "skeleton" || mob.kind === "pillager") {
       steerSkeleton(mob, dt, dx, close);
+    } else if (mob.kind === "drowned") {
+      steerDrowned(mob, dt, dx, close);
     } else if (mob.kind === "witch") {
       steerWitch(mob, dt, dx, close);
     } else if (mob.kind === "blaze") {
@@ -2704,7 +2851,7 @@ function updateMobs(dt) {
     moveBody(mob, dt);
     if (mob.inLava && mob.kind !== "blaze" && mob.kind !== "magma-cube" && mob.kind !== "ghast") hurt(mob, 4, -mob.face);
     if (mob.kind === "snow-golem" && (dimension === "nether" || isRaining())) hurt(mob, 2, 0);
-    if (mob.kind !== "creeper" && mob.kind !== "skeleton" && mob.kind !== "witch" && mob.kind !== "blaze" && mob.kind !== "ghast" && !mob.ally && !player.dead && Math.abs(mob.x - player.x) < mob.hw + player.hw + 4 && Math.abs(mob.y - player.y) < mob.hh) {
+    if (mob.kind !== "creeper" && mob.kind !== "skeleton" && mob.kind !== "pillager" && mob.kind !== "witch" && mob.kind !== "blaze" && mob.kind !== "ghast" && !mob.ally && !player.dead && Math.abs(mob.x - player.x) < mob.hw + player.hw + 4 && Math.abs(mob.y - player.y) < mob.hh) {
       hurt(player, mob.dmg, Math.sign(player.x - mob.x) || -1);
       if (mob.kind === "wither-skeleton") player.wither = Math.max(player.wither ?? 0, 5);
     }
@@ -2731,7 +2878,7 @@ function steerSkeleton(mob, dt, dx, close) {
     mob.vx = 0;
     mob.drawT = Math.min(1, mob.drawT + dt / 1.05);
     if (mob.drawT >= 1) {
-      fireArrow(mob);
+      fireArrow(mob, mob.kind === "pillager" ? 3 : 2);
       mob.drawT = 0;
       mob.shootCd = 1.15;
     }
@@ -2741,7 +2888,7 @@ function steerSkeleton(mob, dt, dx, close) {
   mob.drawT = 0;
 }
 
-function fireArrow(from) {
+function fireArrow(from, dmg = 2) {
   const tx = player.x - from.x;
   const ty = player.y - 24 - (from.y - 28);
   const dist = Math.hypot(tx, ty) || 1;
@@ -2754,8 +2901,47 @@ function fireArrow(from) {
     life: 2.4,
     gone: false,
     from: "mob",
-    dmg: 2,
+    dmg,
   });
+}
+
+function fireTrident(from) {
+  const tx = player.x - from.x;
+  const ty = player.y - 24 - (from.y - 28);
+  const dist = Math.hypot(tx, ty) || 1;
+  const speed = 420;
+  arrows.push({
+    x: from.x + from.face * 18,
+    y: from.y - 28,
+    vx: (tx / dist) * speed,
+    vy: (ty / dist) * speed - 28,
+    life: 2.2,
+    gone: false,
+    from: "mob",
+    dmg: 4,
+    trident: true,
+  });
+}
+
+function steerDrowned(mob, dt, dx, close) {
+  if (mob.shootCd > 0) mob.shootCd -= dt;
+  if (!close) {
+    mob.vx *= 0.8;
+    return;
+  }
+  mob.face = Math.sign(dx) || mob.face;
+  const dist = Math.abs(dx);
+  if (dist < 70) {
+    mob.vx = mob.face * mob.speed * (mob.inWater ? 0.7 : 1);
+    return;
+  }
+  if (dist < 260 && mob.shootCd <= 0 && mob.hitT <= 0 && Math.abs(mob.y - player.y) < 90) {
+    mob.vx = 0;
+    fireTrident(mob);
+    mob.shootCd = 1.8;
+    return;
+  }
+  mob.vx = mob.face * mob.speed * (mob.inWater ? 0.65 : 0.85);
 }
 
 function firePotion(from) {
@@ -3029,7 +3215,7 @@ function updateCrops(dt) {
   for (let y = 0; y < world.h; y++) {
     for (let x = 0; x < world.w; x++) {
       const t = world.tiles[y][x];
-      const spec = WHEAT_STAGE[t] ?? WART_STAGE[t];
+      const spec = WHEAT_STAGE[t] ?? WART_STAGE[t] ?? CARROT_STAGE[t] ?? POTATO_STAGE[t];
       if (spec && Math.random() < 1 / spec.wait) setCell(world.tiles, x, y, spec.next);
       if (t === "S" && Math.random() < 1 / 16) tree(world.tiles, x, y + 1);
       if (t === "Y" && y > 0 && world.tiles[y - 1][x] === "." && Math.random() < 1 / 18) {
@@ -3037,6 +3223,14 @@ function updateCrops(dt) {
         if (below === "a" || below === "d" || below === "g" || below === "Y") setCell(world.tiles, x, y - 1, "Y");
       }
     }
+  }
+}
+
+function updateJukebox(dt) {
+  if (!world?.jukebox) return;
+  for (const [key, disc] of world.jukebox) {
+    const [x, y] = key.split(",").map(Number);
+    if (Math.random() < dt * 2.2) burstBits(x * TILE + 24, y * TILE + 8, disc === "music-disc-cat" ? "#f2a63b" : "#8ec8e8");
   }
 }
 
@@ -3133,7 +3327,7 @@ function steveFrame() {
 }
 
 function deathFrames(kind) {
-  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" || kind === "rabbit" || kind === "villager" || kind === "cat" || kind === "bat" || kind === "squid" || kind === "witch" || kind === "iron-golem" || kind === "horse" || kind === "boat" || kind === "blaze" || kind === "magma-cube" || kind === "ghast" || kind === "snow-golem" ? 8 : 12;
+  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" || kind === "rabbit" || kind === "villager" || kind === "cat" || kind === "bat" || kind === "squid" || kind === "witch" || kind === "iron-golem" || kind === "horse" || kind === "boat" || kind === "blaze" || kind === "magma-cube" || kind === "ghast" || kind === "snow-golem" || kind === "pillager" ? 8 : 12;
 }
 
 function mobGone(mob) {
@@ -3268,7 +3462,7 @@ function drawArrows() {
       ctx.drawImage(pic, viewX(shot.x) - s / 2, viewY(shot.y) - s / 2, s, s);
       continue;
     }
-    const rel = shot.pearl ? "items/ender-pearl.svg" : shot.snowball ? "items/snowball.svg" : shot.potion ? "items/potion-heal.svg" : "items/arrow.svg";
+    const rel = shot.pearl ? "items/ender-pearl.svg" : shot.snowball ? "items/snowball.svg" : shot.potion ? "items/potion-heal.svg" : shot.trident ? "items/trident.svg" : "items/arrow.svg";
     const pic = img(rel);
     if (!pic) continue;
     ctx.save();
@@ -3342,18 +3536,19 @@ function drawHeldItem() {
   const pic = img(rel);
   if (!pic) return;
   const swing = player.swingT > 0 && player.swingKind === "tool";
-  const drawing = id === "bow" && player.drawT > 0;
-  let rot = id === "bow" ? -0.15 : 0.35;
+  const ranged = id === "bow" || id === "crossbow";
+  const drawing = ranged && player.drawT > 0;
+  let rot = ranged ? -0.15 : 0.35;
   if (swing) rot = -1.15 * Math.sin((1 - player.swingT / (10 / 12)) * Math.PI);
   if (drawing) rot = -0.4 - player.drawT * 0.5;
   ctx.save();
   ctx.translate(viewX(player.x), viewY(player.y));
   ctx.scale(player.face, 1);
-  ctx.translate(id === "bow" ? 10 : 12, id === "bow" ? -26 : -22);
+  ctx.translate(ranged ? 10 : 12, ranged ? -26 : -22);
   ctx.rotate(rot);
-  const size = id === "bow" ? 36 : 30;
+  const size = ranged ? 36 : 30;
   ctx.drawImage(pic, -size * 0.2, -size * 0.85, size, size);
-  if (drawing) {
+  if (drawing && id === "bow") {
     const arrow = img("items/arrow.svg");
     if (arrow) ctx.drawImage(arrow, 8, -18, 22, 8);
   }
@@ -3820,6 +4015,7 @@ function frame(ts) {
       updateArrows(dt);
       updateDrops(dt);
       updateCrops(dt);
+      updateJukebox(dt);
       updateDoors(dt);
       updateHazards(dt);
       furnaceTick(furnace, dt);

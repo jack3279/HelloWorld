@@ -85,6 +85,12 @@ export const WITHER_SKELETON_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/skeleton/wither_skeleton.png";
 export const SNOW_GOLEM_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/snow_golem.png";
+export const DROWNED_SKIN_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/zombie/drowned.png";
+export const DROWNED_SKIN_FALLBACK_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/zombie/drowned.tga";
+export const PILLAGER_SKIN_URL =
+  "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/illager/pillager.png";
 export const NETHERITE_ARMOR_1_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/models/armor/netherite_1.png";
 export const NETHERITE_ARMOR_2_URL =
@@ -139,6 +145,8 @@ const MAGMA_CUBE_CACHE = resolve(__dirname, "../../node_modules/.cache/magma-cub
 const GHAST_CACHE = resolve(__dirname, "../../node_modules/.cache/ghast-skin.png");
 const WITHER_SKELETON_CACHE = resolve(__dirname, "../../node_modules/.cache/wither-skeleton-skin.png");
 const SNOW_GOLEM_CACHE = resolve(__dirname, "../../node_modules/.cache/snow-golem-skin.png");
+const DROWNED_CACHE = resolve(__dirname, "../../node_modules/.cache/drowned-skin.png");
+const PILLAGER_CACHE = resolve(__dirname, "../../node_modules/.cache/pillager-skin.png");
 const NETHERITE_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-netherite-1.png");
 const NETHERITE_ARMOR_2_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-netherite-2.png");
 const LEATHER_ARMOR_1_CACHE = resolve(__dirname, "../../node_modules/.cache/armor-leather-1.png");
@@ -509,6 +517,21 @@ export async function loadSnowGolemSkin(explicitPath) {
   return loadSkin(explicitPath, {
     url: SNOW_GOLEM_SKIN_URL,
     cache: SNOW_GOLEM_CACHE,
+    normalize: false,
+  });
+}
+
+export async function loadDrownedSkin(explicitPath) {
+  return loadSkin(explicitPath, {
+    urls: [DROWNED_SKIN_URL, DROWNED_SKIN_FALLBACK_URL],
+    cache: DROWNED_CACHE,
+  });
+}
+
+export async function loadPillagerSkin(explicitPath) {
+  return loadSkin(explicitPath, {
+    url: PILLAGER_SKIN_URL,
+    cache: PILLAGER_CACHE,
     normalize: false,
   });
 }

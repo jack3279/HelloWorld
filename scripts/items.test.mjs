@@ -89,6 +89,10 @@ describe("hotbar item catalog", () => {
     assert.ok(play.includes("iron-block"));
     assert.ok(play.includes("brewing-stand"));
     assert.ok(play.includes("enchanting-table"));
+    assert.ok(play.includes("trident"));
+    assert.ok(play.includes("crossbow"));
+    assert.ok(play.includes("music-disc-13"));
+    assert.ok(play.includes("music-disc-cat"));
   });
 
   it("loads official 16×16 sprites", async () => {
