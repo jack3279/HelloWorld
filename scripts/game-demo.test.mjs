@@ -31,6 +31,9 @@ describe("html game demo", () => {
     assert.match(game, /function drawTile/);
     assert.match(game, /function supportedByFloor/);
     assert.match(game, /TILE \+ 1/);
+    assert.match(game, /player\.knockT/);
+    assert.match(game, /requestAnimationFrame\(frame\)/);
+    assert.doesNotMatch(game, /ctx\.filter/);
     assert.match(css, /image-rendering:\s*pixelated/);
   });
 

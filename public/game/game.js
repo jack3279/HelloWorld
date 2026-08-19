@@ -379,10 +379,12 @@ function solidAt(px, py) {
 }
 
 function rectHitsSolid(x, y, w, h) {
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return true;
   const x0 = Math.floor(x / TILE);
   const x1 = Math.floor((x + w - 1) / TILE);
   const y0 = Math.floor(y / TILE);
   const y1 = Math.floor((y + h - 1) / TILE);
+  if (x1 < x0 || y1 < y0 || x1 - x0 > 8 || y1 - y0 > 8) return true;
   for (let ty = y0; ty <= y1; ty++) {
     for (let tx = x0; tx <= x1; tx++) {
       const t = tx < 0 || tx >= world.w || ty < 0 || ty >= world.h ? "B" : world.tiles[ty][tx];
@@ -468,7 +470,7 @@ function moveBody(body, dt) {
   body.atBed = bed === "z" || bed === "Z" || tileAt(body.x + 16, body.y - 8) === "z" || tileAt(body.x - 16, body.y - 8) === "Z";
   if (body.inWater) {
     body.vy = Math.min(body.vy, 160);
-    body.vx *= 0.88;
+    if ((body.knockT ?? 0) <= 0) body.vx *= 0.88;
   }
 }
 
@@ -490,6 +492,7 @@ function makePlayer() {
     age: 0,
     swingT: 0,
     hurtT: 0,
+    knockT: 0,
     eatT: 0,
     dead: false,
     inWater: false,
@@ -811,6 +814,7 @@ function hurt(who, amount, dir) {
     player.health = Math.max(0, player.health - taken);
     player.invuln = 0.9;
     player.hurtT = 8 / 12;
+    player.knockT = 0.2;
     player.vx = dir * 220;
     player.vy = -220;
     if (player.health <= 0) {
@@ -935,7 +939,9 @@ function updatePlayer(dt) {
   const jump = keys.has(" ") || keys.has("w") || keys.has("arrowup") || hold.jump;
   const speed = player.inWater ? MOVE * 0.55 : MOVE;
 
-  if (player.swingT <= 0 && player.eatT <= 0) {
+  if (player.knockT > 0) {
+    player.knockT -= dt;
+  } else if (player.swingT <= 0 && player.eatT <= 0) {
     player.vx = (right ? speed : 0) - (left ? speed : 0);
     if (left) player.face = -1;
     if (right) player.face = 1;
@@ -1350,9 +1356,10 @@ function drawMobs() {
   for (const mob of mobs) {
     if (mob.dead && mobGone(mob)) continue;
     const spec = { w: 512, h: mob.h, ax: 256, ay: mob.h - 16, scale: mob.scale };
-    if (mob.hitT > 0 || (mob.kind === "creeper" && mob.fuse > 0.4 && Math.floor(time * 16) % 2 === 0)) ctx.filter = "brightness(2)";
+    const flash = mob.hitT > 0 || (mob.kind === "creeper" && mob.fuse > 0.4 && Math.floor(time * 16) % 2 === 0);
+    if (flash) ctx.globalAlpha = 0.55;
     drawAnchored(mobSprite(mob), spec, viewX(mob.x), viewY(mob.y), mob.face);
-    ctx.filter = "none";
+    ctx.globalAlpha = 1;
   }
 }
 
@@ -1540,30 +1547,36 @@ function resize() {
 }
 
 function frame(ts) {
-  const dt = Math.min(0.033, (ts - last) / 1000 || 0.016);
+  const dt = Math.min(0.033, Math.max(0, (ts - last) / 1000 || 0.016));
   last = ts;
-  if (mode === "play") {
-    time += dt;
-    if (messageT > 0) messageT -= dt;
-    updateDemo(dt);
-    updateClock(dt);
-    updatePlayer(dt);
-    updateMobs(dt);
-    updateArrows(dt);
-    updateDrops(dt);
-    updateCrops(dt);
-    updateParticles(dt);
-    updateCamera();
-  }
-  drawSky();
-  if (world) {
-    drawWorld();
-    drawDrops();
-    drawArrows();
-    drawMobs();
-    drawParticles();
-    drawPlayer();
-    drawHud();
+  try {
+    if (mode === "play") {
+      time += dt;
+      if (messageT > 0) messageT -= dt;
+      updateDemo(dt);
+      updateClock(dt);
+      updatePlayer(dt);
+      updateMobs(dt);
+      updateArrows(dt);
+      updateDrops(dt);
+      updateCrops(dt);
+      updateParticles(dt);
+      updateCamera();
+    }
+    drawSky();
+    if (world) {
+      drawWorld();
+      drawDrops();
+      drawArrows();
+      drawMobs();
+      drawParticles();
+      drawPlayer();
+      drawHud();
+    }
+  } catch (err) {
+    console.error(err);
+    message = "战斗时出错，已跳过这一帧。";
+    messageT = 3;
   }
   requestAnimationFrame(frame);
 }
@@ -1733,12 +1746,29 @@ loadAll()
     loadStatus.textContent = "素材已就绪。";
     startBtn.disabled = false;
     demoBtn.disabled = false;
+    const boot = new URLSearchParams(location.search);
+    if (boot.has("autostart")) startGame(boot.get("autostart") === "demo");
   })
   .catch((err) => {
     loadStatus.textContent = err.message;
     startBtn.disabled = true;
     demoBtn.disabled = true;
   });
+
+window.__GAME = {
+  get time() {
+    return time;
+  },
+  get player() {
+    return player;
+  },
+  get mobs() {
+    return mobs;
+  },
+  get message() {
+    return message;
+  },
+};
 
 startBtn.disabled = true;
 demoBtn.disabled = true;
