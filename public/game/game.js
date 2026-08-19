@@ -1,10 +1,12 @@
 import {
+  BREW,
   CHEST_SLOTS,
   COOK_TIME,
   FURNACE_FUEL,
   HOE_IDS,
   RECIPES,
   SMELT,
+  brewTick,
   canCraft,
   countOwned,
   craftOnce,
@@ -93,6 +95,10 @@ const MINEABLE = {
   "^": { drop: "soul-sand", tool: "shovel" },
   "+": { drop: "nether-bricks", tool: "pickaxe" },
   "?": { drop: "magma", tool: "pickaxe" },
+  "(": { drop: "iron-block", tool: "pickaxe" },
+  "{": { drop: "brewing-stand", tool: "pickaxe" },
+  "}": { drop: "enchanting-table", tool: "pickaxe" },
+  "[": { drop: "cake" },
 };
 const PLACEABLE = {
   torch: "t",
@@ -131,11 +137,15 @@ const PLACEABLE = {
   glowstone: "&",
   magma: "?",
   "nether-bricks": "+",
+  "iron-block": "(",
+  "brewing-stand": "{",
+  "enchanting-table": "}",
+  cake: "[",
 };
 const PICK_TOOLS = new Set(["diamond-pickaxe", "iron-pickaxe", "wooden-pickaxe"]);
 const AXE_TOOLS = new Set(["diamond-axe", "iron-axe", "wooden-axe"]);
 const SHOVEL_TOOLS = new Set(["wooden-shovel", "iron-shovel", "diamond-shovel"]);
-const SWORD_IDS = new Set(["diamond-sword", "iron-sword", "wooden-sword"]);
+const SWORD_IDS = new Set(["diamond-sword", "iron-sword", "wooden-sword", "stone-sword"]);
 const HELD_TOOLS = new Set([
   ...SWORD_IDS,
   "bow",
@@ -330,6 +340,13 @@ const ITEM_LABELS = {
   "blaze-powder": "烈焰粉",
   "nether-wart": "下界疣",
   "ghast-tear": "恶魂之泪",
+  "glass-bottle": "玻璃瓶",
+  "potion-fire": "抗火药水",
+  "stone-sword": "石剑",
+  cake: "蛋糕",
+  "iron-block": "铁块",
+  "brewing-stand": "酿造台",
+  "enchanting-table": "附魔台",
 };
 
 const FOOD = {
@@ -355,6 +372,7 @@ const FOOD = {
   "raw-cod": { hunger: 2, health: 0 },
   "cooked-cod": { hunger: 5, health: 2 },
   "mushroom-stew": { hunger: 6, health: 3 },
+  cake: { hunger: 2, health: 1 },
 };
 
 const BLOCKS = {
@@ -435,9 +453,13 @@ const BLOCKS = {
   ";": "blocks/nether-wart-1.svg",
   "<": "blocks/nether-wart-2.svg",
   ">": "blocks/nether-wart-3.svg",
+  "(": "blocks/iron-block.svg",
+  "{": "blocks/brewing-stand.svg",
+  "}": "blocks/enchanting-table.svg",
+  "[": "blocks/cake.svg",
 };
 
-const SOLID = new Set([..."gdscpLabBTFimxIjuyenqHRNVAEKJMOQ8X~Wl=!$", "#", "&", "^", "+", "?"]);
+const SOLID = new Set([..."gdscpLabBTFimxIjuyenqHRNVAEKJMOQ8X~Wl=!$", "#", "&", "^", "+", "?", "(", "{", "}"]);
 
 const canvas = document.getElementById("game");
 const overlay = document.getElementById("overlay");
@@ -465,8 +487,10 @@ let particles = [];
 let craftingOpen = false;
 let chestOpen = false;
 let furnaceOpen = false;
+let brewOpen = false;
 let chestItems = emptySlots(CHEST_SLOTS);
 let furnace = emptyFurnace();
+let brew = emptyFurnace();
 let craftScroll = 0;
 const CRAFT_VISIBLE = 6;
 let cam = { x: 0, y: 0 };
@@ -607,6 +631,15 @@ const MANIFEST = [
   ...range(8, (i) => `ghast-sprites/rest-${i}.svg`),
   ...range(8, (i) => `ghast-sprites/hurt-${i}.svg`),
   ...range(8, (i) => `ghast-sprites/death-${i}.svg`),
+  ...range(8, (i) => `wither-skeleton-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `wither-skeleton-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `wither-skeleton-sprites/hurt-${i}.svg`),
+  ...range(12, (i) => `wither-skeleton-sprites/death-${i}.svg`),
+  ...range(8, (i) => `snow-golem-sprites/walk-${i * 2}.svg`),
+  ...range(8, (i) => `snow-golem-sprites/idle-${i}.svg`),
+  ...range(8, (i) => `snow-golem-sprites/rest-${i}.svg`),
+  ...range(8, (i) => `snow-golem-sprites/hurt-${i}.svg`),
+  ...range(8, (i) => `snow-golem-sprites/death-${i}.svg`),
   ...range(8, (i) => `door-sprites/swing-${i}.svg`),
   "steve-sprites/shield-hold.svg",
   "steve-sprites/shield-block.svg",
@@ -831,19 +864,26 @@ function buildWorld() {
   setCell(tiles, 63, ground - 1, "F");
   setCell(tiles, 64, ground - 1, "T");
   setCell(tiles, 65, ground - 1, "=");
-  setCell(tiles, 65, ground - 2, "!");
+  setCell(tiles, 65, ground - 2, "}");
+  setCell(tiles, 69, ground - 1, "{");
+  setCell(tiles, 69, ground - 2, "!");
   setCell(tiles, 68, ground - 1, "C");
   setCell(tiles, 66, ground - 1, "z");
   setCell(tiles, 67, ground - 1, "Z");
   setCell(tiles, 66, ground - 2, "t");
+  setCell(tiles, 64, ground - 2, "[");
   setCell(tiles, 69, ground - 5, "t");
   setCell(tiles, 60, ground - 1, "N");
+  setCell(tiles, 74, ground - 1, "(");
+  setCell(tiles, 75, ground - 1, "(");
+  setCell(tiles, 76, ground - 1, "~");
+  setCell(tiles, 76, ground - 2, "~");
 
   fillRow(tiles, ground, 71, W - 1, "m");
   setCell(tiles, 0, ground, "B");
   setCell(tiles, W - 1, ground, "B");
 
-  return { w: W, h: H, tiles, ground, nightSpawned: false, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map() };
+  return { w: W, h: H, tiles, ground, nightSpawned: false, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map(), cakeBites: new Map() };
 }
 
 function portalFrame(tiles, x, ground) {
@@ -900,7 +940,7 @@ function buildNether() {
   setCell(tiles, 0, ground, "B");
   setCell(tiles, W - 1, ground, "B");
 
-  return { w: W, h: H, tiles, ground, nightSpawned: true, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map() };
+  return { w: W, h: H, tiles, ground, nightSpawned: true, cropT: 0, doorOpen: new Map(), tntFuse: new Map(), fireT: new Map(), cakeBites: new Map() };
 }
 
 function tileAt(px, py) {
@@ -1108,6 +1148,8 @@ function moveBody(body, dt) {
   body.atChest = chest === "C" || tileAt(body.x + 16, body.y - 8) === "C" || tileAt(body.x - 16, body.y - 8) === "C";
   body.atTable = chest === "T" || tileAt(body.x + 16, body.y - 8) === "T" || tileAt(body.x - 16, body.y - 8) === "T";
   body.atFurnace = chest === "F" || tileAt(body.x + 16, body.y - 8) === "F" || tileAt(body.x - 16, body.y - 8) === "F";
+  body.atBrew = chest === "{" || tileAt(body.x + 16, body.y - 8) === "{" || tileAt(body.x - 16, body.y - 8) === "{";
+  body.atEnchant = chest === "}" || tileAt(body.x + 16, body.y - 8) === "}" || tileAt(body.x - 16, body.y - 8) === "}";
   const bed = tileAt(body.x, body.y - 8);
   body.atBed = bed === "z" || bed === "Z" || tileAt(body.x + 16, body.y - 8) === "z" || tileAt(body.x - 16, body.y - 8) === "Z";
   if (body.inWater) {
@@ -1165,6 +1207,10 @@ function makePlayer() {
     fishT: 0,
     portalT: 0,
     mount: null,
+    fireRes: 0,
+    wither: 0,
+    witherTick: 0,
+    sharpness: 0,
     offhand: { id: "shield", count: 1 },
     items: [
       { id: "diamond-sword", count: 1 },
@@ -1204,6 +1250,8 @@ function makeMob(kind, tx, ty) {
     boat: { hp: 8, speed: 110, dmg: 0, hw: 22, hh: 16, scale: 0.14, sheet: "boat-sprites", h: 400, passive: true, aquatic: true },
     blaze: { hp: 10, speed: 70, dmg: 3, hw: 12, hh: 44, scale: 0.16, sheet: "blaze-sprites", h: 480, fly: true },
     ghast: { hp: 14, speed: 55, dmg: 4, hw: 22, hh: 50, scale: 0.15, sheet: "ghast-sprites", h: 480, fly: true },
+    "wither-skeleton": { hp: 10, speed: 80, dmg: 4, hw: 12, hh: 54, scale: 0.18, sheet: "wither-skeleton-sprites", h: 520 },
+    "snow-golem": { hp: 8, speed: 60, dmg: 0, hw: 12, hh: 44, scale: 0.16, sheet: "snow-golem-sprites", h: 480, ally: true },
     "magma-cube": { hp: 8, speed: 45, dmg: 3, hw: 16, hh: 22, scale: 0.14, sheet: "magma-cube-sprites", h: 480 },
   };
   return {
@@ -1301,6 +1349,7 @@ function resetGame() {
     makeMob("zombie", 50, 10),
     makeMob("horse", 42, 10),
     makeMob("boat", 16, 11),
+    makeMob("snow-golem", 72, 10),
   ];
   drops = [
     makeDrop("diamond", TILE * 13.5, TILE * 9),
@@ -1325,14 +1374,19 @@ function resetGame() {
     makeDrop("fishing-rod", TILE * 15.2, TILE * 9),
     makeDrop("saddle", TILE * 41.4, TILE * 9),
     makeDrop("oak-boat", TILE * 14.4, TILE * 9),
+    makeDrop("iron-block", TILE * 74.4, TILE * 9, 2),
+    makeDrop("glass", TILE * 63.2, TILE * 9, 6),
+    makeDrop("egg", TILE * 8.6, TILE * 9, 2),
   ];
   particles = [];
   arrows = [];
   craftingOpen = false;
   chestOpen = false;
   furnaceOpen = false;
+  brewOpen = false;
   chestItems = emptySlots(CHEST_SLOTS);
   furnace = emptyFurnace();
+  brew = emptyFurnace();
   craftScroll = 0;
   cam = { x: 0, y: 0 };
   time = 0;
@@ -1367,7 +1421,7 @@ function swapOffhand() {
 }
 
 function throwSelected() {
-  if (!player || player.dead || win || craftingOpen || chestOpen || furnaceOpen) return;
+  if (!player || player.dead || win || uiOpen()) return;
   const item = selectedItem();
   if (!item || item.count <= 0) {
     say("这一格是空的。");
@@ -1470,7 +1524,7 @@ function burstBits(x, y, color) {
 }
 
 function uiOpen() {
-  return craftingOpen || chestOpen || furnaceOpen;
+  return craftingOpen || chestOpen || furnaceOpen || brewOpen;
 }
 
 function frontCell() {
@@ -1511,6 +1565,7 @@ function tryOpenTable() {
   if (!player.atTable) return false;
   chestOpen = false;
   furnaceOpen = false;
+  brewOpen = false;
   craftingOpen = !craftingOpen;
   craftScroll = 0;
   say(craftingOpen ? "打开了工作台。点击配方合成。" : "关上了工作台。", 3);
@@ -1521,6 +1576,7 @@ function tryOpenChest() {
   if (!player.atChest) return false;
   craftingOpen = false;
   furnaceOpen = false;
+  brewOpen = false;
   chestOpen = !chestOpen;
   say(chestOpen ? "打开了箱子。点击格子存入或取出。" : "关上了箱子。", 3);
   return true;
@@ -1530,9 +1586,91 @@ function tryOpenFurnace() {
   if (!player.atFurnace) return false;
   craftingOpen = false;
   chestOpen = false;
+  brewOpen = false;
   furnaceOpen = !furnaceOpen;
   say(furnaceOpen ? "打开了熔炉。上面放矿或生肉，下面放煤炭。" : "关上了熔炉。", 3);
   return true;
+}
+
+function tryOpenBrew() {
+  if (!player.atBrew) return false;
+  craftingOpen = false;
+  chestOpen = false;
+  furnaceOpen = false;
+  brewOpen = !brewOpen;
+  say(brewOpen ? "打开了酿造台。上面放玻璃瓶，下面放烈焰粉、下界疣或恶魂之泪。" : "关上了酿造台。", 3);
+  return true;
+}
+
+function tryEnchant() {
+  if (!player.atEnchant) return false;
+  if ((player.sharpness ?? 0) >= 3) {
+    say("锋利已经满级了。");
+    return true;
+  }
+  if ((player.level ?? 0) < 3) {
+    say("需要 3 级经验才能附魔。");
+    return true;
+  }
+  player.level -= 3;
+  player.sharpness = (player.sharpness ?? 0) + 1;
+  say(`附魔了锋利 ${player.sharpness}。挥剑更痛。`);
+  return true;
+}
+
+function tryEatCake() {
+  for (const cell of frontCell()) {
+    const t = world.tiles[cell.y]?.[cell.x];
+    if (t !== "[") continue;
+    if (player.health >= 20 && player.hunger >= 20) {
+      say("已经吃饱了。");
+      return true;
+    }
+    const key = `${cell.x},${cell.y}`;
+    if (!world.cakeBites) world.cakeBites = new Map();
+    const bites = (world.cakeBites.get(key) ?? 0) + 1;
+    player.health = Math.min(20, player.health + 1);
+    player.hunger = Math.min(20, player.hunger + 2);
+    player.eatT = 8 / 10;
+    player.anim = "eat";
+    player.frame = 0;
+    if (bites >= 7) {
+      world.cakeBites.delete(key);
+      setCell(world.tiles, cell.x, cell.y, ".");
+      say("把蛋糕吃完了。");
+    } else {
+      world.cakeBites.set(key, bites);
+      say(`吃了一口蛋糕。还剩 ${7 - bites} 口。`);
+    }
+    return true;
+  }
+  return false;
+}
+
+function tryBuildGolem(tx, ty) {
+  const at = (x, y) => world.tiles[y]?.[x];
+  const clear = (x, y) => setCell(world.tiles, x, y, ".");
+  const below = at(tx, ty + 1);
+  const below2 = at(tx, ty + 2);
+  if (below === "~" && below2 === "~") {
+    clear(tx, ty);
+    clear(tx, ty + 1);
+    clear(tx, ty + 2);
+    mobs.push(makeMob("snow-golem", tx, ty + 2));
+    say("堆出了雪傀儡。");
+    return true;
+  }
+  if (below === "(" && below2 === "(" && at(tx - 1, ty + 1) === "(" && at(tx + 1, ty + 1) === "(") {
+    clear(tx, ty);
+    clear(tx, ty + 1);
+    clear(tx, ty + 2);
+    clear(tx - 1, ty + 1);
+    clear(tx + 1, ty + 1);
+    mobs.push(makeMob("iron-golem", tx, ty + 2));
+    say("堆出了铁傀儡。");
+    return true;
+  }
+  return false;
 }
 
 function chestDiamonds() {
@@ -1832,6 +1970,10 @@ function tryMineOrPlace() {
           setCell(world.tiles, tx, ty, "Y");
         } else {
           setCell(world.tiles, tx, ty, PLACEABLE[item.id]);
+          if (item.id === "pumpkin" && tryBuildGolem(tx, ty)) {
+            item.count -= 1;
+            return true;
+          }
         }
         item.count -= 1;
         say(`放下了${ITEM_LABELS[item.id] ?? item.id}`);
@@ -1903,7 +2045,9 @@ function hurt(who, amount, dir) {
       boat: "oak-boat",
       blaze: "blaze-rod",
       ghast: "ghast-tear",
+      "wither-skeleton": "bone",
       "magma-cube": "slimeball",
+      "snow-golem": "snowball",
     };
     if (who.kind !== "bat") drops.push(makeDrop(loot[who.kind] ?? "apple", who.x, who.y - 20));
     if (who.kind === "cow") drops.push(makeDrop("leather", who.x + 6, who.y - 16));
@@ -1919,6 +2063,11 @@ function hurt(who, amount, dir) {
     if (who.kind === "iron-golem") drops.push(makeDrop("iron-ingot", who.x + 8, who.y - 16, 2));
     if (who.kind === "magma-cube" && Math.random() < 0.5) drops.push(makeDrop("coal", who.x + 6, who.y - 16));
     if (who.kind === "ghast") drops.push(makeDrop("gunpowder", who.x + 6, who.y - 16, 2));
+    if (who.kind === "wither-skeleton") {
+      drops.push(makeDrop("coal", who.x + 6, who.y - 16));
+      if (Math.random() < 0.12) drops.push(makeDrop("stone-sword", who.x - 8, who.y - 18));
+    }
+    if (who.kind === "snow-golem") drops.push(makeDrop("snowball", who.x + 6, who.y - 16, 4));
     if (player.mount === who) dismount();
     spawnXp(who.x, who.y - 18, who.kind === "villager" ? 3 : who.passive ? 2 : 4);
   }
@@ -2080,6 +2229,7 @@ function captureDim() {
     particles,
     chestItems,
     furnace,
+    brew,
   };
 }
 
@@ -2091,6 +2241,7 @@ function applyDim(snap) {
   particles = snap.particles;
   chestItems = snap.chestItems;
   furnace = snap.furnace;
+  brew = snap.brew ?? emptyFurnace();
 }
 
 function swapDimension() {
@@ -2104,6 +2255,8 @@ function swapDimension() {
         makeMob("blaze", 48, 6),
         makeMob("blaze", 28, 7),
         makeMob("ghast", 18, 5),
+        makeMob("wither-skeleton", 58, 10),
+        makeMob("wither-skeleton", 64, 10),
         makeMob("magma-cube", 22, 10),
         makeMob("magma-cube", 42, 10),
       ];
@@ -2112,6 +2265,7 @@ function swapDimension() {
       particles = [];
       chestItems = emptySlots(CHEST_SLOTS);
       furnace = emptyFurnace();
+      brew = emptyFurnace();
     }
   } else applyDim(dimKeep[next]);
   dimension = next;
@@ -2123,6 +2277,7 @@ function swapDimension() {
   craftingOpen = false;
   chestOpen = false;
   furnaceOpen = false;
+  brewOpen = false;
   say(dimension === "nether" ? "穿过了传送门。这里是下界。" : "回到了主世界。", 4);
 }
 
@@ -2181,11 +2336,19 @@ function pressUse(down) {
     say("关上了熔炉。");
     return;
   }
+  if (brewOpen) {
+    brewOpen = false;
+    say("关上了酿造台。");
+    return;
+  }
   if (player.sleeping > 0 || player.eatT > 0) return;
   if (tryToggleDoor()) return;
+  if (tryOpenBrew()) return;
   if (tryOpenFurnace()) return;
+  if (tryEnchant()) return;
   if (tryOpenChest()) return;
   if (tryOpenTable()) return;
+  if (tryEatCake()) return;
   if (trySleep()) return;
   if (holdingBow()) {
     player.bowHeld = true;
@@ -2223,7 +2386,16 @@ function useSelected() {
   if (!item || item.count <= 0) return;
   if (SWORD_IDS.has(item.id)) {
     if (player.swingT > 0) return;
-    startToolSwing(item.id === "diamond-sword" ? "sword" : "tool");
+    startToolSwing("sword");
+    return;
+  }
+  if (item.id === "potion-fire") {
+    item.count -= 1;
+    player.fireRes = Math.max(player.fireRes ?? 0, 45);
+    player.eatT = 8 / 10;
+    player.anim = "eat";
+    player.frame = 0;
+    say("喝下了抗火药水。岩浆暂时伤不到你。");
     return;
   }
   const food = FOOD[item.id];
@@ -2251,7 +2423,7 @@ function swingHit() {
   for (const mob of mobs) {
     if (mob.dead || mob.hitT > 0) continue;
     if (Math.abs(mob.x - x) < reach + mob.hw && Math.abs(mob.y - player.y) < player.hh + 8) {
-      hurt(mob, 3, player.face);
+      hurt(mob, 3 + (player.sharpness ?? 0), player.face);
     }
   }
 }
@@ -2263,7 +2435,7 @@ function updatePlayer(dt) {
     return;
   }
 
-  if (craftingOpen || chestOpen || furnaceOpen) {
+  if (craftingOpen || chestOpen || furnaceOpen || brewOpen) {
     player.vx = 0;
     player.vy = 0;
     player.anim = "idle";
@@ -2272,6 +2444,7 @@ function updatePlayer(dt) {
     if (craftingOpen && !player.atTable) craftingOpen = false;
     if (chestOpen && !player.atChest) chestOpen = false;
     if (furnaceOpen && !player.atFurnace) furnaceOpen = false;
+    if (brewOpen && !player.atBrew) brewOpen = false;
     return;
   }
 
@@ -2344,10 +2517,20 @@ function updatePlayer(dt) {
 
   if (!player.mount) moveBody(player, dt);
 
-  if (player.inLava) hurt(player, 3, -player.face);
+  if (player.fireRes > 0) player.fireRes = Math.max(0, player.fireRes - dt);
+  if (player.wither > 0) {
+    player.wither -= dt;
+    player.witherTick = (player.witherTick ?? 0) + dt;
+    if (player.witherTick >= 1) {
+      player.witherTick = 0;
+      hurt(player, 1, 0);
+    }
+  } else player.witherTick = 0;
+
+  if (player.inLava && !(player.fireRes > 0)) hurt(player, 3, -player.face);
   const foot = tileAt(player.x, player.y - 4);
-  if (foot === "*") hurt(player, 2, -player.face);
-  if (foot === "?") hurt(player, 2, -player.face);
+  if (foot === "*" && !(player.fireRes > 0)) hurt(player, 2, -player.face);
+  if (foot === "?" && !(player.fireRes > 0)) hurt(player, 2, -player.face);
   if (foot === "^") {
     player.vx *= 0.45;
     if (player.mount) player.mount.vx *= 0.45;
@@ -2478,6 +2661,7 @@ function updateMobs(dt) {
       }
       moveBody(mob, dt);
       if (mob.inLava && mob.kind !== "blaze" && mob.kind !== "magma-cube" && mob.kind !== "ghast") hurt(mob, 4, -mob.face);
+      if (mob.kind === "snow-golem" && (dimension === "nether" || isRaining())) hurt(mob, 2, 0);
       continue;
     }
     if (mob.kind === "creeper" && close && Math.abs(dx) < 72 && Math.abs(mob.y - player.y) < 56) {
@@ -2503,6 +2687,8 @@ function updateMobs(dt) {
       steerGhast(mob, dt, dx, close);
     } else if (mob.kind === "iron-golem") {
       steerGolem(mob, dt);
+    } else if (mob.kind === "snow-golem") {
+      steerSnowGolem(mob, dt);
     } else {
       if (mob.kind === "creeper") mob.fuse = Math.max(0, mob.fuse - dt * 1.8);
       if (close) {
@@ -2517,8 +2703,10 @@ function updateMobs(dt) {
     }
     moveBody(mob, dt);
     if (mob.inLava && mob.kind !== "blaze" && mob.kind !== "magma-cube" && mob.kind !== "ghast") hurt(mob, 4, -mob.face);
+    if (mob.kind === "snow-golem" && (dimension === "nether" || isRaining())) hurt(mob, 2, 0);
     if (mob.kind !== "creeper" && mob.kind !== "skeleton" && mob.kind !== "witch" && mob.kind !== "blaze" && mob.kind !== "ghast" && !mob.ally && !player.dead && Math.abs(mob.x - player.x) < mob.hw + player.hw + 4 && Math.abs(mob.y - player.y) < mob.hh) {
       hurt(player, mob.dmg, Math.sign(player.x - mob.x) || -1);
+      if (mob.kind === "wither-skeleton") player.wither = Math.max(player.wither ?? 0, 5);
     }
   }
 }
@@ -2704,6 +2892,46 @@ function steerGolem(mob, dt) {
   }
 }
 
+function steerSnowGolem(mob, dt) {
+  if (mob.shootCd > 0) mob.shootCd -= dt;
+  let target = null;
+  let best = 260;
+  for (const other of mobs) {
+    if (other.dead || other.passive || other.ally || other === mob) continue;
+    const d = Math.hypot(other.x - mob.x, other.y - mob.y);
+    if (d < best) {
+      best = d;
+      target = other;
+    }
+  }
+  if (!target) {
+    if ((mob.grounded || mob.inWater) && Math.random() < 0.01) {
+      mob.face = Math.random() < 0.5 ? -1 : 1;
+      mob.vx = mob.face * mob.speed * 0.35;
+    } else if (Math.random() < 0.012) mob.vx = 0;
+    return;
+  }
+  const gap = target.x - mob.x;
+  mob.face = Math.sign(gap) || mob.face;
+  if (Math.abs(gap) < 48) mob.vx = -mob.face * mob.speed * 0.4;
+  else if (Math.abs(gap) > 160) mob.vx = mob.face * mob.speed * 0.7;
+  else mob.vx = 0;
+  if (mob.shootCd <= 0 && Math.abs(gap) < 220 && Math.abs(target.y - mob.y) < 80) {
+    arrows.push({
+      x: mob.x + mob.face * 16,
+      y: mob.y - 28,
+      vx: mob.face * 340,
+      vy: -30,
+      life: 1.6,
+      gone: false,
+      from: "ally",
+      dmg: 0,
+      snowball: true,
+    });
+    mob.shootCd = 1.35;
+  }
+}
+
 function landPearl(shot) {
   player.x = shot.x;
   player.y = shot.y + 28;
@@ -2721,7 +2949,7 @@ function updateArrows(dt) {
     shot.x += shot.vx * dt;
     shot.y += shot.vy * dt;
     const stuck = shot.life <= 0 || solidAt(shot.x, shot.y);
-    if (shot.from === "player") {
+    if (shot.from === "player" || shot.from === "ally") {
       for (const mob of mobs) {
         if (mob.dead) continue;
         if (Math.abs(shot.x - mob.x) < mob.hw + 8 && Math.abs(shot.y - (mob.y - mob.hh * 0.5)) < mob.hh * 0.6) {
@@ -2905,7 +3133,7 @@ function steveFrame() {
 }
 
 function deathFrames(kind) {
-  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" || kind === "rabbit" || kind === "villager" || kind === "cat" || kind === "bat" || kind === "squid" || kind === "witch" || kind === "iron-golem" || kind === "horse" || kind === "boat" || kind === "blaze" || kind === "magma-cube" || kind === "ghast" ? 8 : 12;
+  return kind === "pig" || kind === "cow" || kind === "chicken" || kind === "sheep" || kind === "wolf" || kind === "slime" || kind === "rabbit" || kind === "villager" || kind === "cat" || kind === "bat" || kind === "squid" || kind === "witch" || kind === "iron-golem" || kind === "horse" || kind === "boat" || kind === "blaze" || kind === "magma-cube" || kind === "ghast" || kind === "snow-golem" ? 8 : 12;
 }
 
 function mobGone(mob) {
@@ -3391,6 +3619,75 @@ function drawFurnacePanel() {
   for (let i = 0; i < 9; i++) drawItemSlot(player.items[i], originX + i * 38, barY, 34);
 }
 
+function clickBrewSlot(hit) {
+  if (!hit) return;
+  if (hit.kind === "furnace") {
+    if (transferStack(brew.slots, hit.index, player.items, 9)) say("取出了物品。");
+    else if (brew.slots[hit.index]?.count > 0) say("快捷栏满了。");
+    return;
+  }
+  const src = player.items[hit.index];
+  if (!src || src.count <= 0) return;
+  const dest = src.id === "glass-bottle" ? 0 : BREW[src.id] ? 1 : -1;
+  if (dest < 0) {
+    say("这不能放进酿造台。");
+    return;
+  }
+  const slot = brew.slots[dest];
+  if (slot.count > 0 && slot.id !== src.id) {
+    say("这一格放不下。");
+    return;
+  }
+  if (!slot.id) slot.id = src.id;
+  slot.count += src.count;
+  src.count = 0;
+  src.id = "";
+  say(dest === 0 ? "放进了玻璃瓶。" : "加了材料。");
+}
+
+function drawBrewPanel() {
+  const box = furnacePanelBox();
+  ctx.fillStyle = "rgba(8, 10, 16, 0.78)";
+  ctx.fillRect(0, 0, viewW, viewH);
+  ctx.fillStyle = "rgba(22, 18, 14, 0.96)";
+  ctx.fillRect(box.x, box.y, box.w, box.h);
+  ctx.strokeStyle = "#c6a15b";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(box.x + 1.5, box.y + 1.5, box.w - 3, box.h - 3);
+
+  ctx.textAlign = "left";
+  ctx.font = "bold 22px sans-serif";
+  ctx.fillStyle = "#ffe566";
+  ctx.fillText("酿造台", box.x + 18, box.y + 32);
+  ctx.font = "13px sans-serif";
+  ctx.fillStyle = "#ddd";
+  ctx.fillText("玻璃瓶放上面，烈焰粉/下界疣/恶魂之泪放下面  ·  Esc 关闭", box.x + 18, box.y + 52);
+
+  const originX = box.x + 18;
+  const top = box.y + 88;
+  ctx.fillStyle = "#aaa";
+  ctx.font = "12px sans-serif";
+  ctx.fillText("瓶子", originX + 24, top - 6);
+  ctx.fillText("材料", originX + 24, top + 46);
+  ctx.fillText("产物", originX + 140, top + 20);
+  drawItemSlot(brew.slots[0], originX + 24, top, 34);
+  drawItemSlot(brew.slots[1], originX + 24, top + 52, 34);
+  drawItemSlot(brew.slots[2], originX + 140, top + 26, 34);
+
+  const cookW = 72;
+  const cookX = originX + 64;
+  const cookY = top + 36;
+  ctx.fillStyle = "#2a241c";
+  ctx.fillRect(cookX, cookY, cookW, 8);
+  ctx.fillStyle = "#7ad7ff";
+  ctx.fillRect(cookX, cookY, cookW * Math.min(1, (brew.cook ?? 0) / 3), 8);
+  ctx.fillStyle = "#ffe566";
+  ctx.font = "14px sans-serif";
+  ctx.fillText("快捷栏", originX, box.y + box.h - 68);
+  const barY = box.y + box.h - 58;
+  for (let i = 0; i < 9; i++) drawItemSlot(player.items[i], originX + i * 38, barY, 34);
+}
+
 function craftRowAt(mx, my) {
   const box = craftPanelBox();
   const top = box.y + 70;
@@ -3470,10 +3767,11 @@ function drawHud() {
   ctx.textAlign = "left";
   ctx.font = "14px sans-serif";
   ctx.fillStyle = "#fff";
-  ctx.fillText(`箱子钻石 ${chestDiamonds()} / ${GOAL_DIAMONDS}   ${hourLabel()}   Lv ${player.level ?? 0}`, 16, 28);
+  ctx.fillText(`箱子钻石 ${chestDiamonds()} / ${GOAL_DIAMONDS}   ${hourLabel()}   Lv ${player.level ?? 0}${player.sharpness ? `  锋利${player.sharpness}` : ""}${player.fireRes > 0 ? "  抗火" : ""}${player.wither > 0 ? "  凋零" : ""}`, 16, 28);
   if (craftingOpen) drawCraftPanel();
   if (chestOpen) drawChestPanel();
   if (furnaceOpen) drawFurnacePanel();
+  if (brewOpen) drawBrewPanel();
   if (player.sleeping > 0) {
     ctx.fillStyle = `rgba(8,10,24,${1 - player.sleeping / 1.7})`;
     ctx.fillRect(0, 0, viewW, viewH);
@@ -3525,6 +3823,7 @@ function frame(ts) {
       updateDoors(dt);
       updateHazards(dt);
       furnaceTick(furnace, dt);
+      brewTick(brew, dt);
       updateParticles(dt);
       updateCamera();
     }
@@ -3591,6 +3890,14 @@ function handleCraftKey(key) {
     if (key === "escape" || key === "q" || key === "e" || key === "j") {
       furnaceOpen = false;
       say("关上了熔炉。");
+      return true;
+    }
+    return ["w", "s", "arrowup", "arrowdown", "a", "d", "arrowleft", "arrowright", " "].includes(key);
+  }
+  if (brewOpen && mode === "play") {
+    if (key === "escape" || key === "q" || key === "e" || key === "j") {
+      brewOpen = false;
+      say("关上了酿造台。");
       return true;
     }
     return ["w", "s", "arrowup", "arrowdown", "a", "d", "arrowleft", "arrowright", " "].includes(key);
@@ -3740,6 +4047,19 @@ canvas.addEventListener("mousedown", (e) => {
       if (pos.x < box.x || pos.x > box.x + box.w || pos.y < box.y || pos.y > box.y + box.h) {
         furnaceOpen = false;
         say("关上了熔炉。");
+      }
+    }
+    return;
+  }
+  if (brewOpen) {
+    const pos = canvasPos(e);
+    const hit = furnaceSlotAt(pos.x, pos.y);
+    if (hit) clickBrewSlot(hit);
+    else {
+      const box = furnacePanelBox();
+      if (pos.x < box.x || pos.x > box.x + box.w || pos.y < box.y || pos.y > box.y + box.h) {
+        brewOpen = false;
+        say("关上了酿造台。");
       }
     }
     return;

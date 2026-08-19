@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import {
   CHEST_SLOTS,
   RECIPES,
+  brewTick,
   canCraft,
   countOwned,
   craftOnce,
@@ -153,8 +154,19 @@ describe("crafting recipes", () => {
     assert.deepEqual(boat.need, { "oak-planks": 5 });
     const powder = RECIPES.find((r) => r.id === "blaze-powder");
     assert.deepEqual(powder.need, { "blaze-rod": 1 });
+    const bottle = RECIPES.find((r) => r.id === "glass-bottle");
+    assert.deepEqual(bottle.need, { glass: 3 });
+    const cake = RECIPES.find((r) => r.id === "cake");
+    assert.deepEqual(cake.need, { wheat: 3, sugar: 1, egg: 1 });
+    const ironBlock = RECIPES.find((r) => r.id === "iron-block");
+    assert.deepEqual(ironBlock.need, { "iron-ingot": 9 });
     assert.equal(itemAsset("netherrack"), "blocks/netherrack.svg");
     assert.equal(itemAsset("oak-boat"), "items/oak-boat.svg");
+    assert.equal(itemAsset("iron-block"), "blocks/iron-block.svg");
+    assert.equal(itemAsset("brewing-stand"), "blocks/brewing-stand.svg");
+    assert.equal(itemAsset("enchanting-table"), "blocks/enchanting-table.svg");
+    assert.equal(itemAsset("cake"), "items/cake.svg");
+    assert.equal(itemAsset("glass-bottle"), "items/glass-bottle.svg");
   });
 
   it("smelts sand to glass and logs to charcoal", () => {
@@ -163,6 +175,15 @@ describe("crafting recipes", () => {
     furnace.slots[1] = { id: "charcoal", count: 1 };
     furnaceTick(furnace, 4);
     assert.equal(furnace.slots[2].id, "glass");
+  });
+
+  it("brews fire resistance from a bottle and blaze powder", () => {
+    const brew = emptyFurnace();
+    brew.slots[0] = { id: "glass-bottle", count: 1 };
+    brew.slots[1] = { id: "blaze-powder", count: 1 };
+    brewTick(brew, 3);
+    assert.equal(brew.slots[2].id, "potion-fire");
+    assert.equal(brew.slots[0].count, 0);
   });
 
   it("crafts a wooden pickaxe and maps bow-pulling icons", () => {

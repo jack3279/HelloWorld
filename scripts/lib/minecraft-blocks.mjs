@@ -132,6 +132,8 @@ export const PLAY_BLOCKS = [
   { id: "nether-wart-1", file: "nether_wart_stage_1.png", label: "Nether wart 1", title: "下界疣生长1" },
   { id: "nether-wart-2", file: "nether_wart_stage_2.png", label: "Nether wart 2", title: "下界疣生长2" },
   { id: "nether-wart-3", file: "nether_wart_stage_2.png", label: "Nether wart ripe", title: "成熟下界疣" },
+  { id: "brewing-stand", file: "brewing_stand.png", label: "Brewing stand", title: "酿造台" },
+  { id: "cake", file: "cake_side.png", label: "Cake", title: "蛋糕" },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {

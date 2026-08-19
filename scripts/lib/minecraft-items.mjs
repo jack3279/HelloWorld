@@ -169,6 +169,13 @@ export const PLAY_ITEMS = [
   { id: "blaze-powder", file: "blaze_powder.png", label: "Blaze powder", title: "烈焰粉" },
   { id: "nether-wart", file: "nether_wart.png", label: "Nether wart", title: "下界疣" },
   { id: "ghast-tear", file: "ghast_tear.png", label: "Ghast tear", title: "恶魂之泪" },
+  { id: "glass-bottle", file: "glass_bottle.png", label: "Glass bottle", title: "玻璃瓶", base: JAVA_ITEMS_BASE },
+  { id: "potion-fire", file: "potion_bottle_fireResistance.png", label: "Fire resistance", title: "抗火药水" },
+  { id: "stone-sword", file: "stone_sword.png", label: "Stone sword", title: "石剑" },
+  { id: "cake", file: "cake.png", label: "Cake", title: "蛋糕" },
+  { id: "iron-block", file: "iron_block.png", label: "Iron block", title: "铁块", base: BLOCKS_BASE },
+  { id: "brewing-stand", file: "brewing_stand.png", label: "Brewing stand", title: "酿造台", base: BLOCKS_BASE },
+  { id: "enchanting-table", file: "enchanting_table_top.png", label: "Enchanting table", title: "附魔台", base: BLOCKS_BASE },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.

@@ -82,6 +82,13 @@ describe("hotbar item catalog", () => {
     assert.ok(play.includes("blaze-powder"));
     assert.ok(play.includes("nether-wart"));
     assert.ok(play.includes("ghast-tear"));
+    assert.ok(play.includes("glass-bottle"));
+    assert.ok(play.includes("potion-fire"));
+    assert.ok(play.includes("stone-sword"));
+    assert.ok(play.includes("cake"));
+    assert.ok(play.includes("iron-block"));
+    assert.ok(play.includes("brewing-stand"));
+    assert.ok(play.includes("enchanting-table"));
   });
 
   it("loads official 16×16 sprites", async () => {

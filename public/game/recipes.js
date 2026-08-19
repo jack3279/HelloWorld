@@ -60,12 +60,19 @@ export const RECIPES = [
   { id: "noteblock", count: 1, need: { "oak-planks": 8, "redstone-dust": 1 } },
   { id: "oak-boat", count: 1, need: { "oak-planks": 5 } },
   { id: "blaze-powder", count: 2, need: { "blaze-rod": 1 } },
+  { id: "glass-bottle", count: 3, need: { glass: 3 } },
+  { id: "stone-sword", count: 1, need: { cobblestone: 2, stick: 1 } },
+  { id: "iron-block", count: 1, need: { "iron-ingot": 9 } },
+  { id: "cake", count: 1, need: { wheat: 3, sugar: 1, egg: 1 } },
+  { id: "brewing-stand", count: 1, need: { "blaze-rod": 1, cobblestone: 3 } },
+  { id: "enchanting-table", count: 1, need: { obsidian: 4, diamond: 2, bookshelf: 1 } },
 ];
 
 export const HOTBAR_SLOTS = 9;
 export const CHEST_SLOTS = 27;
 export const FURNACE_SLOTS = 3;
 export const COOK_TIME = 4;
+export const BREW_TIME = 3;
 export const SMELT = {
   "iron-ore": { id: "iron-ingot", n: 1 },
   "gold-ore": { id: "gold-ingot", n: 1 },
@@ -80,6 +87,11 @@ export const SMELT = {
   "raw-cod": { id: "cooked-cod", n: 1 },
 };
 export const FURNACE_FUEL = { coal: 8, charcoal: 8, "oak-planks": 4, "oak-log": 4 };
+export const BREW = {
+  "blaze-powder": { id: "potion-fire", n: 1 },
+  "ghast-tear": { id: "potion-heal", n: 1 },
+  "nether-wart": { id: "potion-heal", n: 1 },
+};
 export const HOE_IDS = new Set(["diamond-hoe", "wooden-hoe", "iron-hoe"]);
 export const BLOCK_FACE_ITEMS = new Set([
   "crafting-table",
@@ -120,6 +132,9 @@ export const BLOCK_FACE_ITEMS = new Set([
   "magma",
   "nether-bricks",
   "nether-portal",
+  "iron-block",
+  "brewing-stand",
+  "enchanting-table",
 ]);
 
 export function emptySlots(n) {
@@ -237,4 +252,39 @@ export function furnaceTick(furnace, dt) {
     } else output.count += recipe.n;
   }
   return furnace;
+}
+
+export function brewCanWork(brew) {
+  const bottle = brew.slots[0];
+  const ingredient = brew.slots[1];
+  const output = brew.slots[2];
+  if (slotEmpty(bottle) || bottle.id !== "glass-bottle") return null;
+  const recipe = BREW[ingredient?.id];
+  if (!recipe || slotEmpty(ingredient)) return null;
+  if (!slotEmpty(output) && output.id !== recipe.id) return null;
+  return recipe;
+}
+
+export function brewTick(brew, dt) {
+  const recipe = brewCanWork(brew);
+  if (!recipe) {
+    brew.cook = 0;
+    return brew;
+  }
+  brew.cook += dt;
+  if (brew.cook >= BREW_TIME) {
+    brew.cook = 0;
+    const bottle = brew.slots[0];
+    const ingredient = brew.slots[1];
+    const output = brew.slots[2];
+    bottle.count -= 1;
+    if (bottle.count <= 0) bottle.id = "";
+    ingredient.count -= 1;
+    if (ingredient.count <= 0) ingredient.id = "";
+    if (slotEmpty(output)) {
+      output.id = recipe.id;
+      output.count = recipe.n;
+    } else output.count += recipe.n;
+  }
+  return brew;
 }

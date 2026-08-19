@@ -13,6 +13,7 @@ const ALPHA_CUTOFF = 16;
 
 export const ITEM_FILES = {
   sword: "diamond_sword.png",
+  "stone-sword": "stone_sword.png",
   bow: "bow_standby.png",
   "bow-0": "bow_pulling_0.png",
   "bow-1": "bow_pulling_1.png",
@@ -157,6 +158,18 @@ export function bowFileForPull(pull = 0) {
 
 export async function swordExtra() {
   return { part: swordPart(), skin: await loadItemTexture(ITEM_FILES.sword), tolerance: { default: 4 } };
+}
+
+export function stoneSwordPart() {
+  return { ...swordPart(), id: "held-sword", label: "Stone sword" };
+}
+
+export async function stoneSwordExtra() {
+  return {
+    part: stoneSwordPart(),
+    skin: await loadItemTexture(ITEM_FILES["stone-sword"]),
+    tolerance: { default: 4 },
+  };
 }
 
 export async function bowExtra(pull = 0) {
