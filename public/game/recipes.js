@@ -84,6 +84,16 @@ export const RECIPES = [
   { id: "diamond-block", count: 1, need: { diamond: 9 } },
   { id: "emerald-block", count: 1, need: { emerald: 9 } },
   { id: "blue-ice", count: 1, need: { ice: 9 } },
+  { id: "paper", count: 3, need: { "sugar-cane": 1 } },
+  { id: "firework", count: 3, need: { paper: 1, gunpowder: 1 } },
+  { id: "lever", count: 1, need: { cobblestone: 1, stick: 1 } },
+  { id: "redstone-torch", count: 1, need: { stick: 1, "redstone-dust": 1 } },
+  { id: "powered-rail", count: 6, need: { "gold-ingot": 6, stick: 1, "redstone-dust": 1 } },
+  { id: "beacon", count: 1, need: { "nether-star": 1, obsidian: 3, glass: 5 } },
+  { id: "anvil", count: 1, need: { "iron-block": 3, "iron-ingot": 4 } },
+  { id: "ender-chest", count: 1, need: { obsidian: 8, "ender-pearl": 1 } },
+  { id: "smithing-table", count: 1, need: { "oak-planks": 4, "iron-ingot": 2 } },
+  { id: "netherite-ingot", count: 1, need: { "netherite-scrap": 4, "gold-ingot": 4 } },
 ];
 
 export const HOTBAR_SLOTS = 9;
@@ -106,6 +116,7 @@ export const SMELT = {
   "birch-log": { id: "charcoal", n: 1 },
   "acacia-log": { id: "charcoal", n: 1 },
   "dark-oak-log": { id: "charcoal", n: 1 },
+  "ancient-debris": { id: "netherite-scrap", n: 1 },
   "raw-cod": { id: "cooked-cod", n: 1 },
 };
 export const FURNACE_FUEL = {
@@ -197,6 +208,14 @@ export const BLOCK_FACE_ITEMS = new Set([
   "acacia-log",
   "dark-oak-log",
   "cloud",
+  "beacon",
+  "anvil",
+  "ender-chest",
+  "lever",
+  "redstone-torch",
+  "powered-rail",
+  "smithing-table",
+  "ancient-debris",
 ]);
 
 export function emptySlots(n) {

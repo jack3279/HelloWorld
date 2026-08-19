@@ -172,6 +172,16 @@ export const PLAY_BLOCKS = [
     crop: [48, 32],
     punchDark: true,
   },
+  { id: "beacon", file: "beacon.png", label: "Beacon", title: "信标" },
+  { id: "anvil", file: "anvil_base.png", label: "Anvil", title: "铁砧" },
+  { id: "ender-chest", file: "ender_chest_front.png", label: "Ender chest", title: "末影箱" },
+  { id: "lever", file: "lever.png", label: "Lever", title: "拉杆" },
+  { id: "redstone-dust", file: "redstone_dust_cross.png", label: "Redstone dust", title: "红石粉", tint: "#c42828" },
+  { id: "redstone-torch", file: "redstone_torch_on.png", label: "Redstone torch", title: "红石火把" },
+  { id: "powered-rail", file: "rail_golden.png", label: "Powered rail", title: "动力铁轨" },
+  { id: "powered-rail-on", file: "rail_golden_powered.png", label: "Powered rail on", title: "充能动力铁轨" },
+  { id: "smithing-table", file: "smithing_table_front.png", label: "Smithing table", title: "锻造台" },
+  { id: "ancient-debris", file: "ancient_debris_side.png", label: "Ancient debris", title: "远古残骸" },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {

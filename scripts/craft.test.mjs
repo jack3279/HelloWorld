@@ -35,7 +35,9 @@ describe("crafting recipes", () => {
     assert.equal(itemAsset("dispenser"), "blocks/dispenser.svg");
     assert.equal(itemAsset("cloud"), "blocks/cloud.svg");
     assert.equal(itemAsset("door-iron"), "blocks/door-iron.svg");
-    assert.equal(itemAsset("spruce-planks"), "blocks/spruce-planks.svg");
+    assert.equal(itemAsset("beacon"), "blocks/beacon.svg");
+    assert.equal(itemAsset("anvil"), "blocks/anvil.svg");
+    assert.equal(itemAsset("firework"), "items/firework.svg");
   });
 
   it("turns a log into planks then sticks", () => {

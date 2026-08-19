@@ -59,6 +59,12 @@ const DISC_SONGS = {
   "music-disc-13": "13",
   "music-disc-cat": "Cat",
 };
+const SMITH_UP = {
+  "diamond-helmet": "netherite-helmet",
+  "diamond-chestplate": "netherite-chestplate",
+  "diamond-leggings": "netherite-leggings",
+  "diamond-boots": "netherite-boots",
+};
 const DOOR_SWING = 8;
 const OFFHAND_SLOT = 9;
 const MINEABLE = {
@@ -117,7 +123,7 @@ const MINEABLE = {
   "═": { drop: "rail" },
   "░": { drop: "end-stone", tool: "pickaxe" },
   "▤": { drop: "end-portal-frame", tool: "pickaxe" },
-  "♣": { drop: "chorus-plant" },
+  "♣": { drop: "chorus-fruit" },
   "☠": { drop: "wither-skull" },
   "♦": { drop: "dragon-egg" },
   "▷": { drop: "dispenser", tool: "pickaxe" },
@@ -140,6 +146,15 @@ const MINEABLE = {
   "┆": { drop: "acacia-log", tool: "axe" },
   "┇": { drop: "dark-oak-log", tool: "axe" },
   "☁": { drop: "cloud" },
+  "☼": { drop: "beacon", tool: "pickaxe" },
+  "⊓": { drop: "anvil", tool: "pickaxe" },
+  "▣": { drop: "ender-chest", tool: "pickaxe" },
+  "⌐": { drop: "lever" },
+  "※": { drop: "redstone-dust" },
+  "†": { drop: "redstone-torch" },
+  "╪": { drop: "powered-rail" },
+  "⊞": { drop: "smithing-table", tool: "axe" },
+  "Ω": { drop: "ancient-debris", tool: "pickaxe" },
 };
 const PLACEABLE = {
   torch: "t",
@@ -211,6 +226,15 @@ const PLACEABLE = {
   "acacia-log": "┆",
   "dark-oak-log": "┇",
   cloud: "☁",
+  beacon: "☼",
+  anvil: "⊓",
+  "ender-chest": "▣",
+  lever: "⌐",
+  "redstone-dust": "※",
+  "redstone-torch": "†",
+  "powered-rail": "╪",
+  "smithing-table": "⊞",
+  "ancient-debris": "Ω",
 };
 const PICK_TOOLS = new Set(["diamond-pickaxe", "iron-pickaxe", "wooden-pickaxe"]);
 const AXE_TOOLS = new Set(["diamond-axe", "iron-axe", "wooden-axe"]);
@@ -458,6 +482,20 @@ const ITEM_LABELS = {
   "acacia-log": "金合欢原木",
   "dark-oak-log": "深色橡木原木",
   cloud: "云",
+  beacon: "信标",
+  anvil: "铁砧",
+  "ender-chest": "末影箱",
+  lever: "拉杆",
+  "redstone-dust": "红石粉",
+  "redstone-torch": "红石火把",
+  "powered-rail": "动力铁轨",
+  "smithing-table": "锻造台",
+  "ancient-debris": "远古残骸",
+  "netherite-ingot": "下界合金锭",
+  "netherite-scrap": "下界合金碎片",
+  paper: "纸",
+  firework: "烟花火箭",
+  "chorus-fruit": "紫颂果",
 };
 
 const FOOD = {
@@ -484,6 +522,7 @@ const FOOD = {
   "cooked-cod": { hunger: 5, health: 2 },
   "mushroom-stew": { hunger: 6, health: 3 },
   cake: { hunger: 2, health: 1 },
+  "chorus-fruit": { hunger: 4, health: 2 },
 };
 
 const BLOCKS = {
@@ -607,10 +646,19 @@ const BLOCKS = {
   "┆": "blocks/acacia-log.svg",
   "┇": "blocks/dark-oak-log.svg",
   "☁": "blocks/cloud.svg",
+  "☼": "blocks/beacon.svg",
+  "⊓": "blocks/anvil.svg",
+  "▣": "blocks/ender-chest.svg",
+  "⌐": "blocks/lever.svg",
+  "※": "blocks/redstone-dust.svg",
+  "†": "blocks/redstone-torch.svg",
+  "╪": "blocks/powered-rail.svg",
+  "⊞": "blocks/smithing-table.svg",
+  "Ω": "blocks/ancient-debris.svg",
 };
 
 const SOLID = new Set([..."gdscpLabBTFimxIjuyenqHRNVAEKJMOQ8X~Wl=!$", "#", "&", "^", "+", "?", "(", "{", "}", ")", "░", "▤", "♦", "☠"]);
-for (const ch of "▷⇨➤▽◉★◆❖▒❄≡≣☰☷♠♧¦┊┆┇☁") SOLID.add(ch);
+for (const ch of "▷⇨➤▽◉★◆❖▒❄≡≣☰☷♠♧¦┊┆┇☁☼⊓▣⊞Ω") SOLID.add(ch);
 
 const canvas = document.getElementById("game");
 const overlay = document.getElementById("overlay");
@@ -637,9 +685,11 @@ let arrows = [];
 let particles = [];
 let craftingOpen = false;
 let chestOpen = false;
+let chestKind = "chest";
 let furnaceOpen = false;
 let brewOpen = false;
 let chestItems = emptySlots(CHEST_SLOTS);
+let enderItems = emptySlots(CHEST_SLOTS);
 let furnace = emptyFurnace();
 let brew = emptyFurnace();
 let craftScroll = 0;
@@ -923,6 +973,8 @@ function worldMaps(extra = {}) {
     power: new Map(),
     gadgetCd: new Map(),
     pistonOut: new Map(),
+    leverOn: new Set(),
+    beaconLit: new Set(),
     ...extra,
   };
 }
@@ -970,11 +1022,12 @@ function buildWorld() {
 
   fillRow(tiles, ground - 2, 22, 26, "p");
   fillRow(tiles, ground - 3, 22, 25, "═");
-  setCell(tiles, 26, ground - 3, "t");
+  setCell(tiles, 22, ground - 3, "╪");
+  setCell(tiles, 23, ground - 3, "╪");
+  setCell(tiles, 26, ground - 3, "†");
   fillRow(tiles, ground - 2, 40, 44, "p");
   fillRow(tiles, ground - 4, 41, 43, "p");
   setCell(tiles, 43, ground - 5, "t");
-  setCell(tiles, 26, ground - 3, "t");
   setCell(tiles, 14, ground, "h");
   setCell(tiles, 17, ground, "h");
   setCell(tiles, 32, ground, "h");
@@ -1092,6 +1145,13 @@ function buildWorld() {
   setCell(tiles, 64, ground - 2, "[");
   setCell(tiles, 69, ground - 5, "t");
   setCell(tiles, 60, ground - 1, "N");
+  setCell(tiles, 59, ground - 1, "⊓");
+  setCell(tiles, 58, ground - 1, "⊞");
+  setCell(tiles, 67, ground - 2, "▣");
+  setCell(tiles, 75, ground - 2, "☼");
+  setCell(tiles, 71, ground - 2, "⌐");
+  setCell(tiles, 72, ground - 2, "†");
+  setCell(tiles, 71, ground - 3, "※");
   setCell(tiles, 74, ground - 1, "★");
   setCell(tiles, 75, ground - 1, "◆");
   setCell(tiles, 76, ground - 1, "❖");
@@ -1169,6 +1229,9 @@ function buildNether() {
   setCell(tiles, 21, ground - 1, ":");
   setCell(tiles, 22, ground - 1, ";");
   setCell(tiles, 23, ground - 1, ">");
+  setCell(tiles, 30, ground - 1, "Ω");
+  setCell(tiles, 50, ground - 1, "Ω");
+  setCell(tiles, 31, ground + 1, "Ω");
 
   portalFrame(tiles, 36, ground);
   setCell(tiles, 0, ground, "B");
@@ -1219,6 +1282,10 @@ function tileAt(px, py) {
   const y = Math.floor(py / TILE);
   if (y < 0 || y >= world.h || x < 0 || x >= world.w) return "B";
   return world.tiles[y][x];
+}
+
+function nearTile(body, ch) {
+  return tileAt(body.x, body.y - 8) === ch || tileAt(body.x + 16, body.y - 8) === ch || tileAt(body.x - 16, body.y - 8) === ch;
 }
 
 function doorState(tx) {
@@ -1421,14 +1488,17 @@ function moveBody(body, dt) {
   }
 
   const mid = tileAt(body.x, body.y - 2);
-  const chest = tileAt(body.x, body.y - 8);
   body.inWater = inWaterAt(body);
   body.inLava = mid === "v" || tileAt(body.x, body.y - 16) === "v";
-  body.atChest = chest === "C" || tileAt(body.x + 16, body.y - 8) === "C" || tileAt(body.x - 16, body.y - 8) === "C";
-  body.atTable = chest === "T" || tileAt(body.x + 16, body.y - 8) === "T" || tileAt(body.x - 16, body.y - 8) === "T";
-  body.atFurnace = chest === "F" || tileAt(body.x + 16, body.y - 8) === "F" || tileAt(body.x - 16, body.y - 8) === "F";
-  body.atBrew = chest === "{" || tileAt(body.x + 16, body.y - 8) === "{" || tileAt(body.x - 16, body.y - 8) === "{";
-  body.atEnchant = chest === "}" || tileAt(body.x + 16, body.y - 8) === "}" || tileAt(body.x - 16, body.y - 8) === "}";
+  body.atChest = nearTile(body, "C");
+  body.atEnder = nearTile(body, "▣");
+  body.atTable = nearTile(body, "T");
+  body.atFurnace = nearTile(body, "F");
+  body.atBrew = nearTile(body, "{");
+  body.atEnchant = nearTile(body, "}");
+  body.atAnvil = nearTile(body, "⊓");
+  body.atSmith = nearTile(body, "⊞");
+  body.atBeacon = nearTile(body, "☼");
   const bed = tileAt(body.x, body.y - 8);
   body.atBed = bed === "z" || bed === "Z" || tileAt(body.x + 16, body.y - 8) === "z" || tileAt(body.x - 16, body.y - 8) === "Z";
   if (body.inWater) {
@@ -1472,6 +1542,10 @@ function makePlayer() {
     inLava: false,
     atBed: false,
     atTable: false,
+    atAnvil: false,
+    atSmith: false,
+    atBeacon: false,
+    atEnder: false,
     armor: 0,
     armorMat: null,
     selected: 0,
@@ -1491,6 +1565,8 @@ function makePlayer() {
     wither: 0,
     witherTick: 0,
     sharpness: 0,
+    beaconT: 0,
+    beaconTick: 0,
     offhand: { id: "shield", count: 1 },
     items: [
       { id: "diamond-sword", count: 1 },
@@ -1672,6 +1748,9 @@ function resetGame() {
     makeDrop("rail", TILE * 22.6, TILE * 7, 8),
     makeDrop("minecart", TILE * 24.2, TILE * 7),
     makeDrop("iron-block", TILE * 74.4, TILE * 9, 2),
+    makeDrop("nether-star", TILE * 75.2, TILE * 8),
+    makeDrop("paper", TILE * 58.6, TILE * 9, 4),
+    makeDrop("firework", TILE * 59.2, TILE * 9, 2),
     makeDrop("glass", TILE * 63.2, TILE * 9, 6),
     makeDrop("egg", TILE * 8.6, TILE * 9, 2),
   ];
@@ -1681,7 +1760,9 @@ function resetGame() {
   chestOpen = false;
   furnaceOpen = false;
   brewOpen = false;
+  chestKind = "chest";
   chestItems = emptySlots(CHEST_SLOTS);
+  enderItems = emptySlots(CHEST_SLOTS);
   furnace = emptyFurnace();
   brew = emptyFurnace();
   craftScroll = 0;
@@ -1850,7 +1931,7 @@ function tryToggleDoor() {
   for (const cell of frontCell()) {
     const t = world.tiles[cell.y]?.[cell.x];
     if (isIronDoor(t)) {
-      say("铁门要用观察者、活塞或发射器的信号才能开。");
+      say("铁门要用拉杆、红石火把或红石信号才能开。");
       return true;
     }
     if (!isOakDoor(t)) continue;
@@ -1862,7 +1943,7 @@ function tryToggleDoor() {
   return false;
 }
 
-const PISTON_STUCK = new Set([..."B$@▓DU⌊⌈⇨➤▷◉▽CTF{})N", "☁"]);
+const PISTON_STUCK = new Set([..."B$@▓DU⌊⌈⇨➤▷◉▽CTF{})N☼⊓▣⊞Ω", "☁"]);
 
 function gadgetKey(x, y) {
   return `${x},${y}`;
@@ -1873,6 +1954,16 @@ function ensureGadgetMaps() {
   if (!world.power) world.power = new Map();
   if (!world.gadgetCd) world.gadgetCd = new Map();
   if (!world.pistonOut) world.pistonOut = new Map();
+  if (!world.leverOn) world.leverOn = new Set();
+  if (!world.beaconLit) world.beaconLit = new Set();
+}
+
+function isPowered(tx, ty) {
+  ensureGadgetMaps();
+  if ((world.power.get(gadgetKey(tx, ty)) ?? 0) > 0) return true;
+  if (world.leverOn.has(gadgetKey(tx, ty))) return true;
+  if (world.tiles[ty]?.[tx] === "†") return true;
+  return false;
 }
 
 function deviceFacing(tx, ty) {
@@ -1930,17 +2021,32 @@ function retractPiston(tx, ty) {
   world.pistonOut.delete(key);
 }
 
+function floodDust(tx, ty, ttl = 0.2) {
+  const q = [[tx, ty]];
+  const seen = new Set([gadgetKey(tx, ty)]);
+  stampPower(tx, ty, ttl);
+  while (q.length) {
+    const [x, y] = q.shift();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx;
+      const ny = y + dy;
+      stampPower(nx, ny, ttl);
+      const key = gadgetKey(nx, ny);
+      const ch = world.tiles[ny]?.[nx];
+      if ((ch === "※" || ch === "╪" || ch === "═") && !seen.has(key)) {
+        seen.add(key);
+        q.push([nx, ny]);
+      }
+    }
+  }
+}
+
 function pulseFrom(tx, ty, msg) {
   ensureGadgetMaps();
   const key = gadgetKey(tx, ty);
   if ((world.gadgetCd.get(key) ?? 0) > 0) return false;
   world.gadgetCd.set(key, 0.8);
-  const ttl = 0.45;
-  world.power.set(key, ttl);
-  world.power.set(gadgetKey(tx - 1, ty), ttl);
-  world.power.set(gadgetKey(tx + 1, ty), ttl);
-  world.power.set(gadgetKey(tx, ty - 1), ttl);
-  world.power.set(gadgetKey(tx, ty + 1), ttl);
+  floodDust(tx, ty, 0.45);
   const t = world.tiles[ty]?.[tx];
   if (t === "▷") fireDispenser(tx, ty);
   if (t === "⇨") extendPiston(tx, ty);
@@ -1951,6 +2057,18 @@ function pulseFrom(tx, ty, msg) {
 function tryGadget() {
   for (const cell of frontCell()) {
     const t = world.tiles[cell.y]?.[cell.x];
+    if (t === "⌐") {
+      ensureGadgetMaps();
+      const key = gadgetKey(cell.x, cell.y);
+      if (world.leverOn.has(key)) {
+        world.leverOn.delete(key);
+        say("拉下了拉杆。");
+      } else {
+        world.leverOn.add(key);
+        say("推上了拉杆。");
+      }
+      return true;
+    }
     if (t === "◉") {
       pulseFrom(cell.x, cell.y, "观察者发出了信号。");
       return true;
@@ -1990,20 +2108,6 @@ function suckHopper(tx, ty) {
   }
 }
 
-function ironDoorPowered(tx) {
-  ensureGadgetMaps();
-  for (let y = 0; y < world.h; y++) {
-    const t = world.tiles[y]?.[tx];
-    if (!isIronDoor(t)) continue;
-    if ((world.power.get(gadgetKey(tx, y)) ?? 0) > 0) return true;
-    if ((world.power.get(gadgetKey(tx - 1, y)) ?? 0) > 0) return true;
-    if ((world.power.get(gadgetKey(tx + 1, y)) ?? 0) > 0) return true;
-    if ((world.power.get(gadgetKey(tx, y - 1)) ?? 0) > 0) return true;
-    if ((world.power.get(gadgetKey(tx, y + 1)) ?? 0) > 0) return true;
-  }
-  return false;
-}
-
 function tickMap(map, dt) {
   for (const [key, t] of [...map]) {
     const next = t - dt;
@@ -2012,27 +2116,53 @@ function tickMap(map, dt) {
   }
 }
 
+function ironDoorPowered(tx) {
+  for (let y = 0; y < world.h; y++) {
+    const t = world.tiles[y]?.[tx];
+    if (!isIronDoor(t)) continue;
+    if (isPowered(tx, y) || isPowered(tx - 1, y) || isPowered(tx + 1, y) || isPowered(tx, y - 1) || isPowered(tx, y + 1)) return true;
+  }
+  return false;
+}
+
+function stampPower(tx, ty, ttl = 0.2) {
+  ensureGadgetMaps();
+  const key = gadgetKey(tx, ty);
+  world.power.set(key, Math.max(world.power.get(key) ?? 0, ttl));
+}
+
+function conductRedstone() {
+  ensureGadgetMaps();
+  for (let y = 0; y < world.h; y++) {
+    for (let x = 0; x < world.w; x++) {
+      const t = world.tiles[y][x];
+      if (t === "†" || (t === "⌐" && world.leverOn.has(gadgetKey(x, y)))) floodDust(x, y, 0.2);
+    }
+  }
+}
+
 function updateGadgets(dt) {
   if (!world) return;
   ensureGadgetMaps();
   tickMap(world.gadgetCd, dt);
   tickMap(world.power, dt);
+  conductRedstone();
   const doorXs = new Set();
   for (let y = 0; y < world.h; y++) {
     for (let x = 0; x < world.w; x++) {
       const t = world.tiles[y][x];
-      if (t === "⇨" && world.pistonOut.get(gadgetKey(x, y)) && (world.power.get(gadgetKey(x, y)) ?? 0) <= 0) {
-        retractPiston(x, y);
+      const powered = isPowered(x, y) || isPowered(x - 1, y) || isPowered(x + 1, y) || isPowered(x, y - 1) || isPowered(x, y + 1);
+      if (t === "⇨") {
+        if (powered) extendPiston(x, y);
+        else if (world.pistonOut.get(gadgetKey(x, y))) retractPiston(x, y);
       }
+      if (t === "▷" && powered) pulseFrom(x, y);
       if (t === "◉" && playerTouchesTile(x + deviceFacing(x, y), y)) pulseFrom(x, y);
       if (t === "▽") suckHopper(x, y);
       if (isIronDoor(t)) doorXs.add(x);
     }
   }
-  for (const tx of doorXs) {
-    const st = doorState(tx);
-    st.open = ironDoorPowered(tx);
-  }
+  for (const tx of doorXs) doorState(tx).open = ironDoorPowered(tx);
 }
 
 function tryOpenTable() {
@@ -2047,12 +2177,32 @@ function tryOpenTable() {
 }
 
 function tryOpenChest() {
+  if (player.atEnder) {
+    craftingOpen = false;
+    furnaceOpen = false;
+    brewOpen = false;
+    if (chestOpen && chestKind === "ender") {
+      chestOpen = false;
+      say("关上了末影箱。", 3);
+    } else {
+      chestOpen = true;
+      chestKind = "ender";
+      say("打开了末影箱。格子在所有世界共用。", 3);
+    }
+    return true;
+  }
   if (!player.atChest) return false;
   craftingOpen = false;
   furnaceOpen = false;
   brewOpen = false;
-  chestOpen = !chestOpen;
-  say(chestOpen ? "打开了箱子。点击格子存入或取出。" : "关上了箱子。", 3);
+  if (chestOpen && chestKind === "chest") {
+    chestOpen = false;
+    say("关上了箱子。", 3);
+  } else {
+    chestOpen = true;
+    chestKind = "chest";
+    say("打开了箱子。点击格子存入或取出。", 3);
+  }
   return true;
 }
 
@@ -2090,6 +2240,130 @@ function tryEnchant() {
   player.sharpness = (player.sharpness ?? 0) + 1;
   say(`附魔了锋利 ${player.sharpness}。挥剑更痛。`);
   return true;
+}
+
+function tryAnvil() {
+  if (!player.atAnvil) return false;
+  if ((player.sharpness ?? 0) >= 5) {
+    say("铁砧已经不能再强化了。");
+    return true;
+  }
+  if ((player.level ?? 0) < 2) {
+    say("铁砧强化需要 2 级经验。");
+    return true;
+  }
+  player.level -= 2;
+  player.sharpness = (player.sharpness ?? 0) + 1;
+  say(`铁砧强化了装备。锋利 ${player.sharpness}。`);
+  return true;
+}
+
+function trySmith() {
+  if (!player.atSmith) return false;
+  const item = selectedItem();
+  const next = SMITH_UP[item?.id];
+  if (!next || item.count <= 0) {
+    say("锻造台要把钻石盔甲拿在手里，并准备下界合金锭。");
+    return true;
+  }
+  const barHas = countOwned(player.items, "netherite-ingot") > 0;
+  const offHas = player.offhand?.id === "netherite-ingot" && player.offhand.count > 0;
+  if (!barHas && !offHas) {
+    say("需要下界合金锭。");
+    return true;
+  }
+  if (barHas) takeNeed(player.items, { "netherite-ingot": 1 });
+  else player.offhand.count -= 1;
+  item.id = next;
+  say(`锻造成了${ITEM_LABELS[next] ?? next}。`);
+  refreshArmor();
+  return true;
+}
+
+function mineralBelow(tx, ty) {
+  const b = world.tiles[ty + 1]?.[tx];
+  return b === "★" || b === "◆" || b === "❖" || b === "(";
+}
+
+function tryBeacon() {
+  if (!player.atBeacon) return false;
+  ensureGadgetMaps();
+  for (const cell of frontCell()) {
+    if (world.tiles[cell.y]?.[cell.x] !== "☼") continue;
+    const key = gadgetKey(cell.x, cell.y);
+    if (world.beaconLit.has(key)) {
+      say("信标已经亮着。站在附近会回血、跑得更快。");
+      return true;
+    }
+    if (!mineralBelow(cell.x, cell.y)) {
+      say("信标要放在铁块、金块、钻石块或绿宝石块上。");
+      return true;
+    }
+    const star = selectedItem();
+    if (star?.id !== "nether-star" || star.count <= 0) {
+      say("激活信标需要下界之星。");
+      return true;
+    }
+    star.count -= 1;
+    world.beaconLit.add(key);
+    say("信标亮起来了！");
+    burstBits(cell.x * TILE + 24, cell.y * TILE, "#9ee7ff");
+    return true;
+  }
+  return false;
+}
+
+function tryTrade() {
+  const item = selectedItem();
+  if (!item || item.count <= 0) return false;
+  for (const mob of mobs) {
+    if (mob.dead || mob.kind !== "villager") continue;
+    if (Math.hypot(mob.x - player.x, mob.y - player.y) > 52) continue;
+    if (item.id === "emerald") {
+      item.count -= 1;
+      if (!addItem("bread", 4)) spillItem("bread", 4);
+      say("村民用面包换了你的绿宝石。");
+      return true;
+    }
+    if (item.id === "wheat" && item.count >= 8) {
+      item.count -= 8;
+      if (!addItem("emerald", 1)) spillItem("emerald", 1);
+      say("村民收购了小麦，给了你一颗绿宝石。");
+      return true;
+    }
+    say("村民要绿宝石换面包，或 8 个小麦换绿宝石。");
+    return true;
+  }
+  return false;
+}
+
+function tryFirework() {
+  const item = selectedItem();
+  if (item?.id !== "firework" || item.count <= 0) return false;
+  item.count -= 1;
+  burstBits(player.x, player.y - 24, "#ff6b6b");
+  burstBits(player.x + 8, player.y - 36, "#ffe566");
+  burstBits(player.x - 8, player.y - 30, "#6bcbff");
+  if (hasElytra() && !player.grounded && !player.mount) {
+    player.vy = -520;
+    player.vx += player.face * 280;
+    say("烟花推进了鞘翅。");
+  } else say("放了一朵烟花。");
+  return true;
+}
+
+function chorusTeleport() {
+  for (let i = 0; i < 12; i++) {
+    const nx = player.x + (Math.random() * 8 - 4) * TILE;
+    const ny = player.y - Math.random() * 3 * TILE;
+    if (!rectHitsSolid(nx - player.hw, ny - player.hh, player.hw * 2, player.hh)) {
+      player.x = nx;
+      player.y = ny;
+      burstBits(nx, ny - 20, "#c57be8");
+      return true;
+    }
+  }
+  return false;
 }
 
 function tryEatCake() {
@@ -2492,6 +2766,8 @@ function tryMineOrPlace() {
         world.pistonOut?.delete(gadgetKey(cell.x, cell.y));
       }
       if ("▷◉⇨▽".includes(t)) world.deviceFace?.delete(gadgetKey(cell.x, cell.y));
+      if (t === "⌐") world.leverOn?.delete(gadgetKey(cell.x, cell.y));
+      if (t === "☼") world.beaconLit?.delete(gadgetKey(cell.x, cell.y));
       setCell(world.tiles, cell.x, cell.y, "xiHRJKMO".includes(t) ? "s" : ".");
       const extra = t === "L" && item?.id === "shears" ? 1 : 0;
       drops.push(makeDrop(spec.drop, cell.x * TILE + 24, cell.y * TILE + 8, 1 + extra));
@@ -2876,7 +3152,7 @@ function tryPlaceBoat() {
 }
 
 function facingRail() {
-  return tileAt(player.x + player.face * 36, player.y - 8) === "═" || tileAt(player.x, player.y - 8) === "═" || tileAt(player.x + player.face * 28, player.y + 4) === "═";
+  return railAt(player.x + player.face * 36, player.y - 8) || railAt(player.x, player.y - 8) || railAt(player.x + player.face * 28, player.y + 4);
 }
 
 function tryPlaceMinecart() {
@@ -2946,7 +3222,15 @@ function tryGlide(dt, jump) {
 }
 
 function railAt(px, py) {
-  return tileAt(px, py) === "═";
+  const t = tileAt(px, py);
+  return t === "═" || t === "╪";
+}
+
+function railPoweredAt(px, py) {
+  const x = Math.floor(px / TILE);
+  const y = Math.floor(py / TILE);
+  if (tileAt(px, py) !== "╪") return false;
+  return isPowered(x, y) || isPowered(x, y + 1) || isPowered(x - 1, y) || isPowered(x + 1, y);
 }
 
 function moveMinecart(body, dt) {
@@ -2963,6 +3247,10 @@ function moveMinecart(body, dt) {
   const nx = body.x + body.vx * dt;
   if ((railAt(nx, body.y - 4) || railAt(nx, ty * TILE + 8)) && !rectHitsSolid(nx - body.hw, body.y - body.hh, body.hw * 2, Math.max(4, body.hh - 6))) {
     body.x = nx;
+    if (railPoweredAt(body.x, body.y - 4) || railPoweredAt(body.x, body.y + 2)) {
+      const dir = Math.sign(body.vx) || body.face || 1;
+      body.vx = dir * Math.max(Math.abs(body.vx), 360);
+    }
   } else body.vx = 0;
 }
 
@@ -3009,6 +3297,7 @@ function swapDimension(next) {
         makeDrop("glowstone", TILE * 64.5, TILE * 8, 2),
         makeDrop("nether-wart", TILE * 22.5, TILE * 8, 3),
         makeDrop("wither-skull", TILE * 21.5, TILE * 8, 3),
+        makeDrop("ancient-debris", TILE * 30.5, TILE * 8, 2),
       ];
       arrows = [];
       particles = [];
@@ -3023,7 +3312,7 @@ function swapDimension(next) {
         makeMob("enderman", 50, 10),
         makeMob("enderman", 56, 10),
       ];
-      drops = [makeDrop("ender-pearl", TILE * 26, TILE * 8, 2)];
+      drops = [makeDrop("ender-pearl", TILE * 26, TILE * 8, 2), makeDrop("chorus-fruit", TILE * 52, TILE * 8, 4)];
       arrows = [];
       particles = [];
       chestItems = emptySlots(CHEST_SLOTS);
@@ -3121,6 +3410,9 @@ function pressUse(down) {
   if (tryOpenBrew()) return;
   if (tryOpenFurnace()) return;
   if (tryEnchant()) return;
+  if (tryAnvil()) return;
+  if (trySmith()) return;
+  if (tryBeacon()) return;
   if (tryOpenChest()) return;
   if (tryOpenTable()) return;
   if (tryEatCake()) return;
@@ -3144,6 +3436,7 @@ function useSelected() {
   if (player.sleeping > 0 || player.eatT > 0) return;
   if (uiOpen()) return;
   if (tryFeed()) return;
+  if (tryTrade()) return;
   if (trySaddle()) return;
   if (tryMount()) return;
   if (tryPlaceBoat()) return;
@@ -3160,6 +3453,7 @@ function useSelected() {
   if (tryFish()) return;
   if (tryNoteblock()) return;
   if (tryJukebox()) return;
+  if (tryFirework()) return;
   if (tryMineOrPlace()) return;
   const item = selectedItem();
   if (!item || item.count <= 0) return;
@@ -3177,6 +3471,17 @@ function useSelected() {
     say("喝下了抗火药水。岩浆暂时伤不到你。");
     return;
   }
+  if (item.id === "chorus-fruit") {
+    item.count -= 1;
+    player.health = Math.min(20, player.health + 2);
+    player.hunger = Math.min(20, player.hunger + 4);
+    player.eatT = 8 / 10;
+    player.anim = "eat";
+    player.frame = 0;
+    chorusTeleport();
+    say("吃了紫颂果，被传送了。");
+    return;
+  }
   const food = FOOD[item.id];
   if (food) {
     if (player.health >= 20 && player.hunger >= 20) {
@@ -3189,7 +3494,10 @@ function useSelected() {
     player.eatT = 8 / 10;
     player.anim = "eat";
     player.frame = 0;
-    say(`使用了${ITEM_LABELS[item.id]}`);
+    if (item.id === "chorus-fruit") {
+      chorusTeleport();
+      say("吃了紫颂果，被传送了。");
+    } else say(`使用了${ITEM_LABELS[item.id]}`);
   }
 }
 
@@ -3221,7 +3529,8 @@ function updatePlayer(dt) {
     player.frame = 0;
     player.age += dt;
     if (craftingOpen && !player.atTable) craftingOpen = false;
-    if (chestOpen && !player.atChest) chestOpen = false;
+    if (chestOpen && chestKind === "ender" && !player.atEnder) chestOpen = false;
+    if (chestOpen && chestKind !== "ender" && !player.atChest) chestOpen = false;
     if (furnaceOpen && !player.atFurnace) furnaceOpen = false;
     if (brewOpen && !player.atBrew) brewOpen = false;
     return;
@@ -3250,7 +3559,7 @@ function updatePlayer(dt) {
   const sprint = keys.has("control") && !sneak;
   const mount = player.mount && !player.mount.dead ? player.mount : null;
   if (player.mount && !mount) dismount();
-  const speed = player.inWater || mount?.kind === "boat" ? MOVE * 0.55 : sneak ? MOVE * 0.45 : sprint ? MOVE * 1.45 : mount?.kind === "horse" ? MOVE * 1.55 : mount?.kind === "minecart" ? MOVE * 1.35 : MOVE;
+  const speed = (player.inWater || mount?.kind === "boat" ? MOVE * 0.55 : sneak ? MOVE * 0.45 : sprint ? MOVE * 1.45 : mount?.kind === "horse" ? MOVE * 1.55 : mount?.kind === "minecart" ? MOVE * 1.35 : MOVE) * (player.beaconT > 0 ? 1.22 : 1);
 
   if (mount) {
     if (sneak) {
@@ -3305,6 +3614,21 @@ function updatePlayer(dt) {
   tryGlide(dt, jump);
 
   if (player.fireRes > 0) player.fireRes = Math.max(0, player.fireRes - dt);
+  if (player.beaconT > 0) {
+    player.beaconT = Math.max(0, player.beaconT - dt);
+    player.beaconTick = (player.beaconTick ?? 0) + dt;
+    if (player.beaconTick >= 1.2) {
+      player.beaconTick = 0;
+      if (player.health < 20) player.health = Math.min(20, player.health + 1);
+    }
+  } else player.beaconTick = 0;
+  if (player.atBeacon && world.beaconLit && [...world.beaconLit].length) player.beaconT = 2.5;
+  if (world?.beaconLit) {
+    for (const key of world.beaconLit) {
+      const [bx] = key.split(",").map(Number);
+      if (Math.abs(player.x - (bx * TILE + 24)) < 220) player.beaconT = 2.5;
+    }
+  }
   if (player.wither > 0) {
     player.wither -= dt;
     player.witherTick = (player.witherTick ?? 0) + dt;
@@ -4190,6 +4514,14 @@ function drawWorld() {
       } else if (t === "*") {
         const f = 1 + (Math.floor(time * 10) % 7);
         drawTile(`blocks/fire-${f}.svg`, dx, dy);
+      } else if (t === "╪" && (isPowered(x, y) || isPowered(x, y + 1) || isPowered(x - 1, y) || isPowered(x + 1, y))) {
+        drawTile("blocks/powered-rail-on.svg", dx, dy);
+      } else if (t === "☼") {
+        drawTile(BLOCKS[t], dx, dy);
+        if (world.beaconLit?.has(`${x},${y}`)) {
+          ctx.fillStyle = "rgba(150, 230, 255, 0.3)";
+          ctx.fillRect(dx + 14, 0, 20, dy);
+        }
       } else if (BLOCKS[t]) drawTile(BLOCKS[t], dx, dy);
     }
   }
@@ -4435,20 +4767,25 @@ function chestSlotAt(mx, my) {
   return null;
 }
 
+function activeChestItems() {
+  return chestKind === "ender" ? enderItems : chestItems;
+}
+
 function clickChestSlot(hit) {
   if (!hit) return;
+  const bag = activeChestItems();
   if (hit.kind === "chest") {
-    if (transferStack(chestItems, hit.index, player.items, 9)) {
+    if (transferStack(bag, hit.index, player.items, 9)) {
       refreshArmor();
       say("取出了物品。");
     }
-    else if (chestItems[hit.index]?.count > 0) say("快捷栏满了。");
+    else if (bag[hit.index]?.count > 0) say("快捷栏满了。");
   } else {
-    if (transferStack(player.items, hit.index, chestItems, CHEST_SLOTS)) {
+    if (transferStack(player.items, hit.index, bag, CHEST_SLOTS)) {
       refreshArmor();
-      say("放进了箱子。");
-      checkChestWin();
-    } else if (player.items[hit.index]?.count > 0) say("箱子满了。");
+      say(chestKind === "ender" ? "放进了末影箱。" : "放进了箱子。");
+      if (chestKind !== "ender") checkChestWin();
+    } else if (player.items[hit.index]?.count > 0) say(chestKind === "ender" ? "末影箱满了。" : "箱子满了。");
   }
 }
 
@@ -4465,7 +4802,7 @@ function drawChestPanel() {
   ctx.textAlign = "left";
   ctx.font = "bold 22px sans-serif";
   ctx.fillStyle = "#ffe566";
-  ctx.fillText("箱子", box.x + 18, box.y + 32);
+  ctx.fillText(chestKind === "ender" ? "末影箱" : "箱子", box.x + 18, box.y + 32);
   ctx.font = "13px sans-serif";
   ctx.fillStyle = "#ddd";
   ctx.fillText("点击箱子格子取出  ·  点击快捷栏存入  ·  Esc 关闭", box.x + 18, box.y + 52);
@@ -4473,10 +4810,11 @@ function drawChestPanel() {
   const originX = box.x + 18;
   const chestY = box.y + 64;
   const gap = 38;
+  const bag = activeChestItems();
   for (let i = 0; i < CHEST_SLOTS; i++) {
     const col = i % 9;
     const row = Math.floor(i / 9);
-    drawItemSlot(chestItems[i], originX + col * gap, chestY + row * gap, 34);
+    drawItemSlot(bag[i], originX + col * gap, chestY + row * gap, 34);
   }
 
   ctx.fillStyle = "#ffe566";
@@ -4732,7 +5070,7 @@ function drawHud() {
   ctx.textAlign = "left";
   ctx.font = "14px sans-serif";
   ctx.fillStyle = "#fff";
-  ctx.fillText(`箱子钻石 ${chestDiamonds()} / ${GOAL_DIAMONDS}   ${hourLabel()}   Lv ${player.level ?? 0}${player.sharpness ? `  锋利${player.sharpness}` : ""}${player.fireRes > 0 ? "  抗火" : ""}${player.wither > 0 ? "  凋零" : ""}`, 16, 28);
+  ctx.fillText(`箱子钻石 ${chestDiamonds()} / ${GOAL_DIAMONDS}   ${hourLabel()}   Lv ${player.level ?? 0}${player.sharpness ? `  锋利${player.sharpness}` : ""}${player.fireRes > 0 ? "  抗火" : ""}${player.wither > 0 ? "  凋零" : ""}${player.beaconT > 0 ? "  信标" : ""}`, 16, 28);
   if (craftingOpen) drawCraftPanel();
   if (chestOpen) drawChestPanel();
   if (furnaceOpen) drawFurnacePanel();

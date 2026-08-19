@@ -227,6 +227,19 @@ export const PLAY_ITEMS = [
     crop: [48, 32],
     punchDark: true,
   },
+  { id: "beacon", file: "beacon.png", label: "Beacon", title: "信标", base: BLOCKS_BASE },
+  { id: "anvil", file: "anvil_base.png", label: "Anvil", title: "铁砧", base: BLOCKS_BASE },
+  { id: "ender-chest", file: "ender_chest_front.png", label: "Ender chest", title: "末影箱", base: BLOCKS_BASE },
+  { id: "lever", file: "lever.png", label: "Lever", title: "拉杆", base: BLOCKS_BASE },
+  { id: "redstone-torch", file: "redstone_torch_on.png", label: "Redstone torch", title: "红石火把", base: BLOCKS_BASE },
+  { id: "powered-rail", file: "rail_golden.png", label: "Powered rail", title: "动力铁轨", base: BLOCKS_BASE },
+  { id: "smithing-table", file: "smithing_table_front.png", label: "Smithing table", title: "锻造台", base: BLOCKS_BASE },
+  { id: "ancient-debris", file: "ancient_debris_side.png", label: "Ancient debris", title: "远古残骸", base: BLOCKS_BASE },
+  { id: "netherite-ingot", file: "netherite_ingot.png", label: "Netherite ingot", title: "下界合金锭" },
+  { id: "netherite-scrap", file: "netherite_scrap.png", label: "Netherite scrap", title: "下界合金碎片" },
+  { id: "paper", file: "paper.png", label: "Paper", title: "纸" },
+  { id: "firework", file: "fireworks.png", label: "Firework rocket", title: "烟花火箭" },
+  { id: "chorus-fruit", file: "chorus_fruit.png", label: "Chorus fruit", title: "紫颂果" },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.
