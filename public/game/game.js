@@ -55,9 +55,19 @@ const PLACEABLE = {
   "crafting-table": "T",
   "oak-sapling": "S",
 };
-const PICK_TOOLS = new Set(["diamond-pickaxe"]);
-const AXE_TOOLS = new Set(["diamond-axe"]);
-const HELD_TOOLS = new Set(["diamond-sword", "bow", "diamond-pickaxe", "diamond-axe", "diamond-hoe", "wooden-hoe"]);
+const PICK_TOOLS = new Set(["diamond-pickaxe", "iron-pickaxe", "wooden-pickaxe"]);
+const AXE_TOOLS = new Set(["diamond-axe", "iron-axe", "wooden-axe"]);
+const SWORD_IDS = new Set(["diamond-sword", "iron-sword", "wooden-sword"]);
+const HELD_TOOLS = new Set([
+  ...SWORD_IDS,
+  "bow",
+  ...PICK_TOOLS,
+  ...AXE_TOOLS,
+  ...HOE_IDS,
+  "wooden-shovel",
+  "iron-shovel",
+  "diamond-shovel",
+]);
 
 const STEVE = {
   loco: { w: 256, h: 320, ax: 128, ay: 300, scale: 0.3 },
@@ -103,6 +113,21 @@ const ITEM_LABELS = {
   "diamond-axe": "钻石斧",
   "diamond-hoe": "钻石锄",
   "wooden-hoe": "木锄",
+  "iron-hoe": "铁锄",
+  "wooden-sword": "木剑",
+  "wooden-pickaxe": "木镐",
+  "wooden-axe": "木斧",
+  "wooden-shovel": "木铲",
+  "iron-sword": "铁剑",
+  "iron-pickaxe": "铁镐",
+  "iron-axe": "铁斧",
+  "iron-shovel": "铁铲",
+  "diamond-shovel": "钻石铲",
+  "water-bucket": "水桶",
+  "lava-bucket": "熔岩桶",
+  "raw-chicken": "生鸡肉",
+  "raw-mutton": "生羊肉",
+  "cooked-mutton": "熟羊肉",
   shears: "剪刀",
   bucket: "桶",
   "iron-ingot": "铁锭",
@@ -134,7 +159,9 @@ const FOOD = {
   "raw-porkchop": { hunger: 3, health: 1 },
   "raw-beef": { hunger: 3, health: 1 },
   "baked-potato": { hunger: 5, health: 2 },
-  potato: { hunger: 1, health: 0 },
+  "raw-chicken": { hunger: 2, health: 0 },
+  "raw-mutton": { hunger: 2, health: 0 },
+  "cooked-mutton": { hunger: 6, health: 3 },
 };
 
 const BLOCKS = {
@@ -285,7 +312,12 @@ const MANIFEST = [
   "hud/hotbar-slot.svg",
   "hud/xp-bar.svg",
   "hud/crosshair.svg",
+  "hud/bubble.svg",
+  "hud/bubble-empty.svg",
   "blocks/furnace-on.svg",
+  "items/bow-pulling-0.svg",
+  "items/bow-pulling-1.svg",
+  "items/bow-pulling-2.svg",
 ];
 
 export function listGameAssets() {
@@ -977,6 +1009,30 @@ function tryFeed() {
   return false;
 }
 
+function tryBucket() {
+  const item = selectedItem();
+  if (!item || item.count <= 0) return false;
+  if (item.id === "bucket") {
+    for (const cell of frontCell()) {
+      const t = world.tiles[cell.y]?.[cell.x];
+      if (t !== "w" && t !== "v") continue;
+      setCell(world.tiles, cell.x, cell.y, ".");
+      item.id = t === "v" ? "lava-bucket" : "water-bucket";
+      say(t === "v" ? "装满了熔岩。" : "装满了水。");
+      return true;
+    }
+    return false;
+  }
+  if (item.id !== "water-bucket" && item.id !== "lava-bucket") return false;
+  const tx = Math.floor((player.x + player.face * 28) / TILE);
+  const ty = Math.floor((player.y - 12) / TILE);
+  if (world.tiles[ty]?.[tx] !== ".") return false;
+  setCell(world.tiles, tx, ty, item.id === "lava-bucket" ? "v" : "w");
+  item.id = "bucket";
+  say("倒了出来。");
+  return true;
+}
+
 function tryFarm() {
   const item = selectedItem();
   const tx = Math.floor((player.x + player.face * 22) / TILE);
@@ -1177,13 +1233,14 @@ function useSelected() {
   if (uiOpen()) return;
   if (tryFeed()) return;
   if (tryHoe()) return;
+  if (tryBucket()) return;
   if (tryFarm()) return;
   if (tryMineOrPlace()) return;
   const item = selectedItem();
   if (!item || item.count <= 0) return;
-  if (item.id === "diamond-sword") {
+  if (SWORD_IDS.has(item.id)) {
     if (player.swingT > 0) return;
-    startToolSwing("sword");
+    startToolSwing(item.id === "diamond-sword" ? "sword" : "tool");
     return;
   }
   const food = FOOD[item.id];
@@ -1588,7 +1645,7 @@ function drawAnchored(rel, spec, x, y, face) {
 }
 
 function holdingSword() {
-  return selectedItem()?.id === "diamond-sword" && selectedItem()?.count > 0;
+  return SWORD_IDS.has(selectedItem()?.id) && selectedItem()?.count > 0;
 }
 
 function heldOverlayId() {
@@ -1753,7 +1810,12 @@ function drawPlayer() {
 function drawHeldItem() {
   const id = heldOverlayId();
   if (!id) return;
-  const pic = img(itemAsset(id));
+  let rel = itemAsset(id);
+  if (id === "bow" && player.drawT > 0) {
+    const frame = player.drawT < 0.4 ? 0 : player.drawT < 0.75 ? 1 : 2;
+    rel = `items/bow-pulling-${frame}.svg`;
+  }
+  const pic = img(rel);
   if (!pic) return;
   const swing = player.swingT > 0 && player.swingKind === "tool";
   const drawing = id === "bow" && player.drawT > 0;
@@ -2045,7 +2107,12 @@ function drawHud() {
   const barY = viewH - 86;
   drawHearts(barX + 8, barY - 28, player.health, "hud/heart.svg", "hud/heart-half.svg", "hud/heart-empty.svg");
   drawHearts(barX + barW - 8 - 180, barY - 28, player.hunger, "hud/hunger-full.svg", "hud/hunger-half.svg", "hud/hunger-empty.svg");
-  if (player.armor > 0) {
+  if (player.inWater) {
+    const filled = Math.max(0, Math.min(10, Math.ceil((player.air / 12) * 10)));
+    for (let i = 0; i < 10; i++) {
+      drawImage(i < filled ? "hud/bubble.svg" : "hud/bubble-empty.svg", barX + 8 + i * 18, barY - 48, 16, 16);
+    }
+  } else if (player.armor > 0) {
     drawHearts(barX + 8, barY - 48, player.armor, "hud/armor-full.svg", "hud/armor-half.svg", "hud/armor-empty.svg");
   }
 

@@ -12,7 +12,17 @@ export const RECIPES = [
   { id: "diamond-pickaxe", count: 1, need: { diamond: 3, stick: 2 } },
   { id: "diamond-axe", count: 1, need: { diamond: 3, stick: 2 } },
   { id: "wooden-hoe", count: 1, need: { "oak-planks": 2, stick: 2 } },
+  { id: "wooden-sword", count: 1, need: { "oak-planks": 2, stick: 1 } },
+  { id: "wooden-pickaxe", count: 1, need: { "oak-planks": 3, stick: 2 } },
+  { id: "wooden-axe", count: 1, need: { "oak-planks": 3, stick: 2 } },
+  { id: "wooden-shovel", count: 1, need: { "oak-planks": 1, stick: 2 } },
+  { id: "iron-hoe", count: 1, need: { "iron-ingot": 2, stick: 2 } },
+  { id: "iron-sword", count: 1, need: { "iron-ingot": 2, stick: 1 } },
+  { id: "iron-pickaxe", count: 1, need: { "iron-ingot": 3, stick: 2 } },
+  { id: "iron-axe", count: 1, need: { "iron-ingot": 3, stick: 2 } },
+  { id: "iron-shovel", count: 1, need: { "iron-ingot": 1, stick: 2 } },
   { id: "diamond-hoe", count: 1, need: { diamond: 2, stick: 2 } },
+  { id: "diamond-shovel", count: 1, need: { diamond: 1, stick: 2 } },
   { id: "shears", count: 1, need: { "iron-ingot": 2 } },
   { id: "bucket", count: 1, need: { "iron-ingot": 3 } },
   { id: "iron-chestplate", count: 1, need: { "iron-ingot": 8 } },
@@ -30,10 +40,12 @@ export const SMELT = {
   "gold-ore": { id: "gold-ingot", n: 1 },
   "raw-porkchop": { id: "cooked-porkchop", n: 1 },
   "raw-beef": { id: "steak", n: 1 },
+  "raw-chicken": { id: "cooked-chicken", n: 1 },
+  "raw-mutton": { id: "cooked-mutton", n: 1 },
   potato: { id: "baked-potato", n: 1 },
 };
 export const FURNACE_FUEL = { coal: 8 };
-export const HOE_IDS = new Set(["diamond-hoe", "wooden-hoe"]);
+export const HOE_IDS = new Set(["diamond-hoe", "wooden-hoe", "iron-hoe"]);
 export const BLOCK_FACE_ITEMS = new Set(["crafting-table", "iron-ore", "gold-ore", "oak-sapling"]);
 
 export function emptySlots(n) {

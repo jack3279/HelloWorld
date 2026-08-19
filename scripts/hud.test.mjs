@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
@@ -219,6 +220,15 @@ describe("stacks, crosshair, and tip", () => {
     assert.ok(tip.w > 20);
     assert.ok(tip.pixels.includes("#000000") || tip.pixels.some((hex) => hex && hex.startsWith("#0")), "tip has a dark well");
     assert.ok(tip.pixels.includes(COUNT_WHITE), "tip paints the name");
+  });
+
+  it("ships air-bubble HUD icons for drowning", async () => {
+    assert.ok(existsSync(resolve(ROOT, "assets/hud/bubble.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/hud/bubble-empty.svg")));
+    const bubble = await loadHud("bubble");
+    assert.ok(bubble.w >= 8);
+    const empty = bubble.pixels.filter((hex) => hex == null).length;
+    assert.ok(empty > 0, "bubble keeps a silhouette");
   });
 
   it("composites crosshair, tip, blocks, and stacks on the overlay", async () => {

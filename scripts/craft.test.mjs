@@ -123,4 +123,17 @@ describe("crafting recipes", () => {
     assert.ok(canCraft(wood, hoe));
     assert.deepEqual(craftOnce(wood, hoe), { id: "wooden-hoe", count: 1 });
   });
+
+  it("crafts a wooden pickaxe and maps bow-pulling icons", () => {
+    const items = [
+      { id: "oak-planks", count: 3 },
+      { id: "stick", count: 2 },
+    ];
+    const pick = RECIPES.find((r) => r.id === "wooden-pickaxe");
+    assert.ok(canCraft(items, pick));
+    assert.deepEqual(craftOnce(items, pick), { id: "wooden-pickaxe", count: 1 });
+    assert.equal(itemAsset("bow-pulling-2"), "items/bow-pulling-2.svg");
+    assert.equal(itemAsset("water-bucket"), "items/water-bucket.svg");
+    assert.ok(existsSync(resolve(ROOT, "assets", itemAsset("bow-pulling-0"))));
+  });
 });

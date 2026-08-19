@@ -132,6 +132,23 @@ export const PLAY_ITEMS = [
   { id: "raw-beef", file: "beef_raw.png", label: "Raw beef", title: "生牛肉" },
   { id: "diamond-hoe", file: "diamond_hoe.png", label: "Diamond hoe", title: "钻石锄" },
   { id: "wooden-hoe", file: "wood_hoe.png", label: "Wooden hoe", title: "木锄" },
+  { id: "bow-pulling-0", file: "bow_pulling_0.png", label: "Bow pulling 0", title: "拉弓" },
+  { id: "bow-pulling-1", file: "bow_pulling_1.png", label: "Bow pulling 1", title: "拉弓" },
+  { id: "bow-pulling-2", file: "bow_pulling_2.png", label: "Bow pulling 2", title: "拉满弓" },
+  { id: "water-bucket", file: "bucket_water.png", label: "Water bucket", title: "水桶" },
+  { id: "lava-bucket", file: "bucket_lava.png", label: "Lava bucket", title: "熔岩桶" },
+  { id: "raw-chicken", file: "chicken_raw.png", label: "Raw chicken", title: "生鸡肉" },
+  { id: "raw-mutton", file: "mutton_raw.png", label: "Raw mutton", title: "生羊肉" },
+  { id: "wooden-sword", file: "wood_sword.png", label: "Wooden sword", title: "木剑" },
+  { id: "wooden-pickaxe", file: "wood_pickaxe.png", label: "Wooden pickaxe", title: "木镐" },
+  { id: "wooden-axe", file: "wood_axe.png", label: "Wooden axe", title: "木斧" },
+  { id: "wooden-shovel", file: "wood_shovel.png", label: "Wooden shovel", title: "木铲" },
+  { id: "iron-sword", file: "iron_sword.png", label: "Iron sword", title: "铁剑" },
+  { id: "iron-pickaxe", file: "iron_pickaxe.png", label: "Iron pickaxe", title: "铁镐" },
+  { id: "iron-axe", file: "iron_axe.png", label: "Iron axe", title: "铁斧" },
+  { id: "iron-shovel", file: "iron_shovel.png", label: "Iron shovel", title: "铁铲" },
+  { id: "iron-hoe", file: "iron_hoe.png", label: "Iron hoe", title: "铁锄" },
+  { id: "diamond-shovel", file: "diamond_shovel.png", label: "Diamond shovel", title: "钻石铲" },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.

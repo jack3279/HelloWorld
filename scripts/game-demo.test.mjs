@@ -37,7 +37,10 @@ describe("html game demo", () => {
     assert.match(game, /furnaceTick/);
     assert.match(game, /function tryToggleDoor/);
     assert.match(game, /doorOpen/);
-    assert.match(game, /function tryHoe/);
+    assert.match(game, /function tryBucket/);
+    assert.match(game, /bow-pulling-/);
+    assert.match(game, /hud\/bubble\.svg/);
+    assert.match(game, /water-bucket/);
     assert.match(game, /function firePlayerBow/);
     assert.match(game, /function heldOverlayId/);
     assert.match(game, /from: "player"/);
@@ -114,6 +117,11 @@ describe("html game demo", () => {
     assert.ok(existsSync(resolve(ROOT, "assets/blocks/iron-ore.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/items/raw-porkchop.svg")));
     assert.ok(existsSync(resolve(ROOT, "assets/items/diamond-hoe.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/items/bow-pulling-2.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/hud/bubble.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/hud/bubble-empty.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/items/wooden-pickaxe.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/wheat-6.svg")));
   });
 
   it("serves those files from /repo-assets/", async () => {

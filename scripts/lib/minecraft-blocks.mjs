@@ -115,9 +115,15 @@ export const PLAY_BLOCKS = [
   { id: "bed", file: "bed_feet_side.png", label: "Bed", title: "床" },
   { id: "bed-head", file: "bed_head_side.png", label: "Bed head", title: "床头" },
   { id: "wheat-0", file: "wheat_stage_0.png", label: "Wheat sprout", title: "麦苗" },
+  { id: "wheat-1", file: "wheat_stage_1.png", label: "Wheat 1", title: "小麦生长1" },
+  { id: "wheat-2", file: "wheat_stage_2.png", label: "Wheat 2", title: "小麦生长2" },
   { id: "wheat-3", file: "wheat_stage_3.png", label: "Wheat growing", title: "小麦生长" },
+  { id: "wheat-4", file: "wheat_stage_4.png", label: "Wheat 4", title: "小麦生长4" },
+  { id: "wheat-5", file: "wheat_stage_5.png", label: "Wheat 5", title: "小麦生长5" },
+  { id: "wheat-6", file: "wheat_stage_6.png", label: "Wheat 6", title: "小麦生长6" },
   { id: "wheat-7", file: "wheat_stage_7.png", label: "Wheat ripe", title: "成熟小麦" },
   { id: "door-oak-upper", file: "door_wood_upper.png", label: "Oak door top", title: "橡木门上" },
+  { id: "farmland-dry", file: "farmland_dry.png", label: "Dry farmland", title: "干耕地" },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {
