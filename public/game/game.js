@@ -1,11 +1,18 @@
 import {
   CHEST_SLOTS,
+  COOK_TIME,
+  FURNACE_FUEL,
+  HOE_IDS,
   RECIPES,
+  SMELT,
   canCraft,
   countOwned,
   craftOnce,
+  emptyFurnace,
   emptySlots,
+  furnaceTick,
   itemAsset,
+  takeNeed,
   transferStack,
   tryAddItem,
 } from "./recipes.js";
@@ -28,14 +35,29 @@ const MINEABLE = {
   c: { drop: "cobblestone", tool: "diamond-pickaxe" },
   x: { drop: "coal", tool: "diamond-pickaxe" },
   i: { drop: "diamond", tool: "diamond-pickaxe" },
+  H: { drop: "iron-ore", tool: "diamond-pickaxe" },
+  R: { drop: "gold-ore", tool: "diamond-pickaxe" },
   d: { drop: "dirt" },
   a: { drop: "dirt" },
-  o: { drop: "oak-log" },
+  o: { drop: "oak-log", tool: "diamond-axe" },
+  L: { drop: "oak-sapling" },
+  G: { drop: "wheat-seeds" },
+  S: { drop: "oak-sapling" },
   u: { drop: "pumpkin" },
   e: { drop: "melon-slice" },
   y: { drop: "wheat" },
 };
-const PLACEABLE = { torch: "t", dirt: "d", cobblestone: "c", "oak-planks": "p", "crafting-table": "T" };
+const PLACEABLE = {
+  torch: "t",
+  dirt: "d",
+  cobblestone: "c",
+  "oak-planks": "p",
+  "crafting-table": "T",
+  "oak-sapling": "S",
+};
+const PICK_TOOLS = new Set(["diamond-pickaxe"]);
+const AXE_TOOLS = new Set(["diamond-axe"]);
+const HELD_TOOLS = new Set(["diamond-sword", "bow", "diamond-pickaxe", "diamond-axe", "diamond-hoe", "wooden-hoe"]);
 
 const STEVE = {
   loco: { w: 256, h: 320, ax: 128, ay: 300, scale: 0.3 },
@@ -79,10 +101,19 @@ const ITEM_LABELS = {
   "crafting-table": "工作台",
   bow: "弓",
   "diamond-axe": "钻石斧",
+  "diamond-hoe": "钻石锄",
+  "wooden-hoe": "木锄",
   shears: "剪刀",
   bucket: "桶",
   "iron-ingot": "铁锭",
   "gold-ingot": "金锭",
+  "iron-ore": "铁矿石",
+  "gold-ore": "金矿石",
+  "oak-sapling": "橡树树苗",
+  "raw-porkchop": "生猪排",
+  "raw-beef": "生牛肉",
+  "baked-potato": "烤马铃薯",
+  potato: "马铃薯",
   sugar: "糖",
   egg: "鸡蛋",
   "pumpkin-pie": "南瓜派",
@@ -100,6 +131,10 @@ const FOOD = {
   carrot: { hunger: 3, health: 1 },
   "rotten-flesh": { hunger: 4, health: -2 },
   "pumpkin-pie": { hunger: 8, health: 3 },
+  "raw-porkchop": { hunger: 3, health: 1 },
+  "raw-beef": { hunger: 3, health: 1 },
+  "baked-potato": { hunger: 5, health: 2 },
+  potato: { hunger: 1, health: 0 },
 };
 
 const BLOCKS = {
@@ -126,6 +161,9 @@ const BLOCKS = {
   G: "blocks/tall-grass.svg",
   i: "blocks/diamond-ore.svg",
   x: "blocks/coal-ore.svg",
+  H: "blocks/iron-ore.svg",
+  R: "blocks/gold-ore.svg",
+  S: "blocks/oak-sapling.svg",
   h: "blocks/ladder.svg",
   m: "blocks/mossy-cobblestone.svg",
   j: "blocks/glass.svg",
@@ -142,7 +180,7 @@ const BLOCKS = {
   2: "blocks/wheat-7.svg",
 };
 
-const SOLID = new Set("gdscpLabBTFimxIjuyenq".split(""));
+const SOLID = new Set("gdscpLabBTFimxIjuyenqHR".split(""));
 
 const canvas = document.getElementById("game");
 const overlay = document.getElementById("overlay");
@@ -167,7 +205,9 @@ let arrows = [];
 let particles = [];
 let craftingOpen = false;
 let chestOpen = false;
+let furnaceOpen = false;
 let chestItems = emptySlots(CHEST_SLOTS);
+let furnace = emptyFurnace();
 let craftScroll = 0;
 const CRAFT_VISIBLE = 6;
 let cam = { x: 0, y: 0 };
@@ -245,6 +285,7 @@ const MANIFEST = [
   "hud/hotbar-slot.svg",
   "hud/xp-bar.svg",
   "hud/crosshair.svg",
+  "blocks/furnace-on.svg",
 ];
 
 export function listGameAssets() {
@@ -296,6 +337,17 @@ function tree(tiles, x, ground) {
   }
 }
 
+function oreAt(x, y, ground) {
+  if (y <= ground + 2) return "d";
+  const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+  const h = n - Math.floor(n);
+  if (h < 0.05) return "x";
+  if (h < 0.1) return "H";
+  if (h < 0.13) return "R";
+  if (h < 0.145) return "i";
+  return "s";
+}
+
 function buildWorld() {
   const W = 78;
   const H = 16;
@@ -304,7 +356,7 @@ function buildWorld() {
 
   for (let x = 0; x < W; x++) {
     setCell(tiles, x, H - 1, "B");
-    for (let y = ground + 1; y < H - 1; y++) setCell(tiles, x, y, y > ground + 2 ? "s" : "d");
+    for (let y = ground + 1; y < H - 1; y++) setCell(tiles, x, y, oreAt(x, y, ground));
     setCell(tiles, x, ground, "g");
   }
 
@@ -352,10 +404,17 @@ function buildWorld() {
   setCell(tiles, 20, ground - 1, "P");
   setCell(tiles, 29, ground - 1, "k");
   setCell(tiles, 38, ground - 1, "k");
+  for (const gx of [5, 10, 21, 24, 27, 39, 45, 51, 58, 73]) setCell(tiles, gx, ground - 1, "G");
 
   setCell(tiles, 19, ground + 3, "x");
+  setCell(tiles, 21, ground + 4, "H");
+  setCell(tiles, 23, ground + 3, "H");
   setCell(tiles, 36, ground + 3, "i");
+  setCell(tiles, 37, ground + 4, "R");
+  setCell(tiles, 39, ground + 3, "R");
+  setCell(tiles, 52, ground + 4, "H");
   setCell(tiles, 54, ground + 3, "x");
+  setCell(tiles, 55, ground + 4, "R");
 
   fillRow(tiles, ground, 62, 70, "p");
   for (let y = ground - 3; y < ground; y++) {
@@ -378,7 +437,7 @@ function buildWorld() {
   setCell(tiles, 0, ground, "B");
   setCell(tiles, W - 1, ground, "B");
 
-  return { w: W, h: H, tiles, ground, nightSpawned: false, cropT: 0 };
+  return { w: W, h: H, tiles, ground, nightSpawned: false, cropT: 0, doorOpen: new Set() };
 }
 
 function tileAt(px, py) {
@@ -388,8 +447,18 @@ function tileAt(px, py) {
   return world.tiles[y][x];
 }
 
+function doorClosedAt(tx) {
+  return world && !world.doorOpen.has(tx);
+}
+
+function tileIsSolid(t, tx) {
+  if (t === "D" || t === "U") return doorClosedAt(tx);
+  return SOLID.has(t);
+}
+
 function solidAt(px, py) {
-  return SOLID.has(tileAt(px, py));
+  const t = tileAt(px, py);
+  return tileIsSolid(t, Math.floor(px / TILE));
 }
 
 function rectHitsSolid(x, y, w, h) {
@@ -402,7 +471,7 @@ function rectHitsSolid(x, y, w, h) {
   for (let ty = y0; ty <= y1; ty++) {
     for (let tx = x0; tx <= x1; tx++) {
       const t = tx < 0 || tx >= world.w || ty < 0 || ty >= world.h ? "B" : world.tiles[ty][tx];
-      if (SOLID.has(t)) return true;
+      if (tileIsSolid(t, tx)) return true;
     }
   }
   return false;
@@ -549,6 +618,7 @@ function moveBody(body, dt) {
   body.inLava = mid === "v" || tileAt(body.x, body.y - 16) === "v";
   body.atChest = chest === "C" || tileAt(body.x + 16, body.y - 8) === "C" || tileAt(body.x - 16, body.y - 8) === "C";
   body.atTable = chest === "T" || tileAt(body.x + 16, body.y - 8) === "T" || tileAt(body.x - 16, body.y - 8) === "T";
+  body.atFurnace = chest === "F" || tileAt(body.x + 16, body.y - 8) === "F" || tileAt(body.x - 16, body.y - 8) === "F";
   const bed = tileAt(body.x, body.y - 8);
   body.atBed = bed === "z" || bed === "Z" || tileAt(body.x + 16, body.y - 8) === "z" || tileAt(body.x - 16, body.y - 8) === "Z";
   if (body.inWater) swimBody(body, dt);
@@ -590,14 +660,18 @@ function makePlayer() {
     selected: 0,
     sleeping: 0,
     hungerT: 0,
+    drawT: 0,
+    bowHeld: false,
+    swingKind: "sword",
     items: [
       { id: "diamond-sword", count: 1 },
+      { id: "bow", count: 1 },
+      { id: "arrow", count: 16 },
       { id: "diamond-pickaxe", count: 1 },
+      { id: "diamond-axe", count: 1 },
+      { id: "diamond-hoe", count: 1 },
       { id: "torch", count: 8 },
-      { id: "wheat-seeds", count: 8 },
-      { id: "carrot", count: 4 },
-      { id: "wheat", count: 4 },
-      { id: "bread", count: 2 },
+      { id: "wheat-seeds", count: 4 },
       { id: "oak-log", count: 8 },
     ],
   };
@@ -671,12 +745,16 @@ function resetGame() {
     makeDrop("coal", TILE * 63.5, TILE * 9, 6),
     makeDrop("iron-ingot", TILE * 64.2, TILE * 9, 4),
     makeDrop("apple", TILE * 69, TILE * 9, 2),
+    makeDrop("carrot", TILE * 8, TILE * 9, 4),
+    makeDrop("bread", TILE * 4.5, TILE * 9, 2),
   ];
   particles = [];
   arrows = [];
   craftingOpen = false;
   chestOpen = false;
+  furnaceOpen = false;
   chestItems = emptySlots(CHEST_SLOTS);
+  furnace = emptyFurnace();
   craftScroll = 0;
   cam = { x: 0, y: 0 };
   time = 0;
@@ -684,7 +762,7 @@ function resetGame() {
   win = false;
   demo = null;
   hold.left = hold.right = hold.jump = hold.use = false;
-  message = "向东走。工作台合成，箱子能存东西。把 5 颗钻石放进箱子。";
+  message = "向东走。锄地种田，熔炉烧矿，关门挡怪。把 5 颗钻石放进箱子。";
   messageT = 5;
 }
 
@@ -693,7 +771,7 @@ function selectedItem() {
 }
 
 function throwSelected() {
-  if (!player || player.dead || win || craftingOpen || chestOpen) return;
+  if (!player || player.dead || win || craftingOpen || chestOpen || furnaceOpen) return;
   const item = selectedItem();
   if (!item || item.count <= 0) {
     say("这一格是空的。");
@@ -769,19 +847,48 @@ function burstBits(x, y, color) {
   }
 }
 
+function uiOpen() {
+  return craftingOpen || chestOpen || furnaceOpen;
+}
+
 function frontCell() {
-  const tx = Math.floor((player.x + player.face * 28) / TILE);
-  const cells = [
-    { x: tx, y: Math.floor((player.y - 12) / TILE) },
-    { x: tx, y: Math.floor((player.y - 36) / TILE) },
-    { x: Math.floor(player.x / TILE), y: Math.floor((player.y - 12) / TILE) },
+  const fx = Math.floor((player.x + player.face * 28) / TILE);
+  const px = Math.floor(player.x / TILE);
+  const midY = Math.floor((player.y - 12) / TILE);
+  const headY = Math.floor((player.y - 36) / TILE);
+  const footY = Math.floor((player.y + 4) / TILE);
+  return [
+    { x: fx, y: midY },
+    { x: fx, y: headY },
+    { x: fx, y: footY },
+    { x: px, y: midY },
+    { x: px, y: footY },
   ];
-  return cells;
+}
+
+function startToolSwing(kind) {
+  if (player.swingT > 0) return;
+  player.swingT = 10 / 12;
+  player.swingKind = kind;
+  player.age = 0;
+}
+
+function tryToggleDoor() {
+  for (const cell of frontCell()) {
+    const t = world.tiles[cell.y]?.[cell.x];
+    if (t !== "D" && t !== "U") continue;
+    if (world.doorOpen.has(cell.x)) world.doorOpen.delete(cell.x);
+    else world.doorOpen.add(cell.x);
+    say(world.doorOpen.has(cell.x) ? "打开了门。" : "关上了门。");
+    return true;
+  }
+  return false;
 }
 
 function tryOpenTable() {
   if (!player.atTable) return false;
   chestOpen = false;
+  furnaceOpen = false;
   craftingOpen = !craftingOpen;
   craftScroll = 0;
   say(craftingOpen ? "打开了工作台。点击配方合成。" : "关上了工作台。", 3);
@@ -791,8 +898,18 @@ function tryOpenTable() {
 function tryOpenChest() {
   if (!player.atChest) return false;
   craftingOpen = false;
+  furnaceOpen = false;
   chestOpen = !chestOpen;
   say(chestOpen ? "打开了箱子。点击格子存入或取出。" : "关上了箱子。", 3);
+  return true;
+}
+
+function tryOpenFurnace() {
+  if (!player.atFurnace) return false;
+  craftingOpen = false;
+  chestOpen = false;
+  furnaceOpen = !furnaceOpen;
+  say(furnaceOpen ? "打开了熔炉。上面放矿或生肉，下面放煤炭。" : "关上了熔炉。", 3);
   return true;
 }
 
@@ -884,6 +1001,30 @@ function tryFarm() {
   return false;
 }
 
+function hasTool(spec, item) {
+  if (!spec.tool) return true;
+  if (spec.tool === "diamond-pickaxe") return PICK_TOOLS.has(item?.id);
+  if (spec.tool === "diamond-axe") return AXE_TOOLS.has(item?.id);
+  return item?.id === spec.tool;
+}
+
+function tryHoe() {
+  const item = selectedItem();
+  if (!HOE_IDS.has(item?.id) || item.count <= 0) return false;
+  for (const cell of frontCell()) {
+    const t = world.tiles[cell.y]?.[cell.x];
+    if (t !== "g" && t !== "d") continue;
+    setCell(world.tiles, cell.x, cell.y, "n");
+    startToolSwing("tool");
+    if (t === "g" && Math.random() < 0.45) {
+      drops.push(makeDrop("wheat-seeds", cell.x * TILE + 24, cell.y * TILE - 8));
+    }
+    say("锄成了耕地。");
+    return true;
+  }
+  return false;
+}
+
 function tryMineOrPlace() {
   const item = selectedItem();
   for (const cell of frontCell()) {
@@ -891,17 +1032,15 @@ function tryMineOrPlace() {
     if (!t || t === ".") continue;
     const spec = MINEABLE[t];
     if (spec) {
-      if (spec.tool && item?.id !== spec.tool) {
-        say("需要镐才能挖这个。");
+      if (!hasTool(spec, item)) {
+        say(spec.tool === "diamond-axe" ? "需要斧才能砍这个。" : "需要镐才能挖这个。");
         return true;
       }
-      if (spec.tool) {
+      if (spec.tool || HELD_TOOLS.has(item?.id)) {
         if (player.swingT > 0) return true;
-        player.swingT = 10 / 12;
-        player.anim = "swing";
-        player.frame = 0;
+        startToolSwing(item?.id === "diamond-sword" ? "sword" : "tool");
       }
-      setCell(world.tiles, cell.x, cell.y, t === "x" || t === "i" ? "s" : ".");
+      setCell(world.tiles, cell.x, cell.y, t === "x" || t === "i" || t === "H" || t === "R" ? "s" : ".");
       drops.push(makeDrop(spec.drop, cell.x * TILE + 24, cell.y * TILE + 8));
       burstBits(cell.x * TILE + 24, cell.y * TILE + 24, "#bbb");
       return true;
@@ -912,7 +1051,7 @@ function tryMineOrPlace() {
     const ty = Math.floor((player.y - 12) / TILE);
     if (world.tiles[ty]?.[tx] === ".") {
       const below = world.tiles[ty + 1]?.[tx];
-      if (below && (SOLID.has(below) || below === "n")) {
+      if (below && (SOLID.has(below) || below === "n" || below === "g" || below === "d")) {
         setCell(world.tiles, tx, ty, PLACEABLE[item.id]);
         item.count -= 1;
         say(`放下了${ITEM_LABELS[item.id] ?? item.id}`);
@@ -962,8 +1101,8 @@ function hurt(who, amount, dir) {
       spider: "string",
       creeper: "gunpowder",
       enderman: "ender-pearl",
-      pig: "cooked-porkchop",
-      cow: "steak",
+      pig: "raw-porkchop",
+      cow: "raw-beef",
     };
     drops.push(makeDrop(loot[who.kind] ?? "apple", who.x, who.y - 20));
     if (who.kind === "skeleton") drops.push(makeDrop("arrow", who.x - 8, who.y - 18));
@@ -971,9 +1110,39 @@ function hurt(who, amount, dir) {
   }
 }
 
-function useSelected() {
-  if (player.dead || win) return;
-  if (player.sleeping > 0 || player.eatT > 0) return;
+function holdingBow() {
+  return selectedItem()?.id === "bow" && selectedItem()?.count > 0;
+}
+
+function firePlayerBow() {
+  const charge = player.drawT;
+  player.drawT = 0;
+  player.bowHeld = false;
+  if (charge < 0.18) return;
+  if (!takeNeed(player.items, { arrow: 1 })) {
+    say("没有箭。");
+    return;
+  }
+  const speed = 260 + charge * 240;
+  arrows.push({
+    x: player.x + player.face * 22,
+    y: player.y - 28,
+    vx: player.face * speed,
+    vy: -36 - charge * 40,
+    life: 2.5,
+    gone: false,
+    from: "player",
+    dmg: 2 + Math.round(charge * 4),
+  });
+  say("射出一支箭。");
+}
+
+function pressUse(down) {
+  if (!player || player.dead || win || mode !== "play") return;
+  if (!down) {
+    if (player.bowHeld) firePlayerBow();
+    return;
+  }
   if (craftingOpen) {
     craftingOpen = false;
     say("关上了工作台。");
@@ -984,20 +1153,37 @@ function useSelected() {
     say("关上了箱子。");
     return;
   }
+  if (furnaceOpen) {
+    furnaceOpen = false;
+    say("关上了熔炉。");
+    return;
+  }
+  if (player.sleeping > 0 || player.eatT > 0) return;
+  if (tryToggleDoor()) return;
+  if (tryOpenFurnace()) return;
   if (tryOpenChest()) return;
   if (tryOpenTable()) return;
   if (trySleep()) return;
+  if (holdingBow()) {
+    player.bowHeld = true;
+    return;
+  }
+  useSelected();
+}
+
+function useSelected() {
+  if (player.dead || win) return;
+  if (player.sleeping > 0 || player.eatT > 0) return;
+  if (uiOpen()) return;
   if (tryFeed()) return;
+  if (tryHoe()) return;
   if (tryFarm()) return;
   if (tryMineOrPlace()) return;
   const item = selectedItem();
   if (!item || item.count <= 0) return;
   if (item.id === "diamond-sword") {
     if (player.swingT > 0) return;
-    player.swingT = 10 / 12;
-    player.anim = "swing";
-    player.frame = 0;
-    player.age = 0;
+    startToolSwing("sword");
     return;
   }
   const food = FOOD[item.id];
@@ -1017,6 +1203,7 @@ function useSelected() {
 }
 
 function swingHit() {
+  if (player.swingKind !== "sword") return;
   const t = 1 - player.swingT / (10 / 12);
   if (t < 0.28 || t > 0.72) return;
   const reach = 46;
@@ -1036,7 +1223,7 @@ function updatePlayer(dt) {
     return;
   }
 
-  if (craftingOpen || chestOpen) {
+  if (craftingOpen || chestOpen || furnaceOpen) {
     player.vx = 0;
     player.vy = 0;
     player.anim = "idle";
@@ -1044,6 +1231,7 @@ function updatePlayer(dt) {
     player.age += dt;
     if (craftingOpen && !player.atTable) craftingOpen = false;
     if (chestOpen && !player.atChest) chestOpen = false;
+    if (furnaceOpen && !player.atFurnace) furnaceOpen = false;
     return;
   }
 
@@ -1108,7 +1296,17 @@ function updatePlayer(dt) {
   player.age += dt;
   if (player.eatT > 0) player.eatT -= dt;
 
-  if (player.swingT > 0) {
+  if (player.bowHeld && holdingBow() && player.swingT <= 0 && player.eatT <= 0) {
+    player.drawT = Math.min(1, player.drawT + dt / 0.7);
+  } else if (!player.bowHeld) {
+    player.drawT = 0;
+  }
+  if (!holdingBow()) {
+    player.bowHeld = false;
+    player.drawT = 0;
+  }
+
+  if (player.swingT > 0 && player.swingKind === "sword") {
     player.anim = "swing";
     player.frame = Math.min(9, Math.floor((1 - player.swingT / (10 / 12)) * 10));
   } else if (player.hurtT > 0) {
@@ -1246,6 +1444,8 @@ function fireArrow(from) {
     vy: (ty / dist) * speed - 36,
     life: 2.4,
     gone: false,
+    from: "mob",
+    dmg: 2,
   });
 }
 
@@ -1260,8 +1460,19 @@ function updateArrows(dt) {
       shot.gone = true;
       continue;
     }
+    if (shot.from === "player") {
+      for (const mob of mobs) {
+        if (mob.dead) continue;
+        if (Math.abs(shot.x - mob.x) < mob.hw + 8 && Math.abs(shot.y - (mob.y - mob.hh * 0.5)) < mob.hh * 0.6) {
+          hurt(mob, shot.dmg ?? 3, Math.sign(shot.vx) || player.face);
+          shot.gone = true;
+          break;
+        }
+      }
+      continue;
+    }
     if (!player.dead && Math.abs(shot.x - player.x) < 14 && Math.abs(shot.y - (player.y - 22)) < 28) {
-      hurt(player, 2, Math.sign(shot.vx) || -1);
+      hurt(player, shot.dmg ?? 2, Math.sign(shot.vx) || -1);
       shot.gone = true;
     }
   }
@@ -1295,7 +1506,7 @@ function updateClock(dt) {
   const wasNight = isNight();
   clock = (clock + dt * (24 / DAY_LENGTH)) % 24;
   if (!wasNight && isNight()) {
-    say("天黑了。回房子里的床上睡觉。", 4);
+    say("天黑了。关上门，回房子里睡觉。", 4);
     if (world && !world.nightSpawned) {
       world.nightSpawned = true;
       mobs.push(makeMob("zombie", 22, 10));
@@ -1310,8 +1521,10 @@ function updateCrops(dt) {
   world.cropT = 0;
   for (let y = 0; y < world.h; y++) {
     for (let x = 0; x < world.w; x++) {
-      const spec = WHEAT_STAGE[world.tiles[y][x]];
+      const t = world.tiles[y][x];
+      const spec = WHEAT_STAGE[t];
       if (spec && Math.random() < 1 / spec.wait) setCell(world.tiles, x, y, spec.next);
+      if (t === "S" && Math.random() < 1 / 16) tree(world.tiles, x, y + 1);
     }
   }
 }
@@ -1378,11 +1591,16 @@ function holdingSword() {
   return selectedItem()?.id === "diamond-sword" && selectedItem()?.count > 0;
 }
 
+function heldOverlayId() {
+  const item = selectedItem();
+  if (!item || item.count <= 0 || !HELD_TOOLS.has(item.id)) return null;
+  if (player.dead || player.anim === "sleep" || player.anim === "eat" || player.anim === "death") return null;
+  if (player.anim === "swing" && item.id === "diamond-sword") return null;
+  return item.id;
+}
+
 function steveFrame() {
-  if (player.anim === "idle") {
-    if (holdingSword()) return "steve-sprites/swing-0.svg";
-    return `steve-sprites/${player.frame === 0 ? "idle-a" : "idle-b"}.svg`;
-  }
+  if (player.anim === "idle") return `steve-sprites/${player.frame === 0 ? "idle-a" : "idle-b"}.svg`;
   if (player.anim === "run") return `steve-sprites/run-${player.frame}.svg`;
   if (player.anim === "jump") return `steve-sprites/${["jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"][player.frame]}.svg`;
   if (player.anim === "swing") return `steve-sprites/swing-${player.frame}.svg`;
@@ -1464,7 +1682,14 @@ function drawWorld() {
       const dy = viewY(y * TILE);
       if (t === "v") drawTile(lavaFrame, dx, dy);
       else if (t === "w") drawTile(waterFrame, dx, dy);
-      else if (BLOCKS[t]) drawTile(BLOCKS[t], dx, dy);
+      else if (t === "F" && furnace.burn > 0) drawTile("blocks/furnace-on.svg", dx, dy);
+      else if ((t === "D" || t === "U") && world.doorOpen.has(x)) {
+        ctx.save();
+        ctx.translate(dx + TILE * 0.78, dy);
+        ctx.scale(0.22, 1);
+        drawTile(BLOCKS[t], 0, 0);
+        ctx.restore();
+      } else if (BLOCKS[t]) drawTile(BLOCKS[t], dx, dy);
     }
   }
 }
@@ -1519,10 +1744,34 @@ function drawPlayer() {
     player.anim === "swing" ||
     player.anim === "hurt" ||
     player.anim === "death" ||
-    player.anim === "sleep" ||
-    (player.anim === "idle" && holdingSword());
+    player.anim === "sleep";
   drawAnchored(steveFrame(), combat ? STEVE.combat : STEVE.loco, viewX(player.x), viewY(player.y), player.face);
   ctx.globalAlpha = 1;
+  drawHeldItem();
+}
+
+function drawHeldItem() {
+  const id = heldOverlayId();
+  if (!id) return;
+  const pic = img(itemAsset(id));
+  if (!pic) return;
+  const swing = player.swingT > 0 && player.swingKind === "tool";
+  const drawing = id === "bow" && player.drawT > 0;
+  let rot = id === "bow" ? -0.15 : 0.35;
+  if (swing) rot = -1.15 * Math.sin((1 - player.swingT / (10 / 12)) * Math.PI);
+  if (drawing) rot = -0.4 - player.drawT * 0.5;
+  ctx.save();
+  ctx.translate(viewX(player.x), viewY(player.y));
+  ctx.scale(player.face, 1);
+  ctx.translate(id === "bow" ? 10 : 12, id === "bow" ? -26 : -22);
+  ctx.rotate(rot);
+  const size = id === "bow" ? 36 : 30;
+  ctx.drawImage(pic, -size * 0.2, -size * 0.85, size, size);
+  if (drawing) {
+    const arrow = img("items/arrow.svg");
+    if (arrow) ctx.drawImage(arrow, 8, -18, 22, 8);
+  }
+  ctx.restore();
 }
 
 function drawHearts(x, y, value, full, half, empty) {
@@ -1684,6 +1933,102 @@ function drawChestPanel() {
   }
 }
 
+function furnacePanelBox() {
+  const w = Math.min(420, viewW - 32);
+  const h = Math.min(260, viewH - 140);
+  return { x: (viewW - w) / 2, y: 72, w, h };
+}
+
+function furnaceSlotAt(mx, my) {
+  const box = furnacePanelBox();
+  const originX = box.x + 18;
+  const gap = 38;
+  const top = box.y + 88;
+  const barY = box.y + box.h - 58;
+  const slots = [
+    { kind: "furnace", index: 0, x: originX + 24, y: top },
+    { kind: "furnace", index: 1, x: originX + 24, y: top + 52 },
+    { kind: "furnace", index: 2, x: originX + 140, y: top + 26 },
+  ];
+  for (const slot of slots) {
+    if (mx >= slot.x && mx < slot.x + 34 && my >= slot.y && my < slot.y + 34) return slot;
+  }
+  if (my >= barY && my < barY + 36) {
+    const col = Math.floor((mx - originX) / gap);
+    if (col >= 0 && col < 9) return { kind: "hotbar", index: col };
+  }
+  return null;
+}
+
+function clickFurnaceSlot(hit) {
+  if (!hit) return;
+  if (hit.kind === "furnace") {
+    if (transferStack(furnace.slots, hit.index, player.items, 9)) say("取出了物品。");
+    else if (furnace.slots[hit.index]?.count > 0) say("快捷栏满了。");
+    return;
+  }
+  const src = player.items[hit.index];
+  if (!src || src.count <= 0) return;
+  const dest = SMELT[src.id] ? 0 : FURNACE_FUEL[src.id] ? 1 : -1;
+  if (dest < 0) {
+    say("这不能放进熔炉。");
+    return;
+  }
+  const slot = furnace.slots[dest];
+  if (slot.count > 0 && slot.id !== src.id) {
+    say("这一格放不下。");
+    return;
+  }
+  if (!slot.id) slot.id = src.id;
+  slot.count += src.count;
+  src.count = 0;
+  src.id = "";
+  say(dest === 0 ? "放进了原料。" : "加了燃料。");
+}
+
+function drawFurnacePanel() {
+  const box = furnacePanelBox();
+  ctx.fillStyle = "rgba(8, 10, 16, 0.78)";
+  ctx.fillRect(0, 0, viewW, viewH);
+  ctx.fillStyle = "rgba(22, 18, 14, 0.96)";
+  ctx.fillRect(box.x, box.y, box.w, box.h);
+  ctx.strokeStyle = "#c6a15b";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(box.x + 1.5, box.y + 1.5, box.w - 3, box.h - 3);
+
+  ctx.textAlign = "left";
+  ctx.font = "bold 22px sans-serif";
+  ctx.fillStyle = "#ffe566";
+  ctx.fillText("熔炉", box.x + 18, box.y + 32);
+  ctx.font = "13px sans-serif";
+  ctx.fillStyle = "#ddd";
+  ctx.fillText("矿石/生肉放上面，煤炭放下面  ·  Esc 关闭", box.x + 18, box.y + 52);
+
+  const originX = box.x + 18;
+  const top = box.y + 88;
+  ctx.fillStyle = "#aaa";
+  ctx.font = "12px sans-serif";
+  ctx.fillText("原料", originX + 24, top - 6);
+  ctx.fillText("燃料", originX + 24, top + 46);
+  ctx.fillText("产物", originX + 140, top + 20);
+  drawItemSlot(furnace.slots[0], originX + 24, top, 34);
+  drawItemSlot(furnace.slots[1], originX + 24, top + 52, 34);
+  drawItemSlot(furnace.slots[2], originX + 140, top + 26, 34);
+
+  const cookW = 72;
+  const cookX = originX + 64;
+  const cookY = top + 36;
+  ctx.fillStyle = "#2a241c";
+  ctx.fillRect(cookX, cookY, cookW, 8);
+  ctx.fillStyle = furnace.burn > 0 ? "#ffb347" : "#555";
+  ctx.fillRect(cookX, cookY, cookW * Math.min(1, furnace.cook / COOK_TIME), 8);
+  ctx.fillStyle = "#ffe566";
+  ctx.font = "14px sans-serif";
+  ctx.fillText("快捷栏", originX, box.y + box.h - 68);
+  const barY = box.y + box.h - 58;
+  for (let i = 0; i < 9; i++) drawItemSlot(player.items[i], originX + i * 38, barY, 34);
+}
+
 function craftRowAt(mx, my) {
   const box = craftPanelBox();
   const top = box.y + 70;
@@ -1747,6 +2092,7 @@ function drawHud() {
   ctx.fillText(`箱子钻石 ${chestDiamonds()} / ${GOAL_DIAMONDS}   ${hourLabel()}`, 16, 28);
   if (craftingOpen) drawCraftPanel();
   if (chestOpen) drawChestPanel();
+  if (furnaceOpen) drawFurnacePanel();
   if (player.sleeping > 0) {
     ctx.fillStyle = `rgba(8,10,24,${1 - player.sleeping / 1.7})`;
     ctx.fillRect(0, 0, viewW, viewH);
@@ -1795,6 +2141,7 @@ function frame(ts) {
       updateArrows(dt);
       updateDrops(dt);
       updateCrops(dt);
+      furnaceTick(furnace, dt);
       updateParticles(dt);
       updateCamera();
     }
@@ -1847,6 +2194,14 @@ function handleCraftKey(key) {
     if (key === "escape" || key === "q" || key === "e" || key === "j") {
       chestOpen = false;
       say("关上了箱子。");
+      return true;
+    }
+    return ["w", "s", "arrowup", "arrowdown", "a", "d", "arrowleft", "arrowright", " "].includes(key);
+  }
+  if (furnaceOpen && mode === "play") {
+    if (key === "escape" || key === "q" || key === "e" || key === "j") {
+      furnaceOpen = false;
+      say("关上了熔炉。");
       return true;
     }
     return ["w", "s", "arrowup", "arrowdown", "a", "d", "arrowleft", "arrowright", " "].includes(key);
@@ -1931,16 +2286,24 @@ window.addEventListener("keydown", (e) => {
   } else if (key >= "1" && key <= "9" && player) {
     player.selected = Number(key) - 1;
   }
-  if (key === "j" || key === "e") useSelected();
-  if (key === "q" && mode === "play" && !craftingOpen && !chestOpen) throwSelected();
+  if ((key === "j" || key === "e") && !e.repeat) pressUse(true);
+  if (key === "q" && mode === "play" && !uiOpen()) throwSelected();
   if (key === "r" && mode === "play") resetGame();
 });
 
 window.addEventListener("keyup", (e) => {
-  keys.delete(bindKey(e));
+  const key = bindKey(e);
+  keys.delete(key);
+  if (key === "j" || key === "e") pressUse(false);
 });
 
-window.addEventListener("blur", () => keys.clear());
+window.addEventListener("blur", () => {
+  keys.clear();
+  if (player?.bowHeld) {
+    player.bowHeld = false;
+    player.drawT = 0;
+  }
+});
 
 canvas.addEventListener("mousedown", (e) => {
   if (mode !== "play") return;
@@ -1971,7 +2334,24 @@ canvas.addEventListener("mousedown", (e) => {
     }
     return;
   }
-  useSelected();
+  if (furnaceOpen) {
+    const pos = canvasPos(e);
+    const hit = furnaceSlotAt(pos.x, pos.y);
+    if (hit) clickFurnaceSlot(hit);
+    else {
+      const box = furnacePanelBox();
+      if (pos.x < box.x || pos.x > box.x + box.w || pos.y < box.y || pos.y > box.y + box.h) {
+        furnaceOpen = false;
+        say("关上了熔炉。");
+      }
+    }
+    return;
+  }
+  pressUse(true);
+});
+
+window.addEventListener("mouseup", (e) => {
+  if (e.button === 0) pressUse(false);
 });
 
 window.addEventListener("resize", resize);
@@ -1982,7 +2362,7 @@ for (const btn of document.querySelectorAll("#touch button")) {
     const act = btn.dataset.act;
     if (dir) hold[dir] = on;
     if (act === "jump") hold.jump = on;
-    if (act === "use" && on) useSelected();
+    if (act === "use") pressUse(on);
     if (act === "drop" && on) throwSelected();
   };
   btn.addEventListener("pointerdown", (e) => {

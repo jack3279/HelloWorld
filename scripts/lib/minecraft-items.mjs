@@ -128,6 +128,10 @@ export const PLAY_ITEMS = [
   { id: "wheat-seeds", file: "seeds_wheat.png", label: "Wheat seeds", title: "小麦种子" },
   { id: "bed", file: "bed_red.png", label: "Bed", title: "床" },
   { id: "pumpkin", file: "pumpkin_side.png", label: "Pumpkin", title: "南瓜", base: BLOCKS_BASE },
+  { id: "raw-porkchop", file: "porkchop_raw.png", label: "Raw porkchop", title: "生猪排" },
+  { id: "raw-beef", file: "beef_raw.png", label: "Raw beef", title: "生牛肉" },
+  { id: "diamond-hoe", file: "diamond_hoe.png", label: "Diamond hoe", title: "钻石锄" },
+  { id: "wooden-hoe", file: "wood_hoe.png", label: "Wooden hoe", title: "木锄" },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.

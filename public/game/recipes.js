@@ -11,6 +11,8 @@ export const RECIPES = [
   { id: "diamond-sword", count: 1, need: { diamond: 2, stick: 1 } },
   { id: "diamond-pickaxe", count: 1, need: { diamond: 3, stick: 2 } },
   { id: "diamond-axe", count: 1, need: { diamond: 3, stick: 2 } },
+  { id: "wooden-hoe", count: 1, need: { "oak-planks": 2, stick: 2 } },
+  { id: "diamond-hoe", count: 1, need: { diamond: 2, stick: 2 } },
   { id: "shears", count: 1, need: { "iron-ingot": 2 } },
   { id: "bucket", count: 1, need: { "iron-ingot": 3 } },
   { id: "iron-chestplate", count: 1, need: { "iron-ingot": 8 } },
@@ -21,9 +23,25 @@ export const RECIPES = [
 
 export const HOTBAR_SLOTS = 9;
 export const CHEST_SLOTS = 27;
+export const FURNACE_SLOTS = 3;
+export const COOK_TIME = 4;
+export const SMELT = {
+  "iron-ore": { id: "iron-ingot", n: 1 },
+  "gold-ore": { id: "gold-ingot", n: 1 },
+  "raw-porkchop": { id: "cooked-porkchop", n: 1 },
+  "raw-beef": { id: "steak", n: 1 },
+  potato: { id: "baked-potato", n: 1 },
+};
+export const FURNACE_FUEL = { coal: 8 };
+export const HOE_IDS = new Set(["diamond-hoe", "wooden-hoe"]);
+export const BLOCK_FACE_ITEMS = new Set(["crafting-table", "iron-ore", "gold-ore", "oak-sapling"]);
 
 export function emptySlots(n) {
   return Array.from({ length: n }, () => ({ id: "", count: 0 }));
+}
+
+export function emptyFurnace() {
+  return { slots: emptySlots(FURNACE_SLOTS), cook: 0, burn: 0 };
 }
 
 export function transferStack(from, index, to, maxSlots = HOTBAR_SLOTS) {
@@ -36,7 +54,7 @@ export function transferStack(from, index, to, maxSlots = HOTBAR_SLOTS) {
 }
 
 export function itemAsset(id) {
-  if (id === "crafting-table") return "blocks/crafting-table.svg";
+  if (BLOCK_FACE_ITEMS.has(id)) return `blocks/${id}.svg`;
   return `items/${id}.svg`;
 }
 
@@ -86,4 +104,51 @@ export function takeNeed(items, need) {
 export function craftOnce(items, recipe) {
   if (!takeNeed(items, recipe.need)) return null;
   return { id: recipe.id, count: recipe.count };
+}
+
+function slotEmpty(slot) {
+  return !slot || slot.count <= 0 || !slot.id;
+}
+
+export function furnaceCanWork(furnace) {
+  const input = furnace.slots[0];
+  const output = furnace.slots[2];
+  const recipe = SMELT[input?.id];
+  if (!recipe || slotEmpty(input)) return null;
+  if (!slotEmpty(output) && output.id !== recipe.id) return null;
+  return recipe;
+}
+
+export function furnaceTick(furnace, dt) {
+  if (furnace.burn > 0) furnace.burn = Math.max(0, furnace.burn - dt);
+  const recipe = furnaceCanWork(furnace);
+  const fueled = furnace.burn > 0 || (!slotEmpty(furnace.slots[1]) && FURNACE_FUEL[furnace.slots[1].id]);
+  if (!recipe || !fueled) {
+    furnace.cook = 0;
+    return furnace;
+  }
+  if (furnace.burn <= 0) {
+    const fuel = furnace.slots[1];
+    const time = FURNACE_FUEL[fuel.id];
+    if (!time || fuel.count <= 0) {
+      furnace.cook = 0;
+      return furnace;
+    }
+    fuel.count -= 1;
+    if (fuel.count <= 0) fuel.id = "";
+    furnace.burn = time;
+  }
+  furnace.cook += dt;
+  if (furnace.cook >= COOK_TIME) {
+    furnace.cook = 0;
+    const input = furnace.slots[0];
+    const output = furnace.slots[2];
+    input.count -= 1;
+    if (input.count <= 0) input.id = "";
+    if (slotEmpty(output)) {
+      output.id = recipe.id;
+      output.count = recipe.n;
+    } else output.count += recipe.n;
+  }
+  return furnace;
 }

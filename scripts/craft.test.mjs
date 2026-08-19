@@ -9,7 +9,9 @@ import {
   canCraft,
   countOwned,
   craftOnce,
+  emptyFurnace,
   emptySlots,
+  furnaceTick,
   itemAsset,
   takeNeed,
   transferStack,
@@ -84,5 +86,41 @@ describe("crafting recipes", () => {
     assert.equal(countOwned(chest, "diamond"), 3);
     assert.equal(transferStack(chest, 0, bar, 9), true);
     assert.equal(countOwned(bar, "diamond"), 3);
+  });
+
+  it("smelts ore and raw meat in the furnace", () => {
+    const furnace = emptyFurnace();
+    furnace.slots[0] = { id: "iron-ore", count: 2 };
+    furnace.slots[1] = { id: "coal", count: 1 };
+    furnaceTick(furnace, 4);
+    assert.equal(furnace.slots[2].id, "iron-ingot");
+    assert.equal(furnace.slots[2].count, 1);
+    assert.equal(furnace.slots[0].count, 1);
+    furnace.slots[0] = { id: "raw-porkchop", count: 1 };
+    furnace.slots[1] = { id: "coal", count: 1 };
+    furnace.cook = 0;
+    furnaceTick(furnace, 4);
+    assert.equal(furnace.slots[2].id, "iron-ingot");
+    assert.equal(furnace.slots[2].count, 1, "output keeps iron until emptied");
+    furnace.slots[2] = { id: "", count: 0 };
+    furnaceTick(furnace, 4);
+    assert.equal(furnace.slots[2].id, "cooked-porkchop");
+  });
+
+  it("maps ore and sapling items to block faces", () => {
+    assert.equal(itemAsset("iron-ore"), "blocks/iron-ore.svg");
+    assert.equal(itemAsset("gold-ore"), "blocks/gold-ore.svg");
+    assert.equal(itemAsset("oak-sapling"), "blocks/oak-sapling.svg");
+    assert.equal(itemAsset("diamond-hoe"), "items/diamond-hoe.svg");
+  });
+
+  it("crafts a hoe from planks or diamonds", () => {
+    const wood = [
+      { id: "oak-planks", count: 2 },
+      { id: "stick", count: 2 },
+    ];
+    const hoe = RECIPES.find((r) => r.id === "wooden-hoe");
+    assert.ok(canCraft(wood, hoe));
+    assert.deepEqual(craftOnce(wood, hoe), { id: "wooden-hoe", count: 1 });
   });
 });

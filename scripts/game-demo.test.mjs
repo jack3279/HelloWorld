@@ -32,6 +32,19 @@ describe("html game demo", () => {
     assert.match(game, /tryOpenTable|craftingOpen/);
     assert.match(game, /function tryOpenChest/);
     assert.match(game, /chestOpen/);
+    assert.match(game, /function tryOpenFurnace/);
+    assert.match(game, /furnaceOpen/);
+    assert.match(game, /furnaceTick/);
+    assert.match(game, /function tryToggleDoor/);
+    assert.match(game, /doorOpen/);
+    assert.match(game, /function tryHoe/);
+    assert.match(game, /function firePlayerBow/);
+    assert.match(game, /function heldOverlayId/);
+    assert.match(game, /from: "player"/);
+    assert.match(game, /raw-porkchop/);
+    assert.match(game, /"H"/);
+    assert.match(game, /"R"/);
+    assert.doesNotMatch(game, /holdingSword\(\) return "steve-sprites\/swing-0/);
     assert.match(game, /transferStack/);
     assert.match(game, /放进了箱子/);
     assert.doesNotMatch(game, /player\.atChest && !win/);
@@ -87,7 +100,7 @@ describe("html game demo", () => {
     for (let i = 0; i < 10; i++) rels.add(`creeper-sprites/swell-${i * 2}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`lava-sprites/boil-${i * 4}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`water-sprites/flow-${i * 4}.svg`);
-    const itemIds = [...src.matchAll(/["'](diamond-sword|diamond-pickaxe|torch|bread|steak|apple|golden-apple|potion-heal|diamond|cooked-porkchop|wheat-seeds|carrot|wheat)["']/g)].map((m) => m[1]);
+    const itemIds = [...src.matchAll(/["'](diamond-sword|diamond-pickaxe|diamond-axe|diamond-hoe|bow|arrow|torch|bread|steak|apple|golden-apple|potion-heal|diamond|cooked-porkchop|raw-porkchop|raw-beef|wheat-seeds|carrot|wheat)["']/g)].map((m) => m[1]);
     for (const id of new Set(itemIds)) rels.add(`items/${id}.svg`);
     assert.ok(rels.size >= 40, `expected a full loadout, got ${rels.size}`);
     for (const rel of rels) {
@@ -96,6 +109,11 @@ describe("html game demo", () => {
     assert.ok(rels.has("blocks/grass.svg"));
     assert.ok(rels.has("hud/hotbar.svg"));
     assert.ok(rels.has("items/diamond-sword.svg"));
+    assert.ok(rels.has("blocks/furnace.svg") || src.includes("furnace"));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/furnace-on.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/blocks/iron-ore.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/items/raw-porkchop.svg")));
+    assert.ok(existsSync(resolve(ROOT, "assets/items/diamond-hoe.svg")));
   });
 
   it("serves those files from /repo-assets/", async () => {
