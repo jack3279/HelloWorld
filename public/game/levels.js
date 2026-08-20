@@ -9,6 +9,7 @@ export const LEVELS = [
     title: "开垦",
     subtitle: "第一关",
     brief: "锄地、种麦、合成面包。把 3 个面包放进箱子。",
+    how: "对着草地按「用」锄地，种小麦种子，麦穗变金后收割。到工作台点「面包」：3 个小麦合成 1 个面包，再放进箱子。",
     goal: "箱子里有 3 个面包",
     quest: { type: "chest", item: "bread", count: 3, label: "面包入箱" },
     clock: 8,
@@ -28,6 +29,7 @@ export const LEVELS = [
     title: "牧场",
     subtitle: "第二关",
     brief: "打猎或屠宰，营火或熔炉把肉烤熟，放 4 份熟肉进箱子。",
+    how: "杀掉猪牛羊鸡拿到生肉。站到屋子里的熔炉上按「用」烤熟（背包要有煤炭）；也可以把生肉拿到屋外营火上烤。把 4 份熟肉放进箱子。",
     goal: "箱子里有 4 份熟肉",
     quest: { type: "chest", any: COOKED_MEAT, count: 4, label: "熟肉入箱" },
     clock: 9,
@@ -46,6 +48,7 @@ export const LEVELS = [
     title: "渔村",
     subtitle: "第三关",
     brief: "对着水塘甩竿，钓上 3 条东西。鱼、骨头或睡莲都算。",
+    how: "走到水塘边，手上拿鱼竿对着水面按「用」甩竿，等一会儿上钩。钓到 3 次即可，鱼、骨头、皮革或睡莲都算。",
     goal: "钓鱼 3 次",
     quest: { type: "fish", count: 3, label: "钓鱼次数" },
     clock: 10,
@@ -62,6 +65,7 @@ export const LEVELS = [
     title: "矿洞",
     subtitle: "第四关",
     brief: "下矿挖铁矿和煤，熔炼后把 8 个铁锭放进箱子。木镐挖不了铁矿。",
+    how: "开门进小屋。右边矿井顺着梯子下去，石镐挖平台上的铁矿。站到熔炉上按「用」烧成铁锭（背包要有煤炭），把 8 个铁锭放进箱子。",
     goal: "箱子里有 8 个铁锭",
     quest: { type: "chest", item: "iron-ingot", count: 8, label: "铁锭入箱" },
     clock: 10,
@@ -80,6 +84,7 @@ export const LEVELS = [
     title: "守夜",
     subtitle: "第五关",
     brief: "天黑了。用弓或剑消灭 6 只敌对生物。",
+    how: "按「用」穿上铁胸甲。弓按住蓄力再松开射箭；近了换石剑。苦力怕会自爆，拉开距离射。消灭 6 只就过关。",
     goal: "击杀 6 只敌对生物",
     quest: { type: "kills", count: 6, label: "击杀敌对生物" },
     clock: 19.2,
@@ -98,6 +103,7 @@ export const LEVELS = [
     title: "主世界",
     subtitle: "第六关",
     brief: "向东穿过农场、矿洞、雪原和下界。把 5 颗钻石放进任意箱子。",
+    how: "一直往东走。地上会捡到钻石，矿井平台上也有钻石矿（钻石镐才能挖）。凑齐 5 颗，开门放进村子或遗迹的箱子。",
     goal: "箱子里有 5 颗钻石",
     quest: { type: "chest", item: "diamond", count: 5, label: "钻石入箱" },
     clock: 8,
@@ -119,6 +125,7 @@ export const LEVELS = [
     title: "下界",
     subtitle: "第七关",
     brief: "挖 4 个下界石英放进箱子，用打火石点亮传送门并走过去。",
+    how: "先开堡垒的门，箱子在里面。往右下矿井，平台上有石英矿，挖 4 个放进箱子。再用打火石点黑曜石门框，走进发光的门。",
     goal: "石英入箱并穿过传送门",
     quest: {
       type: "and",
@@ -148,5 +155,6 @@ export function levelById(id) {
 }
 
 export function overlayGoal(level) {
-  return `${level.subtitle}「${level.title}」：${level.brief}`;
+  const detail = level.how ?? level.brief;
+  return `${level.subtitle}「${level.title}」：${detail}`;
 }

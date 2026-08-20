@@ -11,7 +11,6 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildFigure, loadSkin, makeProjector, parseArgs, svgFigureBody } from "./lib/steve-model.mjs";
-import { swordExtra } from "./lib/held-item.mjs";
 import { ANIMATIONS, COMBAT_SPRITE, SPRITE, TOLERANCE, catalog } from "./lib/steve-poses.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -65,13 +64,10 @@ if (skin.width < 64 || skin.height < 64) throw new Error("expected a 64x64 skin"
 const outDir = resolve(__dirname, "..", args.get("out") ?? "assets/steve-sprites");
 await mkdir(outDir, { recursive: true });
 
-const heldSword = await swordExtra();
-
 const frames = [];
 for (const entry of catalog()) {
   const combat = entry.tags.includes("combat");
   const canvas = combat ? COMBAT_SPRITE : SPRITE;
-  const extras = entry.tags.includes("swing") ? [heldSword] : undefined;
   const project = makeProjector({
     scale: canvas.scale,
     originX: canvas.originX,
@@ -82,7 +78,6 @@ for (const entry of catalog()) {
     skin,
     pose: entry.pose,
     tolerance: TOLERANCE,
-    extras,
   });
   const svg = frameSvg(entry.id, entry.label, parts, canvas, project);
   const file = `${entry.id}.svg`;

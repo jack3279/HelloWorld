@@ -9,6 +9,7 @@ import {
   PLAYER_SLOTS,
   RECIPES,
   SMELT,
+  FUELS,
   TOOL_DUR,
   canCraft,
   canHarvest,
@@ -55,6 +56,18 @@ const HOES = new Set(["wooden-hoe", "stone-hoe", "iron-hoe", "diamond-hoe"]);
 const SHOVELS = new Set(["wooden-shovel", "stone-shovel", "iron-shovel", "diamond-shovel"]);
 const AXES = new Set(["wooden-axe", "stone-axe", "iron-axe", "diamond-axe"]);
 const SWORDS = { "wooden-sword": 2, "stone-sword": 3, "iron-sword": 3, "diamond-sword": 4 };
+const HAND_TOOLS = new Set([
+  ...PICKS,
+  ...HOES,
+  ...SHOVELS,
+  ...AXES,
+  ...Object.keys(SWORDS),
+  "stick",
+  "fishing-rod",
+  "flint-and-steel",
+  "shears",
+  "bow",
+]);
 const PICK = "diamond-pickaxe";
 const AIR_MAX = 12;
 const XP_ORE = { x: 1, i: 5, io: 1, go: 2, co: 1, ro: 2, lo: 3, eo: 5, qo: 3, gl: 2 };
@@ -308,6 +321,8 @@ const BLOCKS = {
   B: "blocks/bedrock.svg",
   D: "blocks/door-oak.svg",
   U: "blocks/door-oak-upper.svg",
+  dA: "blocks/door-oak-open.svg",
+  dB: "blocks/door-oak-upper-open.svg",
   f: "blocks/dandelion.svg",
   P: "blocks/poppy.svg",
   G: "blocks/tall-grass.svg",
@@ -401,6 +416,17 @@ const BLOCKS = {
   ba: "blocks/iron-bars.svg",
 };
 
+const FIRE_FRAMES = [
+  "blocks/fire.svg",
+  "blocks/fire-1.svg",
+  "blocks/fire-2.svg",
+  "blocks/fire-3.svg",
+  "blocks/fire-4.svg",
+  "blocks/fire-5.svg",
+  "blocks/fire-6.svg",
+  "blocks/fire-7.svg",
+];
+
 const NON_SOLID = new Set([
   ".",
   "w",
@@ -414,8 +440,6 @@ const NON_SOLID = new Set([
   "sa",
   "rm",
   "bm",
-  "D",
-  "U",
   "z",
   "Z",
   "0",
@@ -436,6 +460,13 @@ const NON_SOLID = new Set([
   "w1",
   "w2",
   "ln",
+  "lp",
+  "L",
+  "bl",
+  "sl",
+  "o",
+  "bo",
+  "so",
   "cf",
   "to",
   "cp",
@@ -443,6 +474,8 @@ const NON_SOLID = new Set([
   "k",
   "C",
   "dO",
+  "dA",
+  "dB",
   "F",
   "T",
   "bk",
@@ -507,6 +540,7 @@ function range(n, map) {
 
 const MANIFEST = [
   ...Object.values(BLOCKS),
+  ...FIRE_FRAMES,
   ...range(8, (i) => `lava-sprites/boil-${i * 4}.svg`),
   ...range(8, (i) => `water-sprites/flow-${i * 4}.svg`),
   ...["idle-a", "idle-b", ...range(8, (i) => `run-${i}`), "jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"].map(
@@ -589,6 +623,8 @@ const MANIFEST = [
   "items/bow-1.svg",
   "items/bow-2.svg",
   ...range(10, (i) => `blocks/destroy-${i}.svg`),
+  ...range(8, (i) => `door-sprites/swing-${i}.svg`),
+  ...range(8, (i) => `iron-door-sprites/swing-${i}.svg`),
 ];
 
 export function listGameAssets() {
@@ -645,9 +681,20 @@ function spruceTree(tiles, x, ground) {
   setCell(tiles, x, ground - 2, "so");
   setCell(tiles, x, ground - 3, "so");
   setCell(tiles, x, ground - 4, "so");
-  for (const [dy, r] of [[3, 2], [4, 2], [5, 1], [6, 1]]) {
+  for (const [dy, r] of [
+    [5, 2],
+    [6, 1],
+    [7, 0],
+  ]) {
     for (let dx = -r; dx <= r; dx++) setCell(tiles, x + dx, ground - dy, "sl");
   }
+}
+
+function fillPond(tiles, x0, x1, ground) {
+  fillRow(tiles, ground, x0, x1, "w");
+  fillRow(tiles, ground + 1, x0, x1, "w");
+  fillRow(tiles, ground + 2, x0, x1, "w");
+  fillRow(tiles, ground + 3, x0, x1, "s");
 }
 
 function portal(tiles, x, ground) {
@@ -694,29 +741,22 @@ function buildWorld() {
     setCell(tiles, x, ground, "g");
   }
 
-  fillRow(tiles, ground, 14, 17, ".");
-  fillRow(tiles, ground + 1, 14, 17, "w");
-  fillRow(tiles, ground + 2, 14, 17, "w");
-  fillRow(tiles, ground + 3, 14, 17, "s");
+  fillPond(tiles, 14, 17, ground);
   setCell(tiles, 15, ground, "lp");
   setCell(tiles, 16, ground, "lp");
   setCell(tiles, 13, ground + 1, "gs");
   setCell(tiles, 18, ground + 1, "gs");
 
-  fillRow(tiles, ground, 32, 35, ".");
   fillRow(tiles, ground + 1, 32, 35, "v");
   fillRow(tiles, ground + 2, 32, 35, "v");
   fillRow(tiles, ground + 3, 32, 35, "s");
+  fillRow(tiles, ground, 32, 35, "p");
 
   fillRow(tiles, ground - 2, 22, 26, "p");
   fillRow(tiles, ground - 2, 40, 44, "p");
   fillRow(tiles, ground - 4, 41, 43, "p");
   setCell(tiles, 43, ground - 5, "t");
   setCell(tiles, 26, ground - 3, "t");
-  setCell(tiles, 14, ground, "h");
-  setCell(tiles, 17, ground, "h");
-  setCell(tiles, 32, ground, "h");
-  setCell(tiles, 35, ground, "h");
 
   tree(tiles, 8, ground);
   tree(tiles, 48, ground);
@@ -786,6 +826,7 @@ function buildWorld() {
   fillRow(tiles, ground + 4, 24, 28, "p");
   setCell(tiles, 26, ground + 4, "x");
   setCell(tiles, 27, ground + 4, "io");
+  setCell(tiles, 28, ground + 4, "i");
 
   fillRow(tiles, ground, 62, 70, "p");
   for (let y = ground - 3; y < ground; y++) {
@@ -860,12 +901,15 @@ function buildWorld() {
     setCell(tiles, 122, y, "nk");
   }
   fillRow(tiles, ground - 4, 118, 122, "nk");
+  setCell(tiles, 118, ground - 1, "D");
+  setCell(tiles, 118, ground - 2, "U");
   setCell(tiles, 119, ground - 1, "t");
   setCell(tiles, 121, ground - 1, "C");
   setCell(tiles, 120, ground - 1, "et");
-  setCell(tiles, 118, ground - 2, "gl");
+  setCell(tiles, 119, ground - 2, "gl");
   setCell(tiles, 122, ground - 5, "gl");
   portal(tiles, 112, ground);
+  fillRow(tiles, ground, 112, 116, "nr");
   fillRow(tiles, ground + 1, 124, 126, "v");
   setCell(tiles, 124, ground, ".");
   setCell(tiles, 125, ground, ".");
@@ -938,6 +982,7 @@ function buildWorld() {
     portalCd: 0,
     portalBox: { x0: 113, x1: 115, y0: ground - 4, y1: ground },
     compost: {},
+    doorAnim: {},
   };
 }
 
@@ -975,6 +1020,7 @@ function finishWorld(tiles, extra = {}) {
     portalCd: 0,
     portalBox: extra.portalBox ?? null,
     compost: {},
+    doorAnim: {},
   };
 }
 
@@ -1003,13 +1049,8 @@ function buildFarmWorld() {
   setCell(tiles, 6, ground - 1, "2");
   setCell(tiles, 7, ground - 1, "1");
   setCell(tiles, 8, ground - 1, "p0");
-  fillRow(tiles, ground, 12, 16, ".");
-  fillRow(tiles, ground + 1, 12, 16, "w");
-  fillRow(tiles, ground + 2, 12, 16, "w");
-  fillRow(tiles, ground + 3, 12, 16, "s");
+  fillPond(tiles, 12, 16, ground);
   setCell(tiles, 13, ground, "lp");
-  setCell(tiles, 12, ground, "h");
-  setCell(tiles, 16, ground, "h");
   tree(tiles, 18, ground);
   tree(tiles, 34, ground);
   hut(tiles, 22, ground);
@@ -1062,15 +1103,10 @@ function buildFishWorld() {
   const H = 20;
   const ground = 10;
   const tiles = makeWorldShell(W, H, ground);
-  fillRow(tiles, ground, 10, 22, ".");
-  fillRow(tiles, ground + 1, 10, 22, "w");
-  fillRow(tiles, ground + 2, 10, 22, "w");
-  fillRow(tiles, ground + 3, 10, 22, "s");
+  fillPond(tiles, 10, 22, ground);
   setCell(tiles, 11, ground, "lp");
   setCell(tiles, 16, ground, "lp");
   setCell(tiles, 20, ground, "lp");
-  setCell(tiles, 10, ground, "h");
-  setCell(tiles, 22, ground, "h");
   tree(tiles, 6, ground);
   tree(tiles, 26, ground);
   hut(tiles, 34, ground);
@@ -1101,7 +1137,7 @@ function buildMineWorld() {
   setCell(tiles, 9, ground - 1, "Z");
   setCell(tiles, 6, ground - 3, "t");
   tree(tiles, 14, ground);
-  setCell(tiles, 20, ground, ".");
+  setCell(tiles, 20, ground, "h");
   setCell(tiles, 20, ground + 1, "h");
   setCell(tiles, 20, ground + 2, "h");
   setCell(tiles, 20, ground + 3, "h");
@@ -1113,9 +1149,12 @@ function buildMineWorld() {
   setCell(tiles, 24, ground + 4, "x");
   setCell(tiles, 25, ground + 4, "io");
   setCell(tiles, 26, ground + 4, "co");
+  setCell(tiles, 21, ground + 5, "io");
   setCell(tiles, 22, ground + 5, "io");
   setCell(tiles, 23, ground + 5, "io");
   setCell(tiles, 24, ground + 5, "x");
+  setCell(tiles, 25, ground + 5, "io");
+  setCell(tiles, 26, ground + 5, "io");
   setCell(tiles, 27, ground + 4, "C");
   setCell(tiles, 18, ground + 4, "t");
   setCell(tiles, 36, ground + 3, "io");
@@ -1166,13 +1205,15 @@ function buildNetherWorld() {
   const W = 56;
   const H = 20;
   const ground = 10;
-  const tiles = makeWorldShell(W, H, ground, (x) => (x % 5 === 0 ? "ss" : x % 7 === 2 ? "mg" : "nr"));
+  const tiles = makeWorldShell(W, H, ground, (x) => (x >= 2 && x <= 46 ? "nr" : x % 5 === 0 ? "ss" : x % 7 === 2 ? "mg" : "nr"));
   fillRow(tiles, ground, 28, 36, "nk");
   for (let y = ground - 3; y < ground; y++) {
     setCell(tiles, 28, y, "nk");
     setCell(tiles, 36, y, "nk");
   }
   fillRow(tiles, ground - 4, 28, 36, "nk");
+  setCell(tiles, 28, ground - 1, "D");
+  setCell(tiles, 28, ground - 2, "U");
   setCell(tiles, 29, ground - 1, "F");
   setCell(tiles, 30, ground - 1, "T");
   setCell(tiles, 31, ground - 1, "C");
@@ -1180,25 +1221,25 @@ function buildNetherWorld() {
   setCell(tiles, 33, ground - 1, "gl");
   setCell(tiles, 30, ground - 3, "t");
   portal(tiles, 8, ground);
+  fillRow(tiles, ground, 8, 12, "nr");
   setCell(tiles, 4, ground - 1, "w0");
   setCell(tiles, 5, ground - 1, "w1");
   setCell(tiles, 6, ground, "ss");
   setCell(tiles, 4, ground, "ss");
   setCell(tiles, 5, ground, "ss");
-  setCell(tiles, 18, ground + 3, "qo");
-  setCell(tiles, 19, ground + 4, "qo");
-  setCell(tiles, 20, ground + 3, "qo");
-  setCell(tiles, 21, ground + 5, "qo");
-  setCell(tiles, 22, ground + 4, "qo");
-  setCell(tiles, 40, ground + 3, "qo");
-  setCell(tiles, 42, ground + 4, "qo");
-  setCell(tiles, 16, ground, ".");
+  setCell(tiles, 16, ground, "h");
   setCell(tiles, 16, ground + 1, "h");
   setCell(tiles, 16, ground + 2, "h");
   setCell(tiles, 16, ground + 3, "h");
   fillRow(tiles, ground + 4, 16, 23, "nk");
   setCell(tiles, 17, ground + 4, "qo");
   setCell(tiles, 18, ground + 4, "t");
+  setCell(tiles, 19, ground + 4, "qo");
+  setCell(tiles, 20, ground + 3, "qo");
+  setCell(tiles, 21, ground + 4, "qo");
+  setCell(tiles, 22, ground + 4, "qo");
+  setCell(tiles, 40, ground + 3, "qo");
+  setCell(tiles, 42, ground + 4, "qo");
   fillRow(tiles, ground + 1, 48, 52, "v");
   setCell(tiles, 48, ground, ".");
   setCell(tiles, 49, ground, ".");
@@ -1286,17 +1327,21 @@ function unstick(body) {
   }
 }
 
+function isWaterCell(t) {
+  return t === "w" || t === "lp";
+}
+
 function waterSurfaceY(px, py) {
   const x = Math.floor(px / TILE);
   if (x < 0 || x >= world.w) return null;
   let y = Math.floor(py / TILE);
   if (y < 0) y = 0;
   if (y >= world.h) y = world.h - 1;
-  if (world.tiles[y][x] !== "w") {
+  if (!isWaterCell(world.tiles[y][x])) {
     let found = -1;
     for (let dy = -4; dy <= 2; dy++) {
       const ty = y + dy;
-      if (ty >= 0 && ty < world.h && world.tiles[ty][x] === "w") {
+      if (ty >= 0 && ty < world.h && isWaterCell(world.tiles[ty][x])) {
         found = ty;
         break;
       }
@@ -1304,18 +1349,23 @@ function waterSurfaceY(px, py) {
     if (found < 0) return null;
     y = found;
   }
-  while (y > 0 && world.tiles[y - 1][x] === "w") y -= 1;
+  while (y > 0 && isWaterCell(world.tiles[y - 1][x])) y -= 1;
   return y * TILE;
 }
 
 function inWaterAt(body) {
-  return tileAt(body.x, body.y - 4) === "w" || tileAt(body.x, body.y - 16) === "w" || tileAt(body.x, body.y - body.hh + 6) === "w";
+  return (
+    isWaterCell(tileAt(body.x, body.y - 4)) ||
+    isWaterCell(tileAt(body.x, body.y - 16)) ||
+    tileAt(body.x, body.y - body.hh + 6) === "w" ||
+    isWaterCell(tileAt(body.x, body.y + 10))
+  );
 }
 
 function swimBody(body, dt) {
   const surface = waterSurfaceY(body.x, body.y - 4);
   if (surface == null) return;
-  const floatY = surface + 8;
+  const floatY = surface + Math.min(TILE - 6, Math.max(22, body.hh * 0.7));
   body.grounded = false;
   if (body.y > floatY + 6) body.vy = Math.min(body.vy - 1600 * dt, -40);
   else if (body.y < floatY - 10) body.vy = Math.min(MAX_FALL, body.vy + GRAVITY * 0.35 * dt);
@@ -1563,6 +1613,7 @@ function levelMobs() {
       makeMob("zombie", 48, 10),
       makeMob("skeleton", 52, 10),
       makeMob("spider", 6, 10),
+      makeMob("zombie", 44, 10),
     ];
   }
   if (id === "nether") {
@@ -1605,6 +1656,8 @@ function levelDrops() {
     makeDrop("diamond", TILE * 13.5, TILE * 9),
     makeDrop("diamond", TILE * 24, TILE * 7.5),
     makeDrop("diamond", TILE * 42, TILE * 5.5),
+    makeDrop("diamond", TILE * 76, TILE * 9),
+    makeDrop("diamond", TILE * 91, TILE * 9),
     makeDrop("golden-apple", TILE * 21, TILE * 9),
     makeDrop("potion-heal", TILE * 39, TILE * 9),
     makeDrop("iron-chestplate", TILE * 67, TILE * 9),
@@ -1644,7 +1697,7 @@ function startLevel(index, asDemo = false) {
   demo = asDemo ? { t: 0 } : null;
   hold.left = hold.right = hold.jump = hold.use = false;
   message = overlayGoal(level);
-  messageT = 6;
+  messageT = level.how ? 12 : 6;
 }
 
 function showMenu() {
@@ -1695,6 +1748,20 @@ function questHud() {
   const part = evalQuest();
   if (part.parts) return part.parts.map((p) => `${p.label} ${p.n}/${p.need}`).join("  ·  ");
   return `${part.label} ${part.n}/${part.need}`;
+}
+
+function wrapHudText(text, maxWidth) {
+  const lines = [];
+  let line = "";
+  for (const ch of String(text ?? "")) {
+    const next = line + ch;
+    if (line && ctx.measureText(next).width > maxWidth) {
+      lines.push(line);
+      line = ch === " " ? "" : ch;
+    } else line = next;
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : [""];
 }
 
 function checkQuest() {
@@ -1969,6 +2036,7 @@ function tryOpenTable() {
   craftingOpen = !craftingOpen;
   craftScroll = 0;
   say(craftingOpen ? "打开了工作台。点击配方合成。" : "关上了工作台。", 3);
+  if (craftingOpen && currentLevel().id === "farm") say("工作台：点「面包」配方，3 个小麦合成 1 个面包。", 6);
   return true;
 }
 
@@ -2184,9 +2252,17 @@ function tryFarm() {
   return false;
 }
 
+function startSwing() {
+  if (!player) return;
+  player.swingT = 10 / 12;
+  player.anim = "swing";
+  player.frame = 0;
+}
+
 function tryTill() {
   const item = selectedItem();
   if (!item || !HOES.has(item.id)) return false;
+  startSwing();
   for (const cell of frontCell()) {
     const t = world.tiles[cell.y]?.[cell.x];
     if (t === "g" || t === "d" || t === "gp") {
@@ -2197,12 +2273,13 @@ function tryTill() {
       return true;
     }
   }
-  return false;
+  return true;
 }
 
 function tryPath() {
   const item = selectedItem();
   if (!item || !SHOVELS.has(item.id)) return false;
+  startSwing();
   for (const cell of frontCell()) {
     if (world.tiles[cell.y]?.[cell.x] !== "g") continue;
     setCell(world.tiles, cell.x, cell.y, "gp");
@@ -2211,7 +2288,7 @@ function tryPath() {
     wearHeld(1);
     return true;
   }
-  return false;
+  return true;
 }
 
 function tryBoneMeal() {
@@ -2260,11 +2337,12 @@ function tryFish() {
   }
   const tx = Math.floor((player.x + player.face * 28) / TILE);
   const ty = Math.floor((player.y - 12) / TILE);
-  const wet = world.tiles[ty]?.[tx] === "w" || world.tiles[ty + 1]?.[tx] === "w" || nearWater(tx, ty);
+  const wet = isWaterCell(world.tiles[ty]?.[tx]) || isWaterCell(world.tiles[ty + 1]?.[tx]) || nearWater(tx, ty);
   if (!wet) return false;
   const need = 2.2 + Math.random() * 1.6;
   player.fishT = need;
   player.fishNeed = need;
+  startSwing();
   say("甩出了鱼竿。等一会儿…");
   return true;
 }
@@ -2309,11 +2387,52 @@ function tryDrinkMilk() {
   return true;
 }
 
+function tileInUse(ids) {
+  const want = new Set(ids);
+  const y = Math.floor((player.y - 12) / TILE);
+  const x = Math.floor(player.x / TILE);
+  const fx = Math.floor((player.x + player.face * 28) / TILE);
+  for (const cx of [x, fx]) {
+    for (const cy of [y, y - 1]) {
+      const t = world.tiles[cy]?.[cx];
+      if (want.has(t)) return { x: cx, y: cy, t };
+    }
+  }
+  return null;
+}
+
+function firstSmeltableId() {
+  const held = selectedItem();
+  if (held?.count > 0 && SMELT[held.id]) return held.id;
+  for (const id of Object.keys(CAMPFIRE_COOK)) {
+    if (countOwned(player.items, id) >= 1) return id;
+  }
+  for (const it of player.items) {
+    if (it?.count > 0 && SMELT[it.id]) return it.id;
+  }
+  return null;
+}
+
+function firstCampfireFoodId() {
+  const held = selectedItem();
+  if (held?.count > 0 && CAMPFIRE_COOK[held.id]) return held.id;
+  for (const it of player.items) {
+    if (it?.count > 0 && CAMPFIRE_COOK[it.id]) return it.id;
+  }
+  return null;
+}
+
 function tryCampfire() {
-  if (!player.atCampfire) return false;
-  const item = selectedItem();
-  const out = item?.count > 0 ? CAMPFIRE_COOK[item.id] : null;
-  if (!out) return false;
+  const hit = tileInUse(["cf"]) || (player.atCampfire ? findTileNear(player.x, player.y - 8, ["cf"]) : null);
+  if (!hit) return false;
+  const id = firstCampfireFoodId();
+  if (!id) {
+    say("营火：把生肉拿到手上再烤。");
+    return true;
+  }
+  const item = player.items.find((it) => it?.id === id && it.count > 0);
+  if (!item) return true;
+  const out = CAMPFIRE_COOK[id];
   item.count -= 1;
   if (!addItem(out, 1)) spillItem(out, 1);
   burstBits(player.x, player.y - 16, "#ff9a3c");
@@ -2609,21 +2728,25 @@ function hurt(who, amount, dir) {
 }
 
 function trySmelt() {
-  if (!player.atFurnace) return false;
-  const item = selectedItem();
-  if (!item || item.count <= 0 || !SMELT[item.id]) return false;
+  const hit = tileInUse(["F"]) || (player.atFurnace ? findTileNear(player.x, player.y - 8, ["F"]) : null);
+  if (!hit) return false;
   if (player.smelt) {
     say("炉子还在烧。");
     return true;
   }
-  const made = smeltOnce(player.items, item.id);
-  if (!made) {
-    say("还缺煤炭或木炭当燃料。");
+  const inputId = firstSmeltableId();
+  if (!inputId) {
+    const holdingFuel = selectedItem()?.count > 0 && FUELS.has(selectedItem().id);
+    say(holdingFuel ? "熔炉：把生肉拿到手上再烧。煤炭已经在背包里了。" : "熔炉：手上拿生肉，背包里放煤炭或木炭，再按「用」。");
     return true;
   }
-  const hit = findTileNear(player.x, player.y - 8, ["F"]);
-  player.smelt = { t: 0, need: 2.4, out: made, x: hit?.x, y: hit?.y };
-  if (hit) world.lit[`${hit.x},${hit.y}`] = 2.6;
+  const made = smeltOnce(player.items, inputId);
+  if (!made) {
+    say("还缺煤炭或木炭当燃料。砍树烧木炭，或用快捷栏里的煤炭。");
+    return true;
+  }
+  player.smelt = { t: 0, need: 2.4, out: made, x: hit.x, y: hit.y };
+  world.lit[`${hit.x},${hit.y}`] = 2.6;
   say(`正在烧${ITEM_LABELS[made.id] ?? made.id}…`);
   return true;
 }
@@ -2688,21 +2811,51 @@ function tryJukebox() {
   return true;
 }
 
+function doorKindOf(t) {
+  if (t === "D" || t === "U" || t === "dA" || t === "dB") return "oak";
+  if (t === "di" || t === "dO") return "iron";
+  return null;
+}
+
+function doorOpenOf(t) {
+  return t === "dA" || t === "dB" || t === "dO";
+}
+
+function doorPair(x, y) {
+  const t = world.tiles[y]?.[x];
+  const kind = doorKindOf(t);
+  if (!kind) return null;
+  if (t === "U" || t === "dB") return { x, y: y + 1, kind, open: t === "dB" };
+  if (t === "di" || t === "dO") {
+    const below = world.tiles[y + 1]?.[x];
+    const lowerY = below === "di" || below === "dO" ? y + 1 : y;
+    return { x, y: lowerY, kind, open: t === "dO" };
+  }
+  return { x, y, kind, open: t === "dA" };
+}
+
+function applyDoorTiles(x, y, kind, open) {
+  if (kind === "oak") {
+    setCell(world.tiles, x, y, open ? "dA" : "D");
+    setCell(world.tiles, x, y - 1, open ? "dB" : "U");
+    return;
+  }
+  setCell(world.tiles, x, y, open ? "dO" : "di");
+  setCell(world.tiles, x, y - 1, open ? "dO" : "di");
+}
+
 function tryDoor() {
   for (const cell of frontCell()) {
     const t = world.tiles[cell.y]?.[cell.x];
-    if (t === "di") {
-      setCell(world.tiles, cell.x, cell.y, "dO");
-      if (world.tiles[cell.y - 1]?.[cell.x] === "di") setCell(world.tiles, cell.x, cell.y - 1, "dO");
-      if (world.tiles[cell.y + 1]?.[cell.x] === "di") setCell(world.tiles, cell.x, cell.y + 1, "dO");
-      say("铁门打开了。");
-      return true;
-    }
-    if (t === "dO") {
-      setCell(world.tiles, cell.x, cell.y, "di");
-      if (world.tiles[cell.y - 1]?.[cell.x] === "dO") setCell(world.tiles, cell.x, cell.y - 1, "di");
-      if (world.tiles[cell.y + 1]?.[cell.x] === "dO") setCell(world.tiles, cell.x, cell.y + 1, "di");
-      say("铁门关上了。");
+    const pair = doorPair(cell.x, cell.y);
+    if (pair) {
+      const key = `${pair.x},${pair.y}`;
+      world.doorAnim = world.doorAnim ?? {};
+      if (world.doorAnim[key]) return true;
+      const opening = !pair.open;
+      if (!opening) applyDoorTiles(pair.x, pair.y, pair.kind, false);
+      world.doorAnim[key] = { dir: opening ? 1 : -1, t: 0, dur: 0.38, kind: pair.kind };
+      say(opening ? "打开了门。" : "关上了门。");
       return true;
     }
     if (t === "td") {
@@ -2717,6 +2870,18 @@ function tryDoor() {
     }
   }
   return false;
+}
+
+function updateDoors(dt) {
+  if (!world?.doorAnim) return;
+  for (const key of Object.keys(world.doorAnim)) {
+    const anim = world.doorAnim[key];
+    anim.t += dt;
+    if (anim.t < anim.dur) continue;
+    const [x, y] = key.split(",").map(Number);
+    applyDoorTiles(x, y, anim.kind, anim.dir > 0);
+    delete world.doorAnim[key];
+  }
 }
 
 function trySaddle() {
@@ -2995,9 +3160,10 @@ function useSelected() {
     say("关上了背包。");
     return;
   }
+  if (trySmelt()) return;
+  if (tryCampfire()) return;
   if (tryOpenChest()) return;
   if (tryOpenTable()) return;
-  if (trySmelt()) return;
   if (tryEnchant()) return;
   if (tryJukebox()) return;
   if (tryDoor()) return;
@@ -3012,7 +3178,6 @@ function useSelected() {
   if (tryPath()) return;
   if (tryBoneMeal()) return;
   if (tryFish()) return;
-  if (tryCampfire()) return;
   if (tryCompost()) return;
   if (tryBucket()) return;
   if (trySponge()) return;
@@ -3023,12 +3188,9 @@ function useSelected() {
   if (tryShoot()) return;
   if (tryThrow()) return;
   if (tryArmor()) return;
-  if (SWORDS[item.id]) {
+  if (SWORDS[item.id] || HAND_TOOLS.has(item.id)) {
     if (player.swingT > 0) return;
-    player.swingT = 10 / 12;
-    player.anim = "swing";
-    player.frame = 0;
-    player.age = 0;
+    startSwing();
     return;
   }
   const food = FOOD[item.id];
@@ -3079,8 +3241,8 @@ function updatePlayer(dt) {
     player.vx = 0;
     player.vy = 0;
     player.anim = "idle";
-    player.frame = 0;
     player.age += dt;
+    player.frame = Math.floor(player.age * 1.6) % 2;
     if (craftingOpen && !player.atTable) craftingOpen = false;
     if (chestOpen && !player.atChest) chestOpen = false;
     return;
@@ -3135,7 +3297,7 @@ function updatePlayer(dt) {
       player.vy = 0;
       player.anim = Math.abs(pig.vx) > 12 ? "run" : "idle";
       player.age += dt;
-      player.frame = player.anim === "run" ? Math.floor(player.age * 12) % 8 : 0;
+      player.frame = player.anim === "run" ? Math.floor(player.age * 12) % 8 : Math.floor(player.age * 1.6) % 2;
       return;
     }
   } else {
@@ -3229,6 +3391,9 @@ function updatePlayer(dt) {
   } else if (player.eatT > 0) {
     player.anim = "eat";
     player.frame = Math.min(7, Math.floor((1 - player.eatT / (8 / 10)) * 8));
+  } else if (player.inWater) {
+    player.anim = "swim";
+    player.frame = Math.floor(player.age * (Math.abs(player.vx) > 20 ? 9 : 6)) % 4;
   } else if (!player.grounded) {
     player.anim = "jump";
     player.frame = player.vy < -80 ? 1 : player.vy > 120 ? 3 : 2;
@@ -3237,7 +3402,7 @@ function updatePlayer(dt) {
     player.frame = Math.floor(player.age * 12) % 8;
   } else {
     player.anim = "idle";
-    player.frame = 0;
+    player.frame = Math.floor(player.age * 1.6) % 2;
   }
 
 }
@@ -3310,6 +3475,8 @@ function updateMobs(dt) {
         explodeAt(Math.floor(mob.x / TILE), Math.floor((mob.y - 8) / TILE), 1.7);
         drops.push(makeDrop("gunpowder", mob.x, mob.y - 20));
         addXp(5);
+        stats.kills += 1;
+        checkQuest();
         say("苦力怕爆炸了！");
         continue;
       }
@@ -3616,6 +3783,49 @@ function drawTile(rel, x, y) {
   ctx.drawImage(pic, BLOCK_SRC_PAD, BLOCK_SRC_PAD, BLOCK_SRC_FACE, BLOCK_SRC_FACE, Math.round(x), Math.round(y), dest, dest);
 }
 
+function drawCampfire(dx, dy) {
+  const dest = TILE + 1;
+  const rx = Math.round(dx);
+  const ry = Math.round(dy);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(rx, ry + dest * 0.52, dest, dest * 0.5);
+  ctx.clip();
+  drawTile(BLOCKS.cf, dx, dy);
+  ctx.restore();
+  const firePic = img(fireFrame());
+  if (!firePic) return;
+  ctx.drawImage(
+    firePic,
+    BLOCK_SRC_PAD,
+    BLOCK_SRC_PAD,
+    BLOCK_SRC_FACE,
+    BLOCK_SRC_FACE * 0.7,
+    rx + 3,
+    ry - 10,
+    dest - 6,
+    dest * 0.78,
+  );
+}
+
+function drawDoorSprite(pair) {
+  const anim = world.doorAnim?.[`${pair.x},${pair.y}`];
+  let frame = doorOpenOf(world.tiles[pair.y]?.[pair.x]) ? 7 : 0;
+  if (anim) {
+    const p = Math.max(0, Math.min(1, anim.t / anim.dur));
+    const eased = p * p * (3 - 2 * p);
+    frame = Math.min(7, Math.floor((anim.dir > 0 ? eased : 1 - eased) * 8));
+  }
+  const folder = pair.kind === "iron" ? "iron-door-sprites" : "door-sprites";
+  const pic = img(`${folder}/swing-${frame}.svg`);
+  if (!pic) return;
+  const scale = (TILE * 2) / 512;
+  ctx.save();
+  ctx.translate(viewX(pair.x * TILE + TILE / 2), viewY((pair.y + 1) * TILE));
+  ctx.drawImage(pic, -128 * scale, -496 * scale, 256 * scale, 512 * scale);
+  ctx.restore();
+}
+
 function drawAnchored(rel, spec, x, y, face) {
   const pic = img(rel);
   if (!pic) return;
@@ -3630,23 +3840,89 @@ function drawAnchored(rel, spec, x, y, face) {
   ctx.restore();
 }
 
-function holdingSword() {
-  const id = selectedItem()?.id;
-  return Boolean(SWORDS[id] && selectedItem()?.count > 0);
+function isHandTool(id) {
+  return Boolean(id && HAND_TOOLS.has(id));
+}
+
+function lerpGrip(a, b, t) {
+  const u = t * t * (3 - 2 * t);
+  return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u, a: a.a + (b.a - a.a) * u };
+}
+
+const IDLE_GRIP = [
+  { x: 5.5, y: -24, a: -0.72 },
+  { x: 5.8, y: -24.6, a: -0.68 },
+];
+const RUN_GRIP = [
+  { x: 6, y: -24, a: -0.7 },
+  { x: 5, y: -31, a: -0.95 },
+  { x: 4, y: -34, a: -1.15 },
+  { x: 5, y: -28, a: -0.85 },
+  { x: 6, y: -24, a: -0.7 },
+  { x: 16, y: -28, a: -0.12 },
+  { x: 18, y: -33, a: 0.08 },
+  { x: 15, y: -28, a: -0.18 },
+];
+const SWING_GRIP = [
+  { x: 6, y: -24, a: -0.72 },
+  { x: 2, y: -28, a: -1.25 },
+  { x: 0, y: -32, a: -1.55 },
+  { x: 22, y: -46, a: 0.15 },
+  { x: 24, y: -42, a: 0.72 },
+  { x: 22, y: -36, a: 1.12 },
+  { x: 20, y: -34, a: 0.85 },
+  { x: 10, y: -26, a: 0.05 },
+  { x: 7, y: -24, a: -0.45 },
+  { x: 6, y: -24, a: -0.72 },
+];
+const JUMP_GRIP = [
+  { x: 8, y: -30, a: -0.95 },
+  { x: 10, y: -48, a: 0.35 },
+  { x: 9, y: -52, a: 0.2 },
+  { x: 18, y: -40, a: 0.55 },
+  { x: 9, y: -26, a: -0.5 },
+];
+
+function heldGrip() {
+  if (player.anim === "swing" || player.bowDraw) {
+    const t = player.bowDraw ? Math.max(0, Math.min(1, player.bowT)) : Math.max(0, Math.min(1, 1 - player.swingT / (10 / 12)));
+    const u = t * (SWING_GRIP.length - 1);
+    const i = Math.min(SWING_GRIP.length - 2, Math.floor(u));
+    return lerpGrip(SWING_GRIP[i], SWING_GRIP[i + 1], u - i);
+  }
+  if (player.anim === "run") {
+    const i = player.frame % RUN_GRIP.length;
+    const next = RUN_GRIP[(i + 1) % RUN_GRIP.length];
+    const f = (player.age * 12) % 1;
+    return lerpGrip(RUN_GRIP[i], next, f);
+  }
+  if (player.anim === "jump") return JUMP_GRIP[Math.max(0, Math.min(JUMP_GRIP.length - 1, player.frame))];
+  if (player.anim === "swim") {
+    const s = Math.sin(player.age * 8);
+    return { x: 10 + s * 8, y: -22 + s * 10, a: -0.35 + s * 0.9 };
+  }
+  const idle = IDLE_GRIP[player.frame % IDLE_GRIP.length];
+  const bob = Math.sin(player.age * 3.2);
+  return { x: idle.x, y: idle.y + bob * 1.3, a: idle.a + bob * 0.08 };
 }
 
 function steveFrame() {
-  if (player.anim === "idle") {
-    if (holdingSword()) return "steve-sprites/swing-0.svg";
-    return `steve-sprites/${player.frame === 0 ? "idle-a" : "idle-b"}.svg`;
-  }
+  if (player.anim === "idle") return `steve-sprites/${player.frame === 0 ? "idle-a" : "idle-b"}.svg`;
   if (player.anim === "run") return `steve-sprites/run-${player.frame}.svg`;
+  if (player.anim === "swim") {
+    const frames = ["jump-rise", "jump-apex", "jump-fall", "jump-apex"];
+    return `steve-sprites/${frames[player.frame % 4]}.svg`;
+  }
   if (player.anim === "jump") return `steve-sprites/${["jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"][player.frame]}.svg`;
   if (player.anim === "swing") return `steve-sprites/swing-${player.frame}.svg`;
   if (player.anim === "hurt") return `steve-sprites/hurt-${player.frame}.svg`;
   if (player.anim === "sleep") return `steve-sprites/sleep-${player.frame}.svg`;
   if (player.anim === "eat") return `steve-sprites/eat-${player.frame}.svg`;
   return `steve-sprites/death-${player.frame}.svg`;
+}
+
+function fireFrame() {
+  return FIRE_FRAMES[Math.floor(time * 10) % FIRE_FRAMES.length];
 }
 
 function deathFrames(kind) {
@@ -3722,7 +3998,12 @@ function drawWorld() {
       const dy = viewY(y * TILE);
       if (t === "v") drawTile(lavaFrame, dx, dy);
       else if (t === "w") drawTile(waterFrame, dx, dy);
-      else if (t === "fi") drawTile(Math.floor(time * 10) % 2 ? "blocks/fire-1.svg" : "blocks/fire.svg", dx, dy);
+      else if (t === "fi") drawTile(fireFrame(), dx, dy);
+      else if (t === "cf") drawCampfire(dx, dy);
+      else if (doorKindOf(t)) {
+        const pair = doorPair(x, y);
+        if (pair && pair.x === x && pair.y === y) drawDoorSprite(pair);
+      }
       else if (t === "F" && (world.lit?.[`${x},${y}`] ?? 0) > 0) drawTile("blocks/furnace-on.svg", dx, dy);
       else if (BLOCKS[t]) {
         drawTile(BLOCKS[t], dx, dy);
@@ -3796,14 +4077,26 @@ function drawParticles() {
 
 function drawPlayer() {
   if (player.invuln > 0 && Math.floor(time * 16) % 2 === 0 && !player.dead) ctx.globalAlpha = 0.45;
-  const combat =
-    player.anim === "swing" ||
-    player.anim === "hurt" ||
-    player.anim === "death" ||
-    player.anim === "sleep" ||
-    (player.anim === "idle" && holdingSword());
+  const combat = player.anim === "swing" || player.anim === "hurt" || player.anim === "death" || player.anim === "sleep";
   drawAnchored(steveFrame(), combat ? STEVE.combat : STEVE.loco, viewX(player.x), viewY(player.y), player.face);
   ctx.globalAlpha = 1;
+  drawHeldItem();
+}
+
+function drawHeldItem() {
+  const it = selectedItem();
+  if (!it?.id || it.count <= 0) return;
+  if (player.dead || player.anim === "sleep" || player.anim === "eat") return;
+  const grip = heldGrip();
+  const tool = isHandTool(it.id);
+  const id = player.bowDraw && it.id === "bow" ? bowIcon(player.bowT) : it.id;
+  const size = tool ? 28 : 18;
+  ctx.save();
+  ctx.translate(viewX(player.x + player.face * grip.x), viewY(player.y + grip.y));
+  ctx.scale(player.face, 1);
+  ctx.rotate(grip.a);
+  drawImage(itemAsset(id), -size * (tool ? 0.2 : 0.45), -size * (tool ? 0.86 : 0.55), size, size);
+  ctx.restore();
 }
 
 function drawHearts(x, y, value, full, half, empty, flash = false) {
@@ -4098,10 +4391,28 @@ function craftRowAt(mx, my) {
   return i;
 }
 
-function drawHud() {
+function hudLayout() {
   const barW = 364;
   const barX = (viewW - barW) / 2;
   const barY = viewH - 86;
+  return { barW, barX, barY, origin: barX + 22, slotW: 38, slotY: barY + 26 };
+}
+
+function hotbarSlotAt(mx, my) {
+  const { origin, slotW, slotY } = hudLayout();
+  if (my < slotY - 8 || my > slotY + 36) return -1;
+  const i = Math.floor((mx - origin) / slotW);
+  if (i < 0 || i > 8) return -1;
+  return i;
+}
+
+function selectHotbar(index) {
+  if (!player || index < 0 || index > 8) return;
+  player.selected = index;
+}
+
+function drawHud() {
+  const { barW, barX, barY, origin } = hudLayout();
   drawHearts(barX + 8, barY - 28, player.health, "hud/heart.svg", "hud/heart-half.svg", "hud/heart-empty.svg", true);
   drawHearts(barX + barW - 8 - 180, barY - 28, player.hunger, "hud/hunger-full.svg", "hud/hunger-half.svg", "hud/hunger-empty.svg");
   if (player.armor > 0) {
@@ -4121,7 +4432,6 @@ function drawHud() {
 
   drawImage("hud/hotbar.svg", barX, barY + 10, barW, 72);
   const slot = 36;
-  const origin = barX + 22;
   for (let i = 0; i < 9; i++) {
     const it = player.items[i];
     const sx = origin + i * 38;
@@ -4161,6 +4471,16 @@ function drawHud() {
   ctx.font = "14px sans-serif";
   ctx.fillStyle = "#fff";
   ctx.fillText(`${currentLevel().subtitle} ${currentLevel().title}   ${questHud()}   ${hourLabel()}   ${player.level ?? 0} 级${player.powerT > 0 ? "   附魔" : ""}${player.sprinting ? "   冲刺" : ""}`, 16, 28);
+  let howBottom = 34;
+  if (currentLevel().how) {
+    ctx.font = "13px sans-serif";
+    ctx.fillStyle = "#ffe566";
+    const howLines = wrapHudText(currentLevel().how, viewW - 36);
+    howLines.forEach((line, i) => ctx.fillText(line, 16, 46 + i * 18));
+    howBottom = 46 + howLines.length * 18;
+    ctx.font = "14px sans-serif";
+    ctx.fillStyle = "#fff";
+  }
   if (craftingOpen) drawCraftPanel();
   if (chestOpen) drawChestPanel();
   if (packOpen && !chestOpen) drawPackPanel();
@@ -4170,10 +4490,14 @@ function drawHud() {
   }
   if (messageT > 0) {
     ctx.textAlign = "center";
+    ctx.font = "14px sans-serif";
+    const lines = wrapHudText(message, 420);
+    const top = howBottom + 8;
+    const boxH = 18 + lines.length * 20;
     ctx.fillStyle = "rgba(0,0,0,0.55)";
-    ctx.fillRect(viewW / 2 - 220, 40, 440, 32);
+    ctx.fillRect(viewW / 2 - 230, top, 460, boxH);
     ctx.fillStyle = "#fff";
-    ctx.fillText(message, viewW / 2, 62);
+    lines.forEach((line, i) => ctx.fillText(line, viewW / 2, top + 18 + i * 20));
   }
   if (player.dead || win) {
     ctx.fillStyle = "rgba(0,0,0,0.45)";
@@ -4215,6 +4539,7 @@ function frame(ts) {
       updateDemo(dt);
       updateClock(dt);
       updatePlayer(dt);
+      updateDoors(dt);
       updateMobs(dt);
       updateArrows(dt);
       updateDrops(dt);
@@ -4444,6 +4769,12 @@ canvas.addEventListener("mousedown", (e) => {
     }
     return;
   }
+  const pos = canvasPos(e);
+  const slot = hotbarSlotAt(pos.x, pos.y);
+  if (slot >= 0) {
+    selectHotbar(slot);
+    return;
+  }
   hold.use = true;
   useSelected();
 });
@@ -4453,6 +4784,17 @@ window.addEventListener("mouseup", () => {
   hold.use = false;
   releaseUse();
 });
+
+canvas.addEventListener(
+  "wheel",
+  (e) => {
+    if (mode !== "play" || !player || menusOpen()) return;
+    e.preventDefault();
+    const dir = e.deltaY > 0 ? 1 : -1;
+    selectHotbar((player.selected + dir + 9) % 9);
+  },
+  { passive: false },
+);
 
 window.addEventListener("resize", resize);
 
