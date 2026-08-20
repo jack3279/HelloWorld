@@ -71,6 +71,9 @@ describe("html game demo", () => {
     assert.match(game, /netherrack/);
     assert.match(game, /soul-sand/);
     assert.match(game, /function trySmelt/);
+    assert.match(game, /function firstSmeltableId/);
+    assert.match(game, /function tileInUse/);
+    assert.match(game, /手上拿生肉/);
     assert.match(game, /function tryShoot/);
     assert.match(game, /function explodeAt/);
     assert.match(game, /function tryTill/);

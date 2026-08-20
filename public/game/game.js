@@ -9,6 +9,7 @@ import {
   PLAYER_SLOTS,
   RECIPES,
   SMELT,
+  FUELS,
   TOOL_DUR,
   canCraft,
   canHarvest,
@@ -2363,11 +2364,52 @@ function tryDrinkMilk() {
   return true;
 }
 
+function tileInUse(ids) {
+  const want = new Set(ids);
+  const y = Math.floor((player.y - 12) / TILE);
+  const x = Math.floor(player.x / TILE);
+  const fx = Math.floor((player.x + player.face * 28) / TILE);
+  for (const cx of [x, fx]) {
+    for (const cy of [y, y - 1]) {
+      const t = world.tiles[cy]?.[cx];
+      if (want.has(t)) return { x: cx, y: cy, t };
+    }
+  }
+  return null;
+}
+
+function firstSmeltableId() {
+  const held = selectedItem();
+  if (held?.count > 0 && SMELT[held.id]) return held.id;
+  for (const id of Object.keys(CAMPFIRE_COOK)) {
+    if (countOwned(player.items, id) >= 1) return id;
+  }
+  for (const it of player.items) {
+    if (it?.count > 0 && SMELT[it.id]) return it.id;
+  }
+  return null;
+}
+
+function firstCampfireFoodId() {
+  const held = selectedItem();
+  if (held?.count > 0 && CAMPFIRE_COOK[held.id]) return held.id;
+  for (const it of player.items) {
+    if (it?.count > 0 && CAMPFIRE_COOK[it.id]) return it.id;
+  }
+  return null;
+}
+
 function tryCampfire() {
-  if (!player.atCampfire) return false;
-  const item = selectedItem();
-  const out = item?.count > 0 ? CAMPFIRE_COOK[item.id] : null;
-  if (!out) return false;
+  const hit = tileInUse(["cf"]) || (player.atCampfire ? findTileNear(player.x, player.y - 8, ["cf"]) : null);
+  if (!hit) return false;
+  const id = firstCampfireFoodId();
+  if (!id) {
+    say("营火：把生肉拿到手上再烤。");
+    return true;
+  }
+  const item = player.items.find((it) => it?.id === id && it.count > 0);
+  if (!item) return true;
+  const out = CAMPFIRE_COOK[id];
   item.count -= 1;
   if (!addItem(out, 1)) spillItem(out, 1);
   burstBits(player.x, player.y - 16, "#ff9a3c");
@@ -2663,21 +2705,25 @@ function hurt(who, amount, dir) {
 }
 
 function trySmelt() {
-  if (!player.atFurnace) return false;
-  const item = selectedItem();
-  if (!item || item.count <= 0 || !SMELT[item.id]) return false;
+  const hit = tileInUse(["F"]) || (player.atFurnace ? findTileNear(player.x, player.y - 8, ["F"]) : null);
+  if (!hit) return false;
   if (player.smelt) {
     say("炉子还在烧。");
     return true;
   }
-  const made = smeltOnce(player.items, item.id);
-  if (!made) {
-    say("还缺煤炭或木炭当燃料。");
+  const inputId = firstSmeltableId();
+  if (!inputId) {
+    const holdingFuel = selectedItem()?.count > 0 && FUELS.has(selectedItem().id);
+    say(holdingFuel ? "熔炉：把生肉拿到手上再烧。煤炭已经在背包里了。" : "熔炉：手上拿生肉，背包里放煤炭或木炭，再按「用」。");
     return true;
   }
-  const hit = findTileNear(player.x, player.y - 8, ["F"]);
-  player.smelt = { t: 0, need: 2.4, out: made, x: hit?.x, y: hit?.y };
-  if (hit) world.lit[`${hit.x},${hit.y}`] = 2.6;
+  const made = smeltOnce(player.items, inputId);
+  if (!made) {
+    say("还缺煤炭或木炭当燃料。砍树烧木炭，或用快捷栏里的煤炭。");
+    return true;
+  }
+  player.smelt = { t: 0, need: 2.4, out: made, x: hit.x, y: hit.y };
+  world.lit[`${hit.x},${hit.y}`] = 2.6;
   say(`正在烧${ITEM_LABELS[made.id] ?? made.id}…`);
   return true;
 }
@@ -3091,9 +3137,10 @@ function useSelected() {
     say("关上了背包。");
     return;
   }
+  if (trySmelt()) return;
+  if (tryCampfire()) return;
   if (tryOpenChest()) return;
   if (tryOpenTable()) return;
-  if (trySmelt()) return;
   if (tryEnchant()) return;
   if (tryJukebox()) return;
   if (tryDoor()) return;
@@ -3108,7 +3155,6 @@ function useSelected() {
   if (tryPath()) return;
   if (tryBoneMeal()) return;
   if (tryFish()) return;
-  if (tryCampfire()) return;
   if (tryCompost()) return;
   if (tryBucket()) return;
   if (trySponge()) return;

@@ -29,6 +29,7 @@ export const LEVELS = [
     title: "牧场",
     subtitle: "第二关",
     brief: "打猎或屠宰，营火或熔炉把肉烤熟，放 4 份熟肉进箱子。",
+    how: "杀掉猪牛羊鸡拿到生肉。站到屋子里的熔炉上按「用」烤熟（背包要有煤炭）；也可以把生肉拿到屋外营火上烤。把 4 份熟肉放进箱子。",
     goal: "箱子里有 4 份熟肉",
     quest: { type: "chest", any: COOKED_MEAT, count: 4, label: "熟肉入箱" },
     clock: 9,

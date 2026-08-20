@@ -75,5 +75,8 @@ describe("campaign levels", () => {
     assert.match(text, /第一关/);
     assert.match(text, /面包/);
     assert.match(text, /3 个小麦/);
+    const hunt = overlayGoal(levelById("hunt"));
+    assert.match(hunt, /熔炉/);
+    assert.match(hunt, /煤炭/);
   });
 });
