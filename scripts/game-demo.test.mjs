@@ -47,6 +47,15 @@ describe("html game demo", () => {
     assert.match(game, /TILE \+ 1/);
     assert.match(game, /player\.knockT/);
     assert.match(game, /requestAnimationFrame\(frame\)/);
+    assert.match(game, /netherrack/);
+    assert.match(game, /soul-sand/);
+    assert.match(game, /function trySmelt/);
+    assert.match(game, /function tryShoot/);
+    assert.match(game, /function explodeAt/);
+    assert.match(game, /function trySaddle/);
+    assert.match(game, /furnace-on/);
+    assert.match(game, /heart-flash/);
+    assert.match(html, /熔炉烧矿/);
     assert.doesNotMatch(game, /ctx\.filter/);
     assert.match(css, /image-rendering:\s*pixelated/);
   });

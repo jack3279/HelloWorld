@@ -4,13 +4,18 @@ import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
+  ARMOR,
   CHEST_SLOTS,
+  FOOD,
+  ITEM_LABELS,
   RECIPES,
+  SMELT,
   canCraft,
   countOwned,
   craftOnce,
   emptySlots,
   itemAsset,
+  smeltOnce,
   takeNeed,
   transferStack,
   tryAddItem,
@@ -84,5 +89,38 @@ describe("crafting recipes", () => {
     assert.equal(countOwned(chest, "diamond"), 3);
     assert.equal(transferStack(chest, 0, bar, 9), true);
     assert.equal(countOwned(bar, "diamond"), 3);
+  });
+
+  it("every labeled item and recipe has an icon on disk", () => {
+    const ids = new Set(Object.keys(ITEM_LABELS));
+    for (const recipe of RECIPES) {
+      ids.add(recipe.id);
+      for (const id of Object.keys(recipe.need)) ids.add(id);
+    }
+    for (const id of Object.keys(SMELT)) ids.add(id);
+    for (const spec of Object.values(SMELT)) ids.add(spec.out);
+    for (const id of Object.keys(ARMOR)) ids.add(id);
+    for (const id of Object.keys(FOOD)) ids.add(id);
+    assert.ok(RECIPES.length >= 30, "enough recipes to fill the table");
+    assert.ok(Object.keys(ARMOR).length >= 16);
+    for (const id of ids) {
+      assert.ok(existsSync(resolve(ROOT, "assets", itemAsset(id))), `missing ${itemAsset(id)}`);
+    }
+  });
+
+  it("smelts iron ore with coal", () => {
+    const items = [
+      { id: "iron-ore", count: 1 },
+      { id: "coal", count: 1 },
+    ];
+    assert.deepEqual(smeltOnce(items, "iron-ore"), { id: "iron-ingot", count: 1 });
+    assert.equal(countOwned(items, "iron-ore"), 0);
+    assert.equal(countOwned(items, "coal"), 0);
+  });
+
+  it("refuses to smelt without fuel", () => {
+    const items = [{ id: "sand", count: 2 }];
+    assert.equal(smeltOnce(items, "sand"), null);
+    assert.equal(countOwned(items, "sand"), 2);
   });
 });
