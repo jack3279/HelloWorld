@@ -87,7 +87,11 @@ describe("html game demo", () => {
     assert.match(game, /3 个小麦合成/);
     assert.match(levels, /锄地/);
     assert.match(game, /setCell\(tiles, x, ground - 3, trunk\)/);
-    assert.match(game, /ctx\.rotate\(angle\)/);
+    assert.match(game, /ctx\.rotate\(grip\.a\)/);
+    assert.match(game, /function heldGrip/);
+    assert.match(game, /SWING_GRIP/);
+    const swing = await readFile(resolve(ROOT, "assets/steve-sprites/swing-3.svg"), "utf8");
+    assert.doesNotMatch(swing, /held-sword/);
     assert.match(game, /function tryBoneMeal/);
     assert.match(game, /function tryFish/);
     assert.match(game, /player\.level/);

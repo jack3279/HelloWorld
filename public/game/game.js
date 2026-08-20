@@ -56,6 +56,18 @@ const HOES = new Set(["wooden-hoe", "stone-hoe", "iron-hoe", "diamond-hoe"]);
 const SHOVELS = new Set(["wooden-shovel", "stone-shovel", "iron-shovel", "diamond-shovel"]);
 const AXES = new Set(["wooden-axe", "stone-axe", "iron-axe", "diamond-axe"]);
 const SWORDS = { "wooden-sword": 2, "stone-sword": 3, "iron-sword": 3, "diamond-sword": 4 };
+const HAND_TOOLS = new Set([
+  ...PICKS,
+  ...HOES,
+  ...SHOVELS,
+  ...AXES,
+  ...Object.keys(SWORDS),
+  "stick",
+  "fishing-rod",
+  "flint-and-steel",
+  "shears",
+  "bow",
+]);
 const PICK = "diamond-pickaxe";
 const AIR_MAX = 12;
 const XP_ORE = { x: 1, i: 5, io: 1, go: 2, co: 1, ro: 2, lo: 3, eo: 5, qo: 3, gl: 2 };
@@ -2320,6 +2332,7 @@ function tryFish() {
   const need = 2.2 + Math.random() * 1.6;
   player.fishT = need;
   player.fishNeed = need;
+  startSwing();
   say("甩出了鱼竿。等一会儿…");
   return true;
 }
@@ -3165,12 +3178,9 @@ function useSelected() {
   if (tryShoot()) return;
   if (tryThrow()) return;
   if (tryArmor()) return;
-  if (SWORDS[item.id]) {
+  if (SWORDS[item.id] || HAND_TOOLS.has(item.id)) {
     if (player.swingT > 0) return;
-    player.swingT = 10 / 12;
-    player.anim = "swing";
-    player.frame = 0;
-    player.age = 0;
+    startSwing();
     return;
   }
   const food = FOOD[item.id];
@@ -3818,9 +3828,70 @@ function drawAnchored(rel, spec, x, y, face) {
   ctx.restore();
 }
 
-function holdingSword() {
-  const id = selectedItem()?.id;
-  return Boolean(SWORDS[id] && selectedItem()?.count > 0);
+function isHandTool(id) {
+  return Boolean(id && HAND_TOOLS.has(id));
+}
+
+function lerpGrip(a, b, t) {
+  const u = t * t * (3 - 2 * t);
+  return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u, a: a.a + (b.a - a.a) * u };
+}
+
+const IDLE_GRIP = [
+  { x: 5.5, y: -24, a: -0.72 },
+  { x: 5.8, y: -24.6, a: -0.68 },
+];
+const RUN_GRIP = [
+  { x: 6, y: -24, a: -0.7 },
+  { x: 5, y: -31, a: -0.95 },
+  { x: 4, y: -34, a: -1.15 },
+  { x: 5, y: -28, a: -0.85 },
+  { x: 6, y: -24, a: -0.7 },
+  { x: 16, y: -28, a: -0.12 },
+  { x: 18, y: -33, a: 0.08 },
+  { x: 15, y: -28, a: -0.18 },
+];
+const SWING_GRIP = [
+  { x: 6, y: -24, a: -0.72 },
+  { x: 2, y: -28, a: -1.25 },
+  { x: 0, y: -32, a: -1.55 },
+  { x: 22, y: -46, a: 0.15 },
+  { x: 24, y: -42, a: 0.72 },
+  { x: 22, y: -36, a: 1.12 },
+  { x: 20, y: -34, a: 0.85 },
+  { x: 10, y: -26, a: 0.05 },
+  { x: 7, y: -24, a: -0.45 },
+  { x: 6, y: -24, a: -0.72 },
+];
+const JUMP_GRIP = [
+  { x: 8, y: -30, a: -0.95 },
+  { x: 10, y: -48, a: 0.35 },
+  { x: 9, y: -52, a: 0.2 },
+  { x: 18, y: -40, a: 0.55 },
+  { x: 9, y: -26, a: -0.5 },
+];
+
+function heldGrip() {
+  if (player.anim === "swing" || player.bowDraw) {
+    const t = player.bowDraw ? Math.max(0, Math.min(1, player.bowT)) : Math.max(0, Math.min(1, 1 - player.swingT / (10 / 12)));
+    const u = t * (SWING_GRIP.length - 1);
+    const i = Math.min(SWING_GRIP.length - 2, Math.floor(u));
+    return lerpGrip(SWING_GRIP[i], SWING_GRIP[i + 1], u - i);
+  }
+  if (player.anim === "run") {
+    const i = player.frame % RUN_GRIP.length;
+    const next = RUN_GRIP[(i + 1) % RUN_GRIP.length];
+    const f = (player.age * 12) % 1;
+    return lerpGrip(RUN_GRIP[i], next, f);
+  }
+  if (player.anim === "jump") return JUMP_GRIP[Math.max(0, Math.min(JUMP_GRIP.length - 1, player.frame))];
+  if (player.anim === "swim") {
+    const s = Math.sin(player.age * 8);
+    return { x: 10 + s * 8, y: -22 + s * 10, a: -0.35 + s * 0.9 };
+  }
+  const idle = IDLE_GRIP[player.frame % IDLE_GRIP.length];
+  const bob = Math.sin(player.age * 3.2);
+  return { x: idle.x, y: idle.y + bob * 1.3, a: idle.a + bob * 0.08 };
 }
 
 function steveFrame() {
@@ -4004,26 +4075,15 @@ function drawHeldItem() {
   const it = selectedItem();
   if (!it?.id || it.count <= 0) return;
   if (player.dead || player.anim === "sleep" || player.anim === "eat") return;
-  if (player.anim === "swing" && holdingSword()) return;
-  const swinging = player.anim === "swing";
-  const t = swinging ? Math.max(0, Math.min(1, 1 - player.swingT / (10 / 12))) : 0;
-  const bob =
-    player.anim === "run"
-      ? Math.sin(player.age * 14) * 2
-      : player.anim === "idle"
-        ? Math.sin(player.age * 3.2) * 1.2
-        : player.anim === "swim"
-          ? Math.sin(player.age * 8) * 3
-          : 0;
-  const angle = swinging ? -0.95 + Math.sin(t * Math.PI) * 1.85 : -0.72;
-  const reach = swinging ? 6 + Math.sin(t * Math.PI) * 16 : 8;
-  const lift = swinging ? -24 - Math.sin(t * Math.PI) * 10 : -18 + bob;
-  const size = 22;
+  const grip = heldGrip();
+  const tool = isHandTool(it.id);
+  const id = player.bowDraw && it.id === "bow" ? bowIcon(player.bowT) : it.id;
+  const size = tool ? 28 : 18;
   ctx.save();
-  ctx.translate(viewX(player.x + player.face * reach), viewY(player.y + lift));
+  ctx.translate(viewX(player.x + player.face * grip.x), viewY(player.y + grip.y));
   ctx.scale(player.face, 1);
-  ctx.rotate(angle);
-  drawImage(itemAsset(it.id), -size * 0.22, -size * 0.88, size, size);
+  ctx.rotate(grip.a);
+  drawImage(itemAsset(id), -size * (tool ? 0.2 : 0.45), -size * (tool ? 0.86 : 0.55), size, size);
   ctx.restore();
 }
 
