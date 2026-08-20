@@ -22,6 +22,7 @@ import {
   transferStack,
   tryAddItem,
 } from "./recipes.js";
+import { LEVELS, overlayGoal } from "./levels.js";
 
 const ROOT = "/repo-assets";
 const TILE = 48;
@@ -29,6 +30,7 @@ const TILE = 48;
 const BLOCK_SRC_PAD = 56;
 const BLOCK_SRC_FACE = 400;
 const GOAL_DIAMONDS = 5;
+const OVERWORLD_INDEX = LEVELS.findIndex((lv) => lv.id === "overworld");
 const GRAVITY = 2100;
 const MOVE = 210;
 const JUMP = 680;
@@ -492,6 +494,8 @@ let message = "";
 let messageT = 0;
 let win = false;
 let demo = null;
+let levelIndex = 0;
+let stats = { kills: 0, fish: 0, portal: false, slept: false };
 
 function asset(rel) {
   return `${ROOT}/${rel}`;
@@ -932,9 +936,293 @@ function buildWorld() {
     bombs: [],
     portalLit: false,
     portalCd: 0,
+    portalBox: { x0: 113, x1: 115, y0: ground - 4, y1: ground },
     compost: {},
   };
 }
+
+function makeWorldShell(W, H, ground, cover = "g") {
+  const tiles = Array.from({ length: H }, () => Array(W).fill("."));
+  for (let x = 0; x < W; x++) {
+    setCell(tiles, x, H - 1, "B");
+    for (let y = ground + 1; y < H - 1; y++) {
+      let t = "s";
+      if (y <= ground + 2) t = "d";
+      else if (y === ground + 5 && x % 7 === 2) t = "gv";
+      setCell(tiles, x, y, t);
+    }
+    setCell(tiles, x, ground, typeof cover === "function" ? cover(x) : cover);
+  }
+  setCell(tiles, 0, ground, "B");
+  setCell(tiles, W - 1, ground, "B");
+  return tiles;
+}
+
+function finishWorld(tiles, extra = {}) {
+  const ground = extra.ground ?? 10;
+  const chests = extra.chests ?? scanChests(tiles);
+  return {
+    w: tiles[0].length,
+    h: tiles.length,
+    tiles,
+    ground,
+    nightSpawned: extra.nightSpawned ?? true,
+    cropT: 0,
+    chests,
+    lit: {},
+    bombs: [],
+    portalLit: extra.portalLit ?? false,
+    portalCd: 0,
+    portalBox: extra.portalBox ?? null,
+    compost: {},
+  };
+}
+
+function hut(tiles, x, ground) {
+  fillRow(tiles, ground, x, x + 6, "p");
+  for (let y = ground - 3; y < ground; y++) {
+    setCell(tiles, x, y, "p");
+    setCell(tiles, x + 6, y, "p");
+  }
+  fillRow(tiles, ground - 4, x, x + 6, "p");
+  setCell(tiles, x, ground - 1, "D");
+  setCell(tiles, x, ground - 2, "U");
+  setCell(tiles, x + 6, ground - 2, "j");
+}
+
+function buildFarmWorld() {
+  const W = 48;
+  const H = 20;
+  const ground = 10;
+  const tiles = makeWorldShell(W, H, ground);
+  fillRow(tiles, ground, 2, 9, "n");
+  setCell(tiles, 2, ground - 1, "0");
+  setCell(tiles, 3, ground - 1, "1");
+  setCell(tiles, 4, ground - 1, "2");
+  setCell(tiles, 5, ground - 1, "2");
+  setCell(tiles, 6, ground - 1, "2");
+  setCell(tiles, 7, ground - 1, "1");
+  setCell(tiles, 8, ground - 1, "p0");
+  fillRow(tiles, ground, 12, 16, ".");
+  fillRow(tiles, ground + 1, 12, 16, "w");
+  fillRow(tiles, ground + 2, 12, 16, "w");
+  fillRow(tiles, ground + 3, 12, 16, "s");
+  setCell(tiles, 13, ground, "lp");
+  setCell(tiles, 12, ground, "h");
+  setCell(tiles, 16, ground, "h");
+  tree(tiles, 18, ground);
+  tree(tiles, 34, ground);
+  hut(tiles, 22, ground);
+  setCell(tiles, 23, ground - 1, "F");
+  setCell(tiles, 24, ground - 1, "T");
+  setCell(tiles, 25, ground - 1, "C");
+  setCell(tiles, 26, ground - 1, "z");
+  setCell(tiles, 27, ground - 1, "Z");
+  setCell(tiles, 24, ground - 3, "t");
+  setCell(tiles, 21, ground - 1, "cf");
+  setCell(tiles, 20, ground - 1, "cp");
+  const chests = scanChests(tiles);
+  fillChest(chests, 25, ground - 1, [
+    ["wheat-seeds", 8],
+    ["bone-meal", 2],
+  ]);
+  return finishWorld(tiles, { ground, chests });
+}
+
+function buildHuntWorld() {
+  const W = 56;
+  const H = 20;
+  const ground = 10;
+  const tiles = makeWorldShell(W, H, ground);
+  tree(tiles, 8, ground);
+  tree(tiles, 16, ground);
+  tree(tiles, 24, ground, "bo", "bl");
+  tree(tiles, 32, ground);
+  setCell(tiles, 11, ground - 1, "cf");
+  setCell(tiles, 12, ground - 1, "cf");
+  hut(tiles, 40, ground);
+  setCell(tiles, 41, ground - 1, "F");
+  setCell(tiles, 42, ground - 1, "T");
+  setCell(tiles, 43, ground - 1, "C");
+  setCell(tiles, 44, ground - 1, "z");
+  setCell(tiles, 45, ground - 1, "Z");
+  setCell(tiles, 42, ground - 3, "t");
+  setCell(tiles, 6, ground - 1, "u");
+  setCell(tiles, 28, ground - 1, "e");
+  const chests = scanChests(tiles);
+  fillChest(chests, 43, ground - 1, [
+    ["coal", 6],
+    ["wheat", 4],
+  ]);
+  return finishWorld(tiles, { ground, chests });
+}
+
+function buildFishWorld() {
+  const W = 52;
+  const H = 20;
+  const ground = 10;
+  const tiles = makeWorldShell(W, H, ground);
+  fillRow(tiles, ground, 10, 22, ".");
+  fillRow(tiles, ground + 1, 10, 22, "w");
+  fillRow(tiles, ground + 2, 10, 22, "w");
+  fillRow(tiles, ground + 3, 10, 22, "s");
+  setCell(tiles, 11, ground, "lp");
+  setCell(tiles, 16, ground, "lp");
+  setCell(tiles, 20, ground, "lp");
+  setCell(tiles, 10, ground, "h");
+  setCell(tiles, 22, ground, "h");
+  tree(tiles, 6, ground);
+  tree(tiles, 26, ground);
+  hut(tiles, 34, ground);
+  setCell(tiles, 35, ground - 1, "F");
+  setCell(tiles, 36, ground - 1, "T");
+  setCell(tiles, 37, ground - 1, "C");
+  setCell(tiles, 38, ground - 1, "z");
+  setCell(tiles, 39, ground - 1, "Z");
+  setCell(tiles, 36, ground - 3, "t");
+  const chests = scanChests(tiles);
+  fillChest(chests, 37, ground - 1, [
+    ["string", 4],
+    ["bread", 2],
+  ]);
+  return finishWorld(tiles, { ground, chests });
+}
+
+function buildMineWorld() {
+  const W = 64;
+  const H = 20;
+  const ground = 10;
+  const tiles = makeWorldShell(W, H, ground);
+  hut(tiles, 4, ground);
+  setCell(tiles, 5, ground - 1, "F");
+  setCell(tiles, 6, ground - 1, "T");
+  setCell(tiles, 7, ground - 1, "C");
+  setCell(tiles, 8, ground - 1, "z");
+  setCell(tiles, 9, ground - 1, "Z");
+  setCell(tiles, 6, ground - 3, "t");
+  tree(tiles, 14, ground);
+  setCell(tiles, 20, ground, ".");
+  setCell(tiles, 20, ground + 1, "h");
+  setCell(tiles, 20, ground + 2, "h");
+  setCell(tiles, 20, ground + 3, "h");
+  fillRow(tiles, ground + 4, 18, 28, "p");
+  setCell(tiles, 19, ground + 3, "t");
+  setCell(tiles, 21, ground + 4, "x");
+  setCell(tiles, 22, ground + 4, "io");
+  setCell(tiles, 23, ground + 4, "io");
+  setCell(tiles, 24, ground + 4, "x");
+  setCell(tiles, 25, ground + 4, "io");
+  setCell(tiles, 26, ground + 4, "co");
+  setCell(tiles, 22, ground + 5, "io");
+  setCell(tiles, 23, ground + 5, "io");
+  setCell(tiles, 24, ground + 5, "x");
+  setCell(tiles, 27, ground + 4, "C");
+  setCell(tiles, 18, ground + 4, "t");
+  setCell(tiles, 36, ground + 3, "io");
+  setCell(tiles, 37, ground + 4, "io");
+  setCell(tiles, 48, ground + 3, "x");
+  const chests = scanChests(tiles);
+  fillChest(chests, 7, ground - 1, [
+    ["coal", 8],
+    ["torch", 8],
+  ]);
+  fillChest(chests, 27, ground + 4, [
+    ["coal", 6],
+    ["iron-ore", 2],
+  ]);
+  return finishWorld(tiles, { ground, chests });
+}
+
+function buildNightWorld() {
+  const W = 60;
+  const H = 20;
+  const ground = 10;
+  const tiles = makeWorldShell(W, H, ground, "g");
+  fillRow(tiles, ground, 16, 28, "sb");
+  fillRow(tiles, ground - 1, 18, 26, "sb");
+  fillRow(tiles, ground - 2, 18, 26, "sb");
+  fillRow(tiles, ground - 3, 18, 26, "sb");
+  setCell(tiles, 18, ground - 1, "D");
+  setCell(tiles, 18, ground - 2, "U");
+  setCell(tiles, 20, ground - 1, "C");
+  setCell(tiles, 21, ground - 1, "z");
+  setCell(tiles, 22, ground - 1, "Z");
+  setCell(tiles, 24, ground - 1, "T");
+  setCell(tiles, 23, ground - 3, "t");
+  setCell(tiles, 27, ground - 1, "tn");
+  tree(tiles, 8, ground);
+  tree(tiles, 36, ground);
+  spruceTree(tiles, 44, ground);
+  fillRow(tiles, ground, 40, 48, "sn");
+  const chests = scanChests(tiles);
+  fillChest(chests, 20, ground - 1, [
+    ["arrow", 12],
+    ["bread", 2],
+  ]);
+  return finishWorld(tiles, { ground, chests });
+}
+
+function buildNetherWorld() {
+  const W = 56;
+  const H = 20;
+  const ground = 10;
+  const tiles = makeWorldShell(W, H, ground, (x) => (x % 5 === 0 ? "ss" : x % 7 === 2 ? "mg" : "nr"));
+  fillRow(tiles, ground, 28, 36, "nk");
+  for (let y = ground - 3; y < ground; y++) {
+    setCell(tiles, 28, y, "nk");
+    setCell(tiles, 36, y, "nk");
+  }
+  fillRow(tiles, ground - 4, 28, 36, "nk");
+  setCell(tiles, 29, ground - 1, "F");
+  setCell(tiles, 30, ground - 1, "T");
+  setCell(tiles, 31, ground - 1, "C");
+  setCell(tiles, 32, ground - 1, "et");
+  setCell(tiles, 33, ground - 1, "gl");
+  setCell(tiles, 30, ground - 3, "t");
+  portal(tiles, 8, ground);
+  setCell(tiles, 4, ground - 1, "w0");
+  setCell(tiles, 5, ground - 1, "w1");
+  setCell(tiles, 6, ground, "ss");
+  setCell(tiles, 4, ground, "ss");
+  setCell(tiles, 5, ground, "ss");
+  setCell(tiles, 18, ground + 3, "qo");
+  setCell(tiles, 19, ground + 4, "qo");
+  setCell(tiles, 20, ground + 3, "qo");
+  setCell(tiles, 21, ground + 5, "qo");
+  setCell(tiles, 22, ground + 4, "qo");
+  setCell(tiles, 40, ground + 3, "qo");
+  setCell(tiles, 42, ground + 4, "qo");
+  setCell(tiles, 16, ground, ".");
+  setCell(tiles, 16, ground + 1, "h");
+  setCell(tiles, 16, ground + 2, "h");
+  setCell(tiles, 16, ground + 3, "h");
+  fillRow(tiles, ground + 4, 16, 23, "nk");
+  setCell(tiles, 17, ground + 4, "qo");
+  setCell(tiles, 18, ground + 4, "t");
+  fillRow(tiles, ground + 1, 48, 52, "v");
+  setCell(tiles, 48, ground, ".");
+  setCell(tiles, 49, ground, ".");
+  const chests = scanChests(tiles);
+  fillChest(chests, 31, ground - 1, [
+    ["nether-wart", 4],
+    ["coal", 6],
+  ]);
+  return finishWorld(tiles, {
+    ground,
+    chests,
+    portalBox: { x0: 9, x1: 11, y0: ground - 4, y1: ground },
+  });
+}
+
+const WORLD_BUILDERS = {
+  farm: buildFarmWorld,
+  hunt: buildHuntWorld,
+  fish: buildFishWorld,
+  mine: buildMineWorld,
+  night: buildNightWorld,
+  overworld: buildWorld,
+  nether: buildNetherWorld,
+};
 
 function tileAt(px, py) {
   const x = Math.floor(px / TILE);
@@ -1129,8 +1417,8 @@ function moveBody(body, dt) {
 
 function makePlayer() {
   return {
-    x: TILE * 3.5,
-    y: TILE * 10,
+    x: TILE * (currentLevel().spawn?.[0] ?? 3.5),
+    y: TILE * (currentLevel().spawn?.[1] ?? 10),
     vx: 0,
     vy: 0,
     hw: 10,
@@ -1178,18 +1466,7 @@ function makePlayer() {
     mount: null,
     equipped: { head: "", chest: "", legs: "", feet: "" },
     bedSpawn: null,
-    items: [
-      { id: "diamond-sword", count: 1, dur: TOOL_DUR["diamond-sword"] },
-      { id: "diamond-pickaxe", count: 1, dur: TOOL_DUR["diamond-pickaxe"] },
-      { id: "wooden-hoe", count: 1, dur: TOOL_DUR["wooden-hoe"] },
-      { id: "torch", count: 8 },
-      { id: "wheat-seeds", count: 8 },
-      { id: "carrot", count: 4 },
-      { id: "wheat", count: 4 },
-      { id: "bread", count: 2 },
-      { id: "oak-log", count: 8 },
-      ...emptySlots(PLAYER_SLOTS - 9),
-    ],
+    items: loadoutItems(currentLevel().items),
   };
 }
 
@@ -1242,10 +1519,61 @@ function makeDrop(id, x, y, count = 1, extra = null) {
   return { id, x, y, vy: -180, count, bob: Math.random() * Math.PI * 2, gone: false, dur: extra?.dur };
 }
 
-function resetGame() {
-  world = buildWorld();
-  player = makePlayer();
-  mobs = [
+function currentLevel() {
+  return LEVELS[Math.max(0, Math.min(LEVELS.length - 1, levelIndex))] ?? LEVELS[0];
+}
+
+function loadoutItems(list) {
+  const slots = emptySlots(PLAYER_SLOTS);
+  (list ?? []).forEach((it, i) => {
+    if (i >= PLAYER_SLOTS) return;
+    slots[i] = { id: it.id, count: it.count };
+    if (TOOL_DUR[it.id]) slots[i].dur = TOOL_DUR[it.id];
+  });
+  return slots;
+}
+
+function emptyStats() {
+  return { kills: 0, fish: 0, portal: false, slept: false };
+}
+
+function levelMobs() {
+  const id = currentLevel().id;
+  if (id === "farm") return [makeMob("pig", 10, 10), makeMob("chicken", 8, 10), makeMob("cow", 32, 10)];
+  if (id === "hunt") {
+    return [
+      makeMob("pig", 10, 10),
+      makeMob("pig", 14, 10),
+      makeMob("cow", 20, 10),
+      makeMob("cow", 26, 10),
+      makeMob("chicken", 12, 10),
+      makeMob("chicken", 18, 10),
+      makeMob("sheep", 30, 10),
+      makeMob("sheep", 34, 10),
+    ];
+  }
+  if (id === "fish") return [makeMob("chicken", 8, 10), makeMob("pig", 28, 10), makeMob("cow", 44, 10)];
+  if (id === "mine") return [makeMob("zombie", 22, 14), makeMob("spider", 26, 14), makeMob("zombie", 40, 10)];
+  if (id === "night") {
+    return [
+      makeMob("zombie", 10, 10),
+      makeMob("skeleton", 14, 10),
+      makeMob("spider", 32, 10),
+      makeMob("creeper", 38, 10),
+      makeMob("zombie", 48, 10),
+      makeMob("skeleton", 52, 10),
+      makeMob("spider", 6, 10),
+    ];
+  }
+  if (id === "nether") {
+    return [
+      makeMob("zombie", 18, 10),
+      makeMob("skeleton", 22, 10),
+      makeMob("enderman", 40, 10),
+      makeMob("creeper", 34, 10),
+    ];
+  }
+  return [
     makeMob("pig", 7, 10),
     makeMob("chicken", 4, 10),
     makeMob("chicken", 12, 10),
@@ -1269,7 +1597,11 @@ function resetGame() {
     makeMob("slime", 15, 10),
     makeMob("slime", 34, 10),
   ];
-  drops = [
+}
+
+function levelDrops() {
+  if (currentLevel().id !== "overworld") return [];
+  return [
     makeDrop("diamond", TILE * 13.5, TILE * 9),
     makeDrop("diamond", TILE * 24, TILE * 7.5),
     makeDrop("diamond", TILE * 42, TILE * 5.5),
@@ -1281,22 +1613,113 @@ function resetGame() {
     makeDrop("apple", TILE * 69, TILE * 9, 2),
     makeDrop("snowball", TILE * 86, TILE * 9, 6),
   ];
+}
+
+function resetGame() {
+  startLevel(levelIndex);
+}
+
+function startLevel(index, asDemo = false) {
+  levelIndex = Math.max(0, Math.min(LEVELS.length - 1, index));
+  const level = currentLevel();
+  const build = WORLD_BUILDERS[level.id] ?? buildWorld;
+  world = build();
+  player = makePlayer();
+  mobs = levelMobs();
+  drops = levelDrops();
+  stats = emptyStats();
   particles = [];
   arrows = [];
   craftingOpen = false;
   chestOpen = false;
   packOpen = false;
   packPick = -1;
-  chestItems = world.chests["68,9"] ?? emptySlots(CHEST_SLOTS);
+  const chestKeys = Object.keys(world.chests ?? {});
+  chestItems = world.chests[chestKeys[0]] ?? emptySlots(CHEST_SLOTS);
   craftScroll = 0;
   cam = { x: 0, y: 0 };
   time = 0;
-  clock = 8;
+  clock = level.clock ?? 8;
   win = false;
-  demo = null;
+  demo = asDemo ? { t: 0 } : null;
   hold.left = hold.right = hold.jump = hold.use = false;
-  message = "向东探索农场、矿洞、雪原和下界。工作台合成，熔炉烧矿，箱子能存东西。把 5 颗钻石放进箱子通关。";
+  message = overlayGoal(level);
   messageT = 6;
+}
+
+function showMenu() {
+  mode = "boot";
+  demo = null;
+  overlay.hidden = false;
+  document.getElementById("hud-layer").hidden = true;
+  fillLevelList();
+}
+
+function nextLevel() {
+  if (levelIndex >= LEVELS.length - 1) {
+    win = "campaign";
+    say("全部关卡通关！按 R 回选关。", 8);
+    return;
+  }
+  startLevel(levelIndex + 1);
+}
+
+function chestHas(id) {
+  return Object.values(world?.chests ?? {}).reduce((n, slots) => n + countOwned(slots, id), 0);
+}
+
+function evalQuest(part = currentLevel().quest) {
+  if (!part) return { n: 0, need: 1, ok: false, label: "" };
+  if (part.type === "chest") {
+    const n = part.any ? part.any.reduce((sum, id) => sum + chestHas(id), 0) : chestHas(part.item);
+    return { n, need: part.count, ok: n >= part.count, label: part.label };
+  }
+  if (part.type === "kills") return { n: stats.kills, need: part.count, ok: stats.kills >= part.count, label: part.label };
+  if (part.type === "fish") return { n: stats.fish, need: part.count, ok: stats.fish >= part.count, label: part.label };
+  if (part.type === "portal") return { n: stats.portal ? 1 : 0, need: 1, ok: Boolean(stats.portal), label: part.label };
+  if (part.type === "sleep") return { n: stats.slept ? 1 : 0, need: 1, ok: Boolean(stats.slept), label: part.label };
+  if (part.type === "and") {
+    const parts = part.parts.map((p) => evalQuest(p));
+    return {
+      n: parts.filter((p) => p.ok).length,
+      need: parts.length,
+      ok: parts.every((p) => p.ok),
+      label: part.label,
+      parts,
+    };
+  }
+  return { n: 0, need: 1, ok: false, label: part.label ?? "" };
+}
+
+function questHud() {
+  const part = evalQuest();
+  if (part.parts) return part.parts.map((p) => `${p.label} ${p.n}/${p.need}`).join("  ·  ");
+  return `${part.label} ${part.n}/${part.need}`;
+}
+
+function checkQuest() {
+  if (!player || win || player.dead) return;
+  if (!evalQuest().ok) return;
+  const last = levelIndex >= LEVELS.length - 1;
+  win = last ? "campaign" : "stage";
+  closeMenus();
+  say(last ? "全部关卡通关！按 R 回选关。" : `${currentLevel().title}完成！按 N 下一关，R 重玩本关。`, 8);
+}
+
+function fillLevelList() {
+  const root = document.getElementById("level-list");
+  if (!root) return;
+  root.hidden = false;
+  root.innerHTML = "";
+  LEVELS.forEach((level, i) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "level-btn";
+    btn.style.setProperty("--i", String(i));
+    btn.innerHTML = `<strong>${level.subtitle} · ${level.title}</strong><span>${level.goal}</span>`;
+    btn.addEventListener("click", () => startGame(false, i));
+    root.appendChild(btn);
+  });
 }
 
 function menusOpen() {
@@ -1406,7 +1829,7 @@ function bedSpawnValid() {
 function respawnPlayer() {
   if (!player || !player.dead) return;
   const atBed = bedSpawnValid();
-  const spawn = atBed ? player.bedSpawn : { x: TILE * 3.5, y: TILE * 10 };
+  const spawn = atBed ? player.bedSpawn : { x: TILE * (currentLevel().spawn?.[0] ?? 3.5), y: TILE * (currentLevel().spawn?.[1] ?? 10) };
   player.dead = false;
   player.health = 20;
   player.hunger = 18;
@@ -1578,13 +2001,7 @@ function chestDiamonds() {
 }
 
 function checkChestWin() {
-  if (win) return;
-  if (chestDiamonds() >= GOAL_DIAMONDS) {
-    win = true;
-    chestOpen = false;
-    packOpen = false;
-    say("钻石放进箱子了。试玩通关！", 10);
-  }
+  checkQuest();
 }
 
 function visibleRecipes() {
@@ -1622,7 +2039,9 @@ function trySleep() {
   }
   player.sleeping = 1.7;
   player.vx = 0;
+  stats.slept = true;
   say("你躺下休息了。以后会死在床边醒来。");
+  checkQuest();
   return true;
 }
 
@@ -1861,6 +2280,8 @@ function finishFishing() {
   burstBits(player.x + player.face * 24, player.y - 8, "#7ecbff");
   say(`钓到了${ITEM_LABELS[id] ?? id}。`);
   wearHeld(1);
+  stats.fish += 1;
+  checkQuest();
 }
 
 function tryMilk() {
@@ -2180,6 +2601,10 @@ function hurt(who, amount, dir) {
     if (who.kind === "enderman" || Math.random() < 0.2) drops.push(makeDrop("diamond", who.x + 8, who.y - 24));
     if (who.kind === "zombie" && Math.random() < 0.12) drops.push(makeDrop("iron-ingot", who.x - 6, who.y - 22));
     addXp(XP_KILL[who.kind] ?? 3);
+    if (!who.passive) {
+      stats.kills += 1;
+      checkQuest();
+    }
   }
 }
 
@@ -2642,6 +3067,11 @@ function updatePlayer(dt) {
   if (player.dead) {
     player.age += dt;
     player.frame = Math.min(11, Math.floor(player.age * 10));
+    return;
+  }
+  if (win) {
+    player.vx = 0;
+    player.vy = 0;
     return;
   }
 
@@ -3127,13 +3557,18 @@ function updateTraps(dt) {
 function updatePortal(dt) {
   if ((world.portalCd ?? 0) > 0) world.portalCd -= dt;
   if (!world.portalLit || world.portalCd > 0 || player.dead) return;
+  const box = world.portalBox;
+  if (!box) return;
   const x = Math.floor(player.x / TILE);
   const y = Math.floor((player.y - 8) / TILE);
-  if (x >= 113 && x <= 115 && y <= world.ground && y >= world.ground - 4) {
-    player.x = TILE * 4;
-    player.y = TILE * world.ground;
+  if (x >= box.x0 && x <= box.x1 && y >= box.y0 && y <= box.y1) {
+    const spawn = currentLevel().spawn ?? [3.5, 10];
+    player.x = TILE * spawn[0];
+    player.y = TILE * spawn[1];
     world.portalCd = 4;
-    say("传送回了出生点。");
+    stats.portal = true;
+    say("穿过了传送门。");
+    checkQuest();
   }
 }
 
@@ -3725,7 +4160,7 @@ function drawHud() {
   ctx.textAlign = "left";
   ctx.font = "14px sans-serif";
   ctx.fillStyle = "#fff";
-  ctx.fillText(`箱子钻石 ${chestDiamonds()} / ${GOAL_DIAMONDS}   ${hourLabel()}   ${player.level ?? 0} 级${player.powerT > 0 ? "   附魔" : ""}${player.sprinting ? "   冲刺" : ""}`, 16, 28);
+  ctx.fillText(`${currentLevel().subtitle} ${currentLevel().title}   ${questHud()}   ${hourLabel()}   ${player.level ?? 0} 级${player.powerT > 0 ? "   附魔" : ""}${player.sprinting ? "   冲刺" : ""}`, 16, 28);
   if (craftingOpen) drawCraftPanel();
   if (chestOpen) drawChestPanel();
   if (packOpen && !chestOpen) drawPackPanel();
@@ -3744,12 +4179,19 @@ function drawHud() {
     ctx.fillStyle = "rgba(0,0,0,0.45)";
     ctx.fillRect(0, 0, viewW, viewH);
     ctx.textAlign = "center";
+    const title = player.dead && !win ? "你死了" : win === "campaign" ? "全部通关" : "关卡完成";
+    const hint =
+      player.dead && !win
+        ? "按 R 重生（世界还在）"
+        : win === "campaign"
+          ? "按 R 回选关"
+          : "按 N 下一关 · 按 R 重玩本关";
     ctx.fillStyle = win ? "#ffe566" : "#ff6b6b";
     ctx.font = "bold 42px sans-serif";
-    ctx.fillText(win ? "试玩通关" : "你死了", viewW / 2, viewH / 2 - 10);
+    ctx.fillText(title, viewW / 2, viewH / 2 - 10);
     ctx.fillStyle = "#fff";
     ctx.font = "18px sans-serif";
-    ctx.fillText(win ? "按 R 重新开始" : "按 R 重生（世界还在）", viewW / 2, viewH / 2 + 28);
+    ctx.fillText(hint, viewW / 2, viewH / 2 + 28);
   }
 }
 
@@ -3809,6 +4251,7 @@ const CODE_KEYS = {
   KeyJ: "j",
   KeyI: "i",
   KeyE: "e",
+  KeyN: "n",
   KeyR: "r",
   Space: " ",
   ArrowLeft: "arrowleft",
@@ -3904,18 +4347,16 @@ function updateDemo(dt) {
   }
 }
 
-function startGame(asDemo = false) {
-  resetGame();
+function startGame(asDemo = false, index) {
+  if (asDemo) startLevel(OVERWORLD_INDEX, true);
+  else startLevel(index == null ? 0 : index, false);
   mode = "play";
   overlay.hidden = true;
   document.getElementById("hud-layer").hidden = false;
   startBtn.blur();
   demoBtn.blur();
   canvas.focus();
-  if (asDemo) {
-    demo = { t: 0 };
-    say("自动演示：向东走、跳跃、挥剑。", 3);
-  }
+  if (asDemo) say("自动演示：向东走、跳跃、挥剑。", 3);
 }
 
 window.addEventListener("keydown", (e) => {
@@ -3935,9 +4376,14 @@ window.addEventListener("keydown", (e) => {
   if ((key === "j" || key === "e") && !e.repeat) useSelected();
   if (key === "i" && mode === "play" && !e.repeat) togglePack();
   if (key === "q" && mode === "play" && !menusOpen()) throwSelected();
+  if (key === "n" && mode === "play" && win === "stage") {
+    nextLevel();
+    return;
+  }
   if (key === "r" && mode === "play") {
     if (player?.dead && !win) respawnPlayer();
-    else resetGame();
+    else if (win === "campaign") showMenu();
+    else startLevel(levelIndex, Boolean(demo));
   }
 });
 
@@ -4031,8 +4477,8 @@ for (const btn of document.querySelectorAll("#touch button")) {
   btn.addEventListener("pointerleave", () => press(false));
 }
 
-startBtn.addEventListener("click", () => startGame(false));
-demoBtn.addEventListener("click", () => startGame(true));
+  startBtn.addEventListener("click", () => startGame(false, 0));
+  demoBtn.addEventListener("click", () => startGame(true, OVERWORLD_INDEX));
 
 resize();
 requestAnimationFrame(frame);
@@ -4043,6 +4489,7 @@ loadAll()
     startBtn.disabled = false;
     demoBtn.disabled = false;
     const boot = new URLSearchParams(location.search);
+    fillLevelList();
     if (boot.has("autostart")) startGame(boot.get("autostart") === "demo");
   })
   .catch((err) => {

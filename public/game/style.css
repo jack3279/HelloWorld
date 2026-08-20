@@ -44,6 +44,7 @@ body {
   justify-content: center;
   padding: 24px;
   text-align: center;
+  overflow: auto;
   background:
     linear-gradient(180deg, rgba(11, 18, 32, 0.28), rgba(11, 18, 32, 0.62)),
     url("/repo-assets/blocks/oak-leaves.svg") center / 96px 96px;
@@ -103,6 +104,72 @@ kbd {
   gap: 12px;
   justify-content: center;
   margin-top: 12px;
+}
+
+.levels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+  width: min(720px, 92vw);
+  margin: 10px 0 4px;
+  text-align: left;
+}
+
+.level-btn {
+  appearance: none;
+  border: 2px solid #3f3f3f;
+  border-radius: 4px;
+  padding: 8px 10px 10px;
+  color: #f4f1de;
+  background: rgba(16, 18, 24, 0.78);
+  cursor: pointer;
+  text-align: left;
+  transform: translateY(0);
+  box-shadow: 0 3px 0 #1a1408;
+  animation: level-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.level-btn:hover,
+.level-btn:focus {
+  border-color: #ffe566;
+  outline: none;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 0 #1a1408, 0 0 0 1px #ffe566;
+}
+
+.level-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #1a1408;
+  transition-duration: 90ms;
+}
+
+@keyframes level-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.level-btn strong {
+  display: block;
+  color: #ffe566;
+  margin-bottom: 2px;
+}
+
+.level-btn span {
+  display: block;
+  font-size: 13px;
+  line-height: 1.35;
+  opacity: 0.92;
 }
 
 .mc-btn {
