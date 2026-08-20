@@ -401,6 +401,17 @@ const BLOCKS = {
   ba: "blocks/iron-bars.svg",
 };
 
+const FIRE_FRAMES = [
+  "blocks/fire.svg",
+  "blocks/fire-1.svg",
+  "blocks/fire-2.svg",
+  "blocks/fire-3.svg",
+  "blocks/fire-4.svg",
+  "blocks/fire-5.svg",
+  "blocks/fire-6.svg",
+  "blocks/fire-7.svg",
+];
+
 const NON_SOLID = new Set([
   ".",
   "w",
@@ -436,6 +447,10 @@ const NON_SOLID = new Set([
   "w1",
   "w2",
   "ln",
+  "lp",
+  "L",
+  "bl",
+  "sl",
   "cf",
   "to",
   "cp",
@@ -507,6 +522,7 @@ function range(n, map) {
 
 const MANIFEST = [
   ...Object.values(BLOCKS),
+  ...FIRE_FRAMES,
   ...range(8, (i) => `lava-sprites/boil-${i * 4}.svg`),
   ...range(8, (i) => `water-sprites/flow-${i * 4}.svg`),
   ...["idle-a", "idle-b", ...range(8, (i) => `run-${i}`), "jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"].map(
@@ -631,9 +647,9 @@ function fillRow(tiles, y, x0, x1, t) {
 
 function tree(tiles, x, ground, trunk = "o", leaf = "L") {
   setCell(tiles, x, ground - 1, trunk);
-  setCell(tiles, x, ground - 2, trunk);
-  setCell(tiles, x, ground - 3, trunk);
-  for (let dy = 4; dy <= 6; dy++) {
+  setCell(tiles, x, ground - 2, leaf);
+  setCell(tiles, x, ground - 3, leaf);
+  for (let dy = 3; dy <= 6; dy++) {
     for (let dx = -2; dx <= 2; dx++) {
       if (Math.abs(dx) + (6 - dy) < 4) setCell(tiles, x + dx, ground - dy, leaf);
     }
@@ -642,10 +658,13 @@ function tree(tiles, x, ground, trunk = "o", leaf = "L") {
 
 function spruceTree(tiles, x, ground) {
   setCell(tiles, x, ground - 1, "so");
-  setCell(tiles, x, ground - 2, "so");
-  setCell(tiles, x, ground - 3, "so");
-  setCell(tiles, x, ground - 4, "so");
-  for (const [dy, r] of [[3, 2], [4, 2], [5, 1], [6, 1]]) {
+  for (const [dy, r] of [
+    [2, 2],
+    [3, 2],
+    [4, 2],
+    [5, 1],
+    [6, 1],
+  ]) {
     for (let dx = -r; dx <= r; dx++) setCell(tiles, x + dx, ground - dy, "sl");
   }
 }
@@ -1309,7 +1328,13 @@ function waterSurfaceY(px, py) {
 }
 
 function inWaterAt(body) {
-  return tileAt(body.x, body.y - 4) === "w" || tileAt(body.x, body.y - 16) === "w" || tileAt(body.x, body.y - body.hh + 6) === "w";
+  return (
+    tileAt(body.x, body.y - 4) === "w" ||
+    tileAt(body.x, body.y - 16) === "w" ||
+    tileAt(body.x, body.y - body.hh + 6) === "w" ||
+    tileAt(body.x, body.y + 10) === "w" ||
+    tileAt(body.x, body.y - 4) === "lp"
+  );
 }
 
 function swimBody(body, dt) {
@@ -3079,8 +3104,8 @@ function updatePlayer(dt) {
     player.vx = 0;
     player.vy = 0;
     player.anim = "idle";
-    player.frame = 0;
     player.age += dt;
+    player.frame = Math.floor(player.age * 1.6) % 2;
     if (craftingOpen && !player.atTable) craftingOpen = false;
     if (chestOpen && !player.atChest) chestOpen = false;
     return;
@@ -3135,7 +3160,7 @@ function updatePlayer(dt) {
       player.vy = 0;
       player.anim = Math.abs(pig.vx) > 12 ? "run" : "idle";
       player.age += dt;
-      player.frame = player.anim === "run" ? Math.floor(player.age * 12) % 8 : 0;
+      player.frame = player.anim === "run" ? Math.floor(player.age * 12) % 8 : Math.floor(player.age * 1.6) % 2;
       return;
     }
   } else {
@@ -3229,6 +3254,9 @@ function updatePlayer(dt) {
   } else if (player.eatT > 0) {
     player.anim = "eat";
     player.frame = Math.min(7, Math.floor((1 - player.eatT / (8 / 10)) * 8));
+  } else if (player.inWater) {
+    player.anim = "swim";
+    player.frame = Math.floor(player.age * (Math.abs(player.vx) > 20 ? 9 : 6)) % 4;
   } else if (!player.grounded) {
     player.anim = "jump";
     player.frame = player.vy < -80 ? 1 : player.vy > 120 ? 3 : 2;
@@ -3237,7 +3265,7 @@ function updatePlayer(dt) {
     player.frame = Math.floor(player.age * 12) % 8;
   } else {
     player.anim = "idle";
-    player.frame = 0;
+    player.frame = Math.floor(player.age * 1.6) % 2;
   }
 
 }
@@ -3636,17 +3664,22 @@ function holdingSword() {
 }
 
 function steveFrame() {
-  if (player.anim === "idle") {
-    if (holdingSword()) return "steve-sprites/swing-0.svg";
-    return `steve-sprites/${player.frame === 0 ? "idle-a" : "idle-b"}.svg`;
-  }
+  if (player.anim === "idle") return `steve-sprites/${player.frame === 0 ? "idle-a" : "idle-b"}.svg`;
   if (player.anim === "run") return `steve-sprites/run-${player.frame}.svg`;
+  if (player.anim === "swim") {
+    const frames = ["jump-rise", "jump-apex", "jump-fall", "jump-apex"];
+    return `steve-sprites/${frames[player.frame % 4]}.svg`;
+  }
   if (player.anim === "jump") return `steve-sprites/${["jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"][player.frame]}.svg`;
   if (player.anim === "swing") return `steve-sprites/swing-${player.frame}.svg`;
   if (player.anim === "hurt") return `steve-sprites/hurt-${player.frame}.svg`;
   if (player.anim === "sleep") return `steve-sprites/sleep-${player.frame}.svg`;
   if (player.anim === "eat") return `steve-sprites/eat-${player.frame}.svg`;
   return `steve-sprites/death-${player.frame}.svg`;
+}
+
+function fireFrame() {
+  return FIRE_FRAMES[Math.floor(time * 10) % FIRE_FRAMES.length];
 }
 
 function deathFrames(kind) {
@@ -3722,7 +3755,26 @@ function drawWorld() {
       const dy = viewY(y * TILE);
       if (t === "v") drawTile(lavaFrame, dx, dy);
       else if (t === "w") drawTile(waterFrame, dx, dy);
-      else if (t === "fi") drawTile(Math.floor(time * 10) % 2 ? "blocks/fire-1.svg" : "blocks/fire.svg", dx, dy);
+      else if (t === "fi") drawTile(fireFrame(), dx, dy);
+      else if (t === "cf") {
+        drawTile(BLOCKS.cf, dx, dy);
+        const firePic = img(fireFrame());
+        if (firePic) {
+          ctx.globalAlpha = 0.86;
+          ctx.drawImage(
+            firePic,
+            BLOCK_SRC_PAD,
+            BLOCK_SRC_PAD,
+            BLOCK_SRC_FACE,
+            BLOCK_SRC_FACE,
+            Math.round(dx) + 6,
+            Math.round(dy) - 10,
+            TILE - 8,
+            TILE - 2,
+          );
+          ctx.globalAlpha = 1;
+        }
+      }
       else if (t === "F" && (world.lit?.[`${x},${y}`] ?? 0) > 0) drawTile("blocks/furnace-on.svg", dx, dy);
       else if (BLOCKS[t]) {
         drawTile(BLOCKS[t], dx, dy);
@@ -3796,14 +3848,29 @@ function drawParticles() {
 
 function drawPlayer() {
   if (player.invuln > 0 && Math.floor(time * 16) % 2 === 0 && !player.dead) ctx.globalAlpha = 0.45;
-  const combat =
-    player.anim === "swing" ||
-    player.anim === "hurt" ||
-    player.anim === "death" ||
-    player.anim === "sleep" ||
-    (player.anim === "idle" && holdingSword());
+  const combat = player.anim === "swing" || player.anim === "hurt" || player.anim === "death" || player.anim === "sleep";
   drawAnchored(steveFrame(), combat ? STEVE.combat : STEVE.loco, viewX(player.x), viewY(player.y), player.face);
   ctx.globalAlpha = 1;
+  drawHeldItem();
+}
+
+function drawHeldItem() {
+  const it = selectedItem();
+  if (!it?.id || it.count <= 0) return;
+  if (player.dead || player.anim === "sleep" || player.anim === "eat") return;
+  if (player.anim === "swing" && holdingSword()) return;
+  const bob =
+    player.anim === "run"
+      ? Math.sin(player.age * 14) * 3
+      : player.anim === "idle"
+        ? Math.sin(player.age * 3.2) * 1.6
+        : player.anim === "swim"
+          ? Math.sin(player.age * 8) * 5
+          : 0;
+  const ox = player.face * (player.anim === "swing" ? 22 : 16);
+  const oy = -22 + bob;
+  const size = 18;
+  drawImage(itemAsset(it.id), viewX(player.x + ox) - size / 2, viewY(player.y + oy) - size / 2, size, size);
 }
 
 function drawHearts(x, y, value, full, half, empty, flash = false) {
@@ -4098,10 +4165,28 @@ function craftRowAt(mx, my) {
   return i;
 }
 
-function drawHud() {
+function hudLayout() {
   const barW = 364;
   const barX = (viewW - barW) / 2;
   const barY = viewH - 86;
+  return { barW, barX, barY, origin: barX + 22, slotW: 38, slotY: barY + 26 };
+}
+
+function hotbarSlotAt(mx, my) {
+  const { origin, slotW, slotY } = hudLayout();
+  if (my < slotY - 8 || my > slotY + 36) return -1;
+  const i = Math.floor((mx - origin) / slotW);
+  if (i < 0 || i > 8) return -1;
+  return i;
+}
+
+function selectHotbar(index) {
+  if (!player || index < 0 || index > 8) return;
+  player.selected = index;
+}
+
+function drawHud() {
+  const { barW, barX, barY, origin } = hudLayout();
   drawHearts(barX + 8, barY - 28, player.health, "hud/heart.svg", "hud/heart-half.svg", "hud/heart-empty.svg", true);
   drawHearts(barX + barW - 8 - 180, barY - 28, player.hunger, "hud/hunger-full.svg", "hud/hunger-half.svg", "hud/hunger-empty.svg");
   if (player.armor > 0) {
@@ -4121,7 +4206,6 @@ function drawHud() {
 
   drawImage("hud/hotbar.svg", barX, barY + 10, barW, 72);
   const slot = 36;
-  const origin = barX + 22;
   for (let i = 0; i < 9; i++) {
     const it = player.items[i];
     const sx = origin + i * 38;
@@ -4444,6 +4528,12 @@ canvas.addEventListener("mousedown", (e) => {
     }
     return;
   }
+  const pos = canvasPos(e);
+  const slot = hotbarSlotAt(pos.x, pos.y);
+  if (slot >= 0) {
+    selectHotbar(slot);
+    return;
+  }
   hold.use = true;
   useSelected();
 });
@@ -4453,6 +4543,17 @@ window.addEventListener("mouseup", () => {
   hold.use = false;
   releaseUse();
 });
+
+canvas.addEventListener(
+  "wheel",
+  (e) => {
+    if (mode !== "play" || !player || menusOpen()) return;
+    e.preventDefault();
+    const dir = e.deltaY > 0 ? 1 : -1;
+    selectHotbar((player.selected + dir + 9) % 9);
+  },
+  { passive: false },
+);
 
 window.addEventListener("resize", resize);
 

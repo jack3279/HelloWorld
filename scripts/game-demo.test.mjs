@@ -54,6 +54,14 @@ describe("html game demo", () => {
     assert.match(game, /function drawTile/);
     assert.match(game, /function supportedByFloor/);
     assert.match(game, /function swimBody/);
+    assert.match(game, /player\.anim === "swim"/);
+    assert.match(game, /function hotbarSlotAt/);
+    assert.match(game, /function selectHotbar/);
+    assert.match(game, /function drawHeldItem/);
+    assert.match(game, /function fireFrame/);
+    assert.match(game, /blocks\/fire-2\.svg/);
+    assert.match(game, /idle-b/);
+    assert.match(html, /点击下方快捷栏/);
     assert.match(game, /water-sprites\/flow-/);
     assert.match(game, /body\.air/);
     assert.match(game, /body\.drownT/);
