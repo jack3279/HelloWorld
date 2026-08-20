@@ -1,0 +1,130 @@
+{
+  "meta": {
+    "source": "scripts/generate-coin-lottie.mjs poseAt",
+    "step": 4,
+    "lottieFps": 60,
+    "sequenceFps": 15,
+    "size": {
+      "w": 400,
+      "h": 400
+    },
+    "count": 23
+  },
+  "frames": {
+    "coin-00": {
+      "file": "coin-00.svg",
+      "lottieFrame": 0,
+      "degrees": 0
+    },
+    "coin-04": {
+      "file": "coin-04.svg",
+      "lottieFrame": 4,
+      "degrees": 16
+    },
+    "coin-08": {
+      "file": "coin-08.svg",
+      "lottieFrame": 8,
+      "degrees": 32
+    },
+    "coin-12": {
+      "file": "coin-12.svg",
+      "lottieFrame": 12,
+      "degrees": 48
+    },
+    "coin-16": {
+      "file": "coin-16.svg",
+      "lottieFrame": 16,
+      "degrees": 64
+    },
+    "coin-20": {
+      "file": "coin-20.svg",
+      "lottieFrame": 20,
+      "degrees": 80
+    },
+    "coin-24": {
+      "file": "coin-24.svg",
+      "lottieFrame": 24,
+      "degrees": 96
+    },
+    "coin-28": {
+      "file": "coin-28.svg",
+      "lottieFrame": 28,
+      "degrees": 112
+    },
+    "coin-32": {
+      "file": "coin-32.svg",
+      "lottieFrame": 32,
+      "degrees": 128
+    },
+    "coin-36": {
+      "file": "coin-36.svg",
+      "lottieFrame": 36,
+      "degrees": 144
+    },
+    "coin-40": {
+      "file": "coin-40.svg",
+      "lottieFrame": 40,
+      "degrees": 160
+    },
+    "coin-44": {
+      "file": "coin-44.svg",
+      "lottieFrame": 44,
+      "degrees": 176
+    },
+    "coin-48": {
+      "file": "coin-48.svg",
+      "lottieFrame": 48,
+      "degrees": 192
+    },
+    "coin-52": {
+      "file": "coin-52.svg",
+      "lottieFrame": 52,
+      "degrees": 208
+    },
+    "coin-56": {
+      "file": "coin-56.svg",
+      "lottieFrame": 56,
+      "degrees": 224
+    },
+    "coin-60": {
+      "file": "coin-60.svg",
+      "lottieFrame": 60,
+      "degrees": 240
+    },
+    "coin-64": {
+      "file": "coin-64.svg",
+      "lottieFrame": 64,
+      "degrees": 256
+    },
+    "coin-68": {
+      "file": "coin-68.svg",
+      "lottieFrame": 68,
+      "degrees": 272
+    },
+    "coin-72": {
+      "file": "coin-72.svg",
+      "lottieFrame": 72,
+      "degrees": 288
+    },
+    "coin-76": {
+      "file": "coin-76.svg",
+      "lottieFrame": 76,
+      "degrees": 304
+    },
+    "coin-80": {
+      "file": "coin-80.svg",
+      "lottieFrame": 80,
+      "degrees": 320
+    },
+    "coin-84": {
+      "file": "coin-84.svg",
+      "lottieFrame": 84,
+      "degrees": 336
+    },
+    "coin-88": {
+      "file": "coin-88.svg",
+      "lottieFrame": 88,
+      "degrees": 352
+    }
+  }
+}
