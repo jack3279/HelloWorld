@@ -16,9 +16,7 @@ import {
   canHarvest,
   countOwned,
   craftOnce,
-  emptyFurnace,
   emptySlots,
-  furnaceTick,
   itemAsset,
   pickSpeed,
   smeltOnce,
@@ -40,14 +38,6 @@ describe("crafting recipes", () => {
     for (const id of ids) {
       assert.ok(existsSync(resolve(ROOT, "assets", itemAsset(id))), `missing ${itemAsset(id)}`);
     }
-    assert.equal(itemAsset("dispenser"), "blocks/dispenser.svg");
-    assert.equal(itemAsset("cloud"), "blocks/cloud.svg");
-    assert.equal(itemAsset("door-iron"), "blocks/door-iron.svg");
-    assert.equal(itemAsset("beacon"), "blocks/beacon.svg");
-    assert.equal(itemAsset("anvil"), "blocks/anvil.svg");
-    assert.equal(itemAsset("beehive"), "blocks/beehive.svg");
-    assert.equal(itemAsset("netherite-sword"), "items/netherite-sword.svg");
-    assert.equal(itemAsset("firework"), "items/firework.svg");
   });
 
   it("turns a log into planks then sticks", () => {

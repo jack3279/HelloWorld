@@ -550,10 +550,6 @@ export function emptySlots(n) {
   return Array.from({ length: n }, () => ({ id: "", count: 0 }));
 }
 
-export function emptyFurnace() {
-  return { slots: emptySlots(FURNACE_SLOTS), cook: 0, burn: 0 };
-}
-
 export function transferStack(from, index, to, maxSlots = HOTBAR_SLOTS) {
   const src = from[index];
   if (!src || src.count <= 0) return false;
