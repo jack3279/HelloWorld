@@ -747,18 +747,16 @@ function buildWorld() {
   setCell(tiles, 13, ground + 1, "gs");
   setCell(tiles, 18, ground + 1, "gs");
 
-  fillRow(tiles, ground, 32, 35, ".");
   fillRow(tiles, ground + 1, 32, 35, "v");
   fillRow(tiles, ground + 2, 32, 35, "v");
   fillRow(tiles, ground + 3, 32, 35, "s");
+  fillRow(tiles, ground, 32, 35, "p");
 
   fillRow(tiles, ground - 2, 22, 26, "p");
   fillRow(tiles, ground - 2, 40, 44, "p");
   fillRow(tiles, ground - 4, 41, 43, "p");
   setCell(tiles, 43, ground - 5, "t");
   setCell(tiles, 26, ground - 3, "t");
-  setCell(tiles, 32, ground, "h");
-  setCell(tiles, 35, ground, "h");
 
   tree(tiles, 8, ground);
   tree(tiles, 48, ground);
@@ -828,6 +826,7 @@ function buildWorld() {
   fillRow(tiles, ground + 4, 24, 28, "p");
   setCell(tiles, 26, ground + 4, "x");
   setCell(tiles, 27, ground + 4, "io");
+  setCell(tiles, 28, ground + 4, "i");
 
   fillRow(tiles, ground, 62, 70, "p");
   for (let y = ground - 3; y < ground; y++) {
@@ -902,12 +901,15 @@ function buildWorld() {
     setCell(tiles, 122, y, "nk");
   }
   fillRow(tiles, ground - 4, 118, 122, "nk");
+  setCell(tiles, 118, ground - 1, "D");
+  setCell(tiles, 118, ground - 2, "U");
   setCell(tiles, 119, ground - 1, "t");
   setCell(tiles, 121, ground - 1, "C");
   setCell(tiles, 120, ground - 1, "et");
-  setCell(tiles, 118, ground - 2, "gl");
+  setCell(tiles, 119, ground - 2, "gl");
   setCell(tiles, 122, ground - 5, "gl");
   portal(tiles, 112, ground);
+  fillRow(tiles, ground, 112, 116, "nr");
   fillRow(tiles, ground + 1, 124, 126, "v");
   setCell(tiles, 124, ground, ".");
   setCell(tiles, 125, ground, ".");
@@ -1135,7 +1137,7 @@ function buildMineWorld() {
   setCell(tiles, 9, ground - 1, "Z");
   setCell(tiles, 6, ground - 3, "t");
   tree(tiles, 14, ground);
-  setCell(tiles, 20, ground, ".");
+  setCell(tiles, 20, ground, "h");
   setCell(tiles, 20, ground + 1, "h");
   setCell(tiles, 20, ground + 2, "h");
   setCell(tiles, 20, ground + 3, "h");
@@ -1147,9 +1149,12 @@ function buildMineWorld() {
   setCell(tiles, 24, ground + 4, "x");
   setCell(tiles, 25, ground + 4, "io");
   setCell(tiles, 26, ground + 4, "co");
+  setCell(tiles, 21, ground + 5, "io");
   setCell(tiles, 22, ground + 5, "io");
   setCell(tiles, 23, ground + 5, "io");
   setCell(tiles, 24, ground + 5, "x");
+  setCell(tiles, 25, ground + 5, "io");
+  setCell(tiles, 26, ground + 5, "io");
   setCell(tiles, 27, ground + 4, "C");
   setCell(tiles, 18, ground + 4, "t");
   setCell(tiles, 36, ground + 3, "io");
@@ -1200,13 +1205,15 @@ function buildNetherWorld() {
   const W = 56;
   const H = 20;
   const ground = 10;
-  const tiles = makeWorldShell(W, H, ground, (x) => (x % 5 === 0 ? "ss" : x % 7 === 2 ? "mg" : "nr"));
+  const tiles = makeWorldShell(W, H, ground, (x) => (x >= 2 && x <= 46 ? "nr" : x % 5 === 0 ? "ss" : x % 7 === 2 ? "mg" : "nr"));
   fillRow(tiles, ground, 28, 36, "nk");
   for (let y = ground - 3; y < ground; y++) {
     setCell(tiles, 28, y, "nk");
     setCell(tiles, 36, y, "nk");
   }
   fillRow(tiles, ground - 4, 28, 36, "nk");
+  setCell(tiles, 28, ground - 1, "D");
+  setCell(tiles, 28, ground - 2, "U");
   setCell(tiles, 29, ground - 1, "F");
   setCell(tiles, 30, ground - 1, "T");
   setCell(tiles, 31, ground - 1, "C");
@@ -1214,25 +1221,25 @@ function buildNetherWorld() {
   setCell(tiles, 33, ground - 1, "gl");
   setCell(tiles, 30, ground - 3, "t");
   portal(tiles, 8, ground);
+  fillRow(tiles, ground, 8, 12, "nr");
   setCell(tiles, 4, ground - 1, "w0");
   setCell(tiles, 5, ground - 1, "w1");
   setCell(tiles, 6, ground, "ss");
   setCell(tiles, 4, ground, "ss");
   setCell(tiles, 5, ground, "ss");
-  setCell(tiles, 18, ground + 3, "qo");
-  setCell(tiles, 19, ground + 4, "qo");
-  setCell(tiles, 20, ground + 3, "qo");
-  setCell(tiles, 21, ground + 5, "qo");
-  setCell(tiles, 22, ground + 4, "qo");
-  setCell(tiles, 40, ground + 3, "qo");
-  setCell(tiles, 42, ground + 4, "qo");
-  setCell(tiles, 16, ground, ".");
+  setCell(tiles, 16, ground, "h");
   setCell(tiles, 16, ground + 1, "h");
   setCell(tiles, 16, ground + 2, "h");
   setCell(tiles, 16, ground + 3, "h");
   fillRow(tiles, ground + 4, 16, 23, "nk");
   setCell(tiles, 17, ground + 4, "qo");
   setCell(tiles, 18, ground + 4, "t");
+  setCell(tiles, 19, ground + 4, "qo");
+  setCell(tiles, 20, ground + 3, "qo");
+  setCell(tiles, 21, ground + 4, "qo");
+  setCell(tiles, 22, ground + 4, "qo");
+  setCell(tiles, 40, ground + 3, "qo");
+  setCell(tiles, 42, ground + 4, "qo");
   fillRow(tiles, ground + 1, 48, 52, "v");
   setCell(tiles, 48, ground, ".");
   setCell(tiles, 49, ground, ".");
@@ -1606,6 +1613,7 @@ function levelMobs() {
       makeMob("zombie", 48, 10),
       makeMob("skeleton", 52, 10),
       makeMob("spider", 6, 10),
+      makeMob("zombie", 44, 10),
     ];
   }
   if (id === "nether") {
@@ -1648,6 +1656,8 @@ function levelDrops() {
     makeDrop("diamond", TILE * 13.5, TILE * 9),
     makeDrop("diamond", TILE * 24, TILE * 7.5),
     makeDrop("diamond", TILE * 42, TILE * 5.5),
+    makeDrop("diamond", TILE * 76, TILE * 9),
+    makeDrop("diamond", TILE * 91, TILE * 9),
     makeDrop("golden-apple", TILE * 21, TILE * 9),
     makeDrop("potion-heal", TILE * 39, TILE * 9),
     makeDrop("iron-chestplate", TILE * 67, TILE * 9),
@@ -2327,7 +2337,7 @@ function tryFish() {
   }
   const tx = Math.floor((player.x + player.face * 28) / TILE);
   const ty = Math.floor((player.y - 12) / TILE);
-  const wet = world.tiles[ty]?.[tx] === "w" || world.tiles[ty + 1]?.[tx] === "w" || nearWater(tx, ty);
+  const wet = isWaterCell(world.tiles[ty]?.[tx]) || isWaterCell(world.tiles[ty + 1]?.[tx]) || nearWater(tx, ty);
   if (!wet) return false;
   const need = 2.2 + Math.random() * 1.6;
   player.fishT = need;
@@ -3465,6 +3475,8 @@ function updateMobs(dt) {
         explodeAt(Math.floor(mob.x / TILE), Math.floor((mob.y - 8) / TILE), 1.7);
         drops.push(makeDrop("gunpowder", mob.x, mob.y - 20));
         addXp(5);
+        stats.kills += 1;
+        checkQuest();
         say("苦力怕爆炸了！");
         continue;
       }

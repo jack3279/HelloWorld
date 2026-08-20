@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -78,5 +78,52 @@ describe("campaign levels", () => {
     const hunt = overlayGoal(levelById("hunt"));
     assert.match(hunt, /熔炉/);
     assert.match(hunt, /煤炭/);
+  });
+
+  it("explains how to finish the later stages", () => {
+    for (const level of LEVELS) {
+      assert.ok(level.how, `${level.id} needs how-to copy`);
+    }
+    assert.match(overlayGoal(levelById("fish")), /鱼竿/);
+    assert.match(overlayGoal(levelById("mine")), /石镐/);
+    assert.match(overlayGoal(levelById("night")), /铁胸甲/);
+    assert.match(overlayGoal(levelById("overworld")), /矿井/);
+    assert.match(overlayGoal(levelById("nether")), /打火石/);
+  });
+
+  it("keeps later maps completable without hidden ores or sealed huts", () => {
+    const game = readFileSync(resolve(ROOT, "public/game/game.js"), "utf8");
+    const fn = (name) => {
+      const start = game.indexOf(`function ${name}(`);
+      assert.ok(start >= 0, name);
+      const next = game.indexOf("\nfunction ", start + 1);
+      return game.slice(start, next);
+    };
+    const count = (src, tile) => [...src.matchAll(new RegExp(`"${tile}"`, "g"))].length;
+
+    const mine = fn("buildMineWorld");
+    assert.ok(count(mine, "io") >= 8, "mine shaft needs 8 iron ore on the map");
+    assert.match(mine, /setCell\(tiles, 20, ground, "h"\)/);
+
+    const nightMobs = game.slice(game.indexOf('if (id === "night")'), game.indexOf('if (id === "nether")'));
+    assert.ok([...nightMobs.matchAll(/makeMob\("/g)].length >= 8, "night needs spare hostiles beyond 6 kills");
+    assert.match(game, /mob\.exploded = true;[\s\S]*stats\.kills \+= 1/);
+
+    const drops = fn("levelDrops");
+    assert.ok([...drops.matchAll(/makeDrop\("diamond"/g)].length >= 5, "overworld needs 5 diamond pickups");
+
+    const overworld = fn("buildWorld");
+    assert.match(overworld, /fillRow\(tiles, ground, 32, 35, "p"\)/);
+    assert.match(overworld, /setCell\(tiles, 28, ground \+ 4, "i"\)/);
+    assert.match(overworld, /setCell\(tiles, 118, ground - 1, "D"\)/);
+    assert.doesNotMatch(overworld, /setCell\(tiles, 118, ground - 2, "gl"\)/);
+
+    const nether = fn("buildNetherWorld");
+    const brickFloor = nether.indexOf('fillRow(tiles, ground + 4, 16, 23, "nk")');
+    assert.ok(brickFloor >= 0, "nether quartz shaft floor");
+    assert.ok(nether.indexOf('setCell(tiles, 19, ground + 4, "qo")') > brickFloor, "quartz must be placed after the brick fill");
+    assert.ok(count(nether, "qo") >= 6);
+    assert.match(nether, /setCell\(tiles, 28, ground - 1, "D"\)/);
+    assert.match(nether, /fillRow\(tiles, ground, 8, 12, "nr"\)/);
   });
 });
