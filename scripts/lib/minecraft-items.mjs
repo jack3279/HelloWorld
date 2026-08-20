@@ -3,6 +3,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { cropRgba, punchDarkRgba } from "./minecraft-blocks.mjs";
 import { decodePng, hexToRgba01, parseArgs, rgbToHex } from "./steve-model.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -233,7 +234,9 @@ export async function loadItem(id) {
     await mkdir(CACHE, { recursive: true });
     await writeFile(cachePath, buf);
   }
-  const png = decodePng(buf);
+  let png = decodePng(buf);
+  if (item.crop) png = cropRgba(png, item.crop[0], item.crop[1], item.crop[2] ?? TILE, item.crop[3] ?? TILE);
+  if (item.punchDark) png = punchDarkRgba(png, item.punchDark === true ? 48 : item.punchDark);
   if (png.width < TILE || png.height < TILE) {
     throw new Error(`${item.file} is smaller than ${TILE}×${TILE}`);
   }

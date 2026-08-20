@@ -75,6 +75,22 @@ describe("generated spider assets", () => {
     assert.doesNotMatch(svg, /NaN|undefined/);
   });
 
+  it("puts the head on the right of the idle sprite, same as other mobs", async () => {
+    const svg = await readFile(resolve(ROOT, "assets/spider-sprites/idle-0.svg"), "utf8");
+    function midX(id) {
+      const start = svg.indexOf(`id="${id}"`);
+      const next = svg.indexOf(`<g id="`, start + 8);
+      const chunk = svg.slice(start, next === -1 ? undefined : next);
+      const xs = [];
+      for (const path of chunk.matchAll(/\bd="([^"]+)"/g)) {
+        const nums = [...path[1].matchAll(/-?\d+(?:\.\d+)?/g)].map(Number);
+        for (let i = 0; i + 1 < nums.length; i += 2) xs.push(nums[i]);
+      }
+      return (Math.min(...xs) + Math.max(...xs)) / 2;
+    }
+    assert.ok(midX("head") > midX("abdomen"), "head should lead to the right");
+  });
+
   it("ships idle, walk, and rear flipbooks", async () => {
     for (const [scene, min] of [
       ["scene-1", 8],

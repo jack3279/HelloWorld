@@ -3,7 +3,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { decodePng } from "./steve-model.mjs";
+import { boxUv, decodePng, loadShieldSkin } from "./steve-model.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export const ITEMS_BASE =
@@ -13,11 +13,14 @@ const ALPHA_CUTOFF = 16;
 
 export const ITEM_FILES = {
   sword: "diamond_sword.png",
+  "stone-sword": "stone_sword.png",
   bow: "bow_standby.png",
   "bow-0": "bow_pulling_0.png",
   "bow-1": "bow_pulling_1.png",
   "bow-2": "bow_pulling_2.png",
   arrow: "arrow.png",
+  trident: "trident.png",
+  crossbow: "crossbow_standby.png",
 };
 
 export function itemSlabUv(size = 16) {
@@ -159,6 +162,18 @@ export async function swordExtra() {
   return { part: swordPart(), skin: await loadItemTexture(ITEM_FILES.sword), tolerance: { default: 4 } };
 }
 
+export function stoneSwordPart() {
+  return { ...swordPart(), id: "held-sword", label: "Stone sword" };
+}
+
+export async function stoneSwordExtra() {
+  return {
+    part: stoneSwordPart(),
+    skin: await loadItemTexture(ITEM_FILES["stone-sword"]),
+    tolerance: { default: 4 },
+  };
+}
+
 export async function bowExtra(pull = 0) {
   return { part: bowPart(), skin: await loadItemTexture(bowFileForPull(pull)), tolerance: { default: 4 } };
 }
@@ -171,4 +186,69 @@ export async function skeletonDrawExtras(pull) {
   const extras = [await bowExtra(pull)];
   if (pull >= 0.4) extras.push(await arrowExtra());
   return extras;
+}
+
+export function tridentPart() {
+  return { ...swordPart(), id: "held-trident", label: "Trident" };
+}
+
+export async function tridentExtra() {
+  return {
+    part: tridentPart(),
+    skin: await loadItemTexture(ITEM_FILES.trident),
+    tolerance: { default: 4 },
+  };
+}
+
+export function crossbowPart() {
+  return { ...bowPart(), id: "held-crossbow", label: "Crossbow" };
+}
+
+export async function crossbowExtra() {
+  return {
+    part: crossbowPart(),
+    skin: await loadItemTexture(ITEM_FILES.crossbow),
+    tolerance: { default: 4 },
+  };
+}
+
+// Thin in X so a side-view (yaw 90) reads the 12×22 wooden face on ±X.
+// Parented to the far (left) arm — Java off-hand.
+export function shieldPlateUv() {
+  return {
+    nx: { x: 1, y: 1, w: 12, h: 22 },
+    px: { x: 1, y: 1, w: 12, h: 22 },
+    front: { x: 0, y: 1, w: 1, h: 22 },
+    back: { x: 13, y: 1, w: 1, h: 22 },
+    top: { x: 1, y: 0, w: 12, h: 1 },
+    bottom: { x: 1, y: 23, w: 12, h: 1 },
+  };
+}
+
+export function shieldParts() {
+  return [
+    {
+      id: "shield-plate",
+      label: "Shield plate",
+      parent: "arm-left",
+      min: [7.1, 1.5, -7],
+      max: [8.1, 23.5, 5],
+      pivot: [7.6, 12, -0.5],
+      uv: shieldPlateUv(),
+    },
+    {
+      id: "shield-handle",
+      label: "Shield handle",
+      parent: "arm-left",
+      min: [6.2, 9.5, -1],
+      max: [7.2, 15.5, 5],
+      pivot: [6.7, 12.5, 1],
+      uv: boxUv(26, 0, 2, 6, 6),
+    },
+  ];
+}
+
+export async function shieldExtras() {
+  const skin = await loadShieldSkin();
+  return shieldParts().map((part) => ({ part, skin, tolerance: { default: 8 } }));
 }

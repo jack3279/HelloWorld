@@ -275,8 +275,8 @@ export function normalizePlayerSkin(skin) {
 // cached, so repeat runs stay offline-friendly. Pass `{ url, cache }` for
 // another 64x64 (or classic 64x32) player-layout skin such as the zombie.
 export async function loadSkin(explicitPath, options = {}) {
-  const url = options.url ?? SKIN_URL;
-  const cache = options.cache ?? (url === ZOMBIE_SKIN_URL ? ZOMBIE_CACHE : CACHE);
+  const urls = options.urls ?? [options.url ?? SKIN_URL];
+  const cache = options.cache ?? (urls[0] === ZOMBIE_SKIN_URL ? ZOMBIE_CACHE : CACHE);
   const shouldNormalize = options.normalize ?? true;
   let decoded;
   if (explicitPath) decoded = decodeTexture(await readFile(explicitPath));
@@ -284,9 +284,19 @@ export async function loadSkin(explicitPath, options = {}) {
     try {
       decoded = decodeTexture(await readFile(cache));
     } catch {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`could not download ${url} (${res.status})`);
-      const buf = Buffer.from(await res.arrayBuffer());
+      let lastErr;
+      let buf;
+      for (const url of urls) {
+        const res = await fetch(url);
+        if (!res.ok) {
+          lastErr = new Error(`could not download ${url} (${res.status})`);
+          continue;
+        }
+        buf = Buffer.from(await res.arrayBuffer());
+        lastErr = null;
+        break;
+      }
+      if (!buf) throw lastErr ?? new Error("could not download skin");
       await mkdir(dirname(cache), { recursive: true });
       await writeFile(cache, buf);
       decoded = decodeTexture(buf);

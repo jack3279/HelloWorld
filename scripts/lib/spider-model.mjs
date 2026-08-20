@@ -1,4 +1,5 @@
-// Official Bedrock spider: thorax, head, abdomen, eight 16×2×2 legs.
+// Official Bedrock spider with Z negated so the head faces +z (screen-right
+// at yaw 90), matching pig/wolf/cat. Thorax, head, abdomen, eight 16×2×2 legs.
 import { boxUv } from "./steve-model.mjs";
 
 const LEG_UV = boxUv(18, 0, 16, 2, 2);
@@ -31,18 +32,18 @@ export const SPIDER_MODEL = [
     id: "head",
     label: "Head",
     parent: "body",
-    min: [-4, 5, -11],
-    max: [4, 13, -3],
-    pivot: [0, 9, -3],
+    min: [-4, 5, 3],
+    max: [4, 13, 11],
+    pivot: [0, 9, 3],
     uv: boxUv(32, 4, 8, 8, 8),
   },
   {
     id: "abdomen",
     label: "Abdomen",
     parent: "body",
-    min: [-5, 5, 3],
-    max: [5, 13, 15],
-    pivot: [0, 9, 9],
+    min: [-5, 5, -15],
+    max: [5, 13, -3],
+    pivot: [0, 9, -9],
     uv: boxUv(0, 12, 10, 8, 12),
   },
   leg("leg0", "Right front leg", [-4, 9, 2], false),

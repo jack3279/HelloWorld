@@ -119,7 +119,12 @@ export const PLAY_BLOCKS = [
   { id: "bed", file: "bed_feet_side.png", label: "Bed", title: "床" },
   { id: "bed-head", file: "bed_head_side.png", label: "Bed head", title: "床头" },
   { id: "wheat-0", file: "wheat_stage_0.png", label: "Wheat sprout", title: "麦苗" },
+  { id: "wheat-1", file: "wheat_stage_1.png", label: "Wheat 1", title: "小麦生长1" },
+  { id: "wheat-2", file: "wheat_stage_2.png", label: "Wheat 2", title: "小麦生长2" },
   { id: "wheat-3", file: "wheat_stage_3.png", label: "Wheat growing", title: "小麦生长" },
+  { id: "wheat-4", file: "wheat_stage_4.png", label: "Wheat 4", title: "小麦生长4" },
+  { id: "wheat-5", file: "wheat_stage_5.png", label: "Wheat 5", title: "小麦生长5" },
+  { id: "wheat-6", file: "wheat_stage_6.png", label: "Wheat 6", title: "小麦生长6" },
   { id: "wheat-7", file: "wheat_stage_7.png", label: "Wheat ripe", title: "成熟小麦" },
   { id: "door-oak-upper", file: "door_wood_upper.png", label: "Oak door top", title: "橡木门上" },
   { id: "sugar-cane", file: "reeds.png", label: "Sugar cane", title: "甘蔗", base: ITEMS_BASE },
@@ -182,11 +187,46 @@ export async function loadBlock(id) {
     await mkdir(CACHE, { recursive: true });
     await writeFile(cachePath, buf);
   }
-  const png = decodeTexture(buf);
+  let png = decodeTexture(buf);
+  png = applyFaceOpts(png, block);
   if (png.width < TILE || png.height < TILE) {
     throw new Error(`${block.file} is smaller than ${TILE}×${TILE}`);
   }
   return block.tint ? applyTint(png, block.tint) : png;
+}
+
+export function cropRgba(png, x, y, w = TILE, h = TILE) {
+  const rgba = new Uint8Array(w * h * 4);
+  for (let dy = 0; dy < h; dy++) {
+    for (let dx = 0; dx < w; dx++) {
+      const sx = x + dx;
+      const sy = y + dy;
+      if (sx < 0 || sy < 0 || sx >= png.width || sy >= png.height) continue;
+      const si = (sy * png.width + sx) * 4;
+      const di = (dy * w + dx) * 4;
+      rgba[di] = png.rgba[si];
+      rgba[di + 1] = png.rgba[si + 1];
+      rgba[di + 2] = png.rgba[si + 2];
+      rgba[di + 3] = png.rgba[si + 3];
+    }
+  }
+  return { width: w, height: h, rgba };
+}
+
+export function punchDarkRgba(png, cutoff = 48) {
+  const rgba = new Uint8Array(png.rgba);
+  for (let i = 0; i < rgba.length; i += 4) {
+    const lum = (rgba[i] + rgba[i + 1] + rgba[i + 2]) / 3;
+    if (lum < cutoff) rgba[i + 3] = 0;
+  }
+  return { width: png.width, height: png.height, rgba };
+}
+
+function applyFaceOpts(png, spec) {
+  let out = png;
+  if (spec.crop) out = cropRgba(out, spec.crop[0], spec.crop[1], spec.crop[2] ?? TILE, spec.crop[3] ?? TILE);
+  if (spec.punchDark) out = punchDarkRgba(out, spec.punchDark === true ? 48 : spec.punchDark);
+  return out;
 }
 
 function applyTint(png, tintHex) {

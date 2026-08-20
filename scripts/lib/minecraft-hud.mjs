@@ -60,6 +60,8 @@ export const HUD_FILES = {
   "armor-full": "armor_full.png",
   "armor-half": "armor_half.png",
   "armor-empty": "armor_empty.png",
+  bubble: "bubble.png",
+  "bubble-empty": "bubble_empty.png",
   "hotbar-start": "hotbar_start_cap.png",
   "hotbar-end": "hotbar_end_cap.png",
   selected: "selected_hotbar_slot.png",
