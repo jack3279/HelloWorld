@@ -10,6 +10,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const BLOCKS_BASE =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/blocks";
+export const ITEMS_BASE =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items";
 const CACHE = resolve(__dirname, "../../node_modules/.cache/minecraft-blocks");
 
 export const TILE = 16;
@@ -118,6 +120,17 @@ export const PLAY_BLOCKS = [
   { id: "wheat-3", file: "wheat_stage_3.png", label: "Wheat growing", title: "小麦生长" },
   { id: "wheat-7", file: "wheat_stage_7.png", label: "Wheat ripe", title: "成熟小麦" },
   { id: "door-oak-upper", file: "door_wood_upper.png", label: "Oak door top", title: "橡木门上" },
+  { id: "sugar-cane", file: "reeds.png", label: "Sugar cane", title: "甘蔗", base: ITEMS_BASE },
+  { id: "potato-0", file: "potatoes_stage_0.png", label: "Potato sprout", title: "马铃薯苗" },
+  { id: "potato-3", file: "potatoes_stage_2.png", label: "Potato growing", title: "马铃薯生长" },
+  { id: "potato-7", file: "potatoes_stage_3.png", label: "Potato ripe", title: "成熟马铃薯" },
+  { id: "birch-log", file: "log_birch.png", label: "Birch log", title: "白桦原木" },
+  { id: "spruce-log", file: "log_spruce.png", label: "Spruce log", title: "云杉原木" },
+  { id: "fire", file: "fire_0.png", label: "Fire", title: "火焰" },
+  { id: "fire-1", file: "fire_1.png", label: "Fire 2", title: "火焰" },
+  { id: "cocoa-0", file: "cocoa_stage_0.png", label: "Cocoa sprout", title: "可可幼荚" },
+  { id: "cocoa-1", file: "cocoa_stage_1.png", label: "Cocoa growing", title: "可可生长" },
+  { id: "cocoa-2", file: "cocoa_stage_2.png", label: "Cocoa ripe", title: "成熟可可" },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {
@@ -139,7 +152,7 @@ export async function loadBlock(id) {
   try {
     buf = await readFile(cachePath);
   } catch {
-    const url = `${BLOCKS_BASE}/${block.file}`;
+    const url = `${block.base ?? BLOCKS_BASE}/${block.file}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`could not download ${url} (${res.status})`);
     buf = Buffer.from(await res.arrayBuffer());

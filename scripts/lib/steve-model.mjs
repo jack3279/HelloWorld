@@ -9,7 +9,8 @@
 //
 // Consumers: generate-steve-*.mjs, generate-zombie-*.mjs, generate-skeleton.mjs,
 // generate-spider.mjs, generate-enderman.mjs, generate-creeper.mjs,
-// generate-pig.mjs, generate-cow.mjs.
+// generate-pig.mjs, generate-cow.mjs, generate-chicken.mjs, generate-sheep.mjs,
+// generate-slime.mjs.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -31,6 +32,12 @@ export const PIG_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/pig/pig.png";
 export const COW_SKIN_URL =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/cow/cow.png";
+export const CHICKEN_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/chicken.png";
+export const SHEEP_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/sheep/sheep.tga";
+export const SLIME_SKIN_URL =
+  "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/slime/slime.png";
 const SKIN_URL = STEVE_SKIN_URL;
 const CACHE = resolve(__dirname, "../../node_modules/.cache/steve-skin.png");
 const ZOMBIE_CACHE = resolve(__dirname, "../../node_modules/.cache/zombie-skin.png");
@@ -40,6 +47,9 @@ const ENDERMAN_CACHE = resolve(__dirname, "../../node_modules/.cache/enderman-sk
 const CREEPER_CACHE = resolve(__dirname, "../../node_modules/.cache/creeper-skin.png");
 const PIG_CACHE = resolve(__dirname, "../../node_modules/.cache/pig-skin.png");
 const COW_CACHE = resolve(__dirname, "../../node_modules/.cache/cow-skin.png");
+const CHICKEN_CACHE = resolve(__dirname, "../../node_modules/.cache/chicken-skin.png");
+const SHEEP_CACHE = resolve(__dirname, "../../node_modules/.cache/sheep-skin.tga");
+const SLIME_CACHE = resolve(__dirname, "../../node_modules/.cache/slime-skin.png");
 
 // ---------------------------------------------------------------- png decoding
 
@@ -146,28 +156,57 @@ function unpackPngSamples(flat, width, height, bitDepth, channels) {
   return samples;
 }
 
-// Uncompressed true-color TGA (Bedrock spider / enderman skins).
+// Uncompressed (type 2) and RLE (type 10) true-color TGA. Bedrock spider /
+// enderman skins are type 2; the sheep skin is type 10.
 export function decodeTga(buf) {
   const idLen = buf[0];
+  const colorMapType = buf[1];
   const imageType = buf[2];
+  const colorMapLength = buf.readUInt16LE(5);
+  const colorMapDepth = buf[7];
   const width = buf.readUInt16LE(12);
   const height = buf.readUInt16LE(14);
   const bpp = buf[16];
   const desc = buf[17];
-  if (imageType !== 2) throw new Error(`tga type ${imageType} is unsupported`);
+  if (imageType !== 2 && imageType !== 10) throw new Error(`tga type ${imageType} is unsupported`);
   if (bpp !== 24 && bpp !== 32) throw new Error(`tga bit depth ${bpp} is unsupported`);
   const originTop = (desc & 0x20) !== 0;
   const channels = bpp / 8;
-  const off = 18 + idLen;
+  let off = 18 + idLen;
+  if (colorMapType === 1) off += colorMapLength * Math.ceil(colorMapDepth / 8);
+  const pixels = width * height;
+  const raw = new Uint8Array(pixels * channels);
+  if (imageType === 2) {
+    raw.set(buf.subarray(off, off + raw.length));
+  } else {
+    let dst = 0;
+    while (dst < raw.length) {
+      const header = buf[off++];
+      const count = (header & 0x7f) + 1;
+      if (header & 0x80) {
+        const px = buf.subarray(off, off + channels);
+        off += channels;
+        for (let i = 0; i < count; i++) {
+          raw.set(px, dst);
+          dst += channels;
+        }
+      } else {
+        const n = count * channels;
+        raw.set(buf.subarray(off, off + n), dst);
+        off += n;
+        dst += n;
+      }
+    }
+  }
   const rgba = new Uint8Array(width * height * 4);
   for (let y = 0; y < height; y++) {
     const srcY = originTop ? y : height - 1 - y;
     for (let x = 0; x < width; x++) {
-      const i = off + (srcY * width + x) * channels;
-      const b = buf[i];
-      const g = buf[i + 1];
-      const r = buf[i + 2];
-      const a = channels === 4 ? buf[i + 3] : 255;
+      const i = (srcY * width + x) * channels;
+      const b = raw[i];
+      const g = raw[i + 1];
+      const r = raw[i + 2];
+      const a = channels === 4 ? raw[i + 3] : 255;
       rgba.set([r, g, b, a], (y * width + x) * 4);
     }
   }
@@ -282,6 +321,18 @@ export async function loadPigSkin(explicitPath) {
 
 export async function loadCowSkin(explicitPath) {
   return loadSkin(explicitPath, { url: COW_SKIN_URL, cache: COW_CACHE, normalize: false });
+}
+
+export async function loadChickenSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: CHICKEN_SKIN_URL, cache: CHICKEN_CACHE, normalize: false });
+}
+
+export async function loadSheepSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: SHEEP_SKIN_URL, cache: SHEEP_CACHE, normalize: false });
+}
+
+export async function loadSlimeSkin(explicitPath) {
+  return loadSkin(explicitPath, { url: SLIME_SKIN_URL, cache: SLIME_CACHE, normalize: false });
 }
 
 // ------------------------------------------------------------------- 3d helpers

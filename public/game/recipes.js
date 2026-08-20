@@ -12,7 +12,11 @@ function armorSet(metal, ingot) {
 
 export const RECIPES = [
   { id: "oak-planks", count: 4, need: { "oak-log": 1 } },
+  { id: "birch-planks", count: 4, need: { "birch-log": 1 } },
+  { id: "spruce-planks", count: 4, need: { "spruce-log": 1 } },
   { id: "stick", count: 4, need: { "oak-planks": 2 } },
+  { id: "stick", count: 4, need: { "birch-planks": 2 } },
+  { id: "stick", count: 4, need: { "spruce-planks": 2 } },
   { id: "crafting-table", count: 1, need: { "oak-planks": 4 } },
   { id: "chest", count: 1, need: { "oak-planks": 8 } },
   { id: "furnace", count: 1, need: { cobblestone: 8 } },
@@ -31,10 +35,16 @@ export const RECIPES = [
   { id: "stone-bricks", count: 4, need: { stone: 4 } },
   { id: "hay", count: 1, need: { wheat: 9 } },
   { id: "bread", count: 1, need: { wheat: 3 } },
-  { id: "cookie", count: 8, need: { wheat: 2, sugar: 1 } },
+  { id: "cookie", count: 8, need: { wheat: 2, "cocoa-beans": 1 } },
   { id: "sugar", count: 1, need: { "sugar-cane": 1 } },
   { id: "arrow", count: 4, need: { stick: 1, feather: 1 } },
   { id: "bow", count: 1, need: { stick: 3, string: 3 } },
+  { id: "wooden-sword", count: 1, need: { "oak-planks": 2, stick: 1 } },
+  { id: "wooden-pickaxe", count: 1, need: { "oak-planks": 3, stick: 2 } },
+  { id: "wooden-axe", count: 1, need: { "oak-planks": 3, stick: 2 } },
+  { id: "iron-sword", count: 1, need: { "iron-ingot": 2, stick: 1 } },
+  { id: "iron-pickaxe", count: 1, need: { "iron-ingot": 3, stick: 2 } },
+  { id: "iron-axe", count: 1, need: { "iron-ingot": 3, stick: 2 } },
   { id: "diamond-sword", count: 1, need: { diamond: 2, stick: 1 } },
   { id: "diamond-pickaxe", count: 1, need: { diamond: 3, stick: 2 } },
   { id: "diamond-axe", count: 1, need: { diamond: 3, stick: 2 } },
@@ -42,6 +52,11 @@ export const RECIPES = [
   { id: "bucket", count: 1, need: { "iron-ingot": 3 } },
   { id: "golden-apple", count: 1, need: { apple: 1, "gold-ingot": 8 } },
   { id: "pumpkin-pie", count: 1, need: { pumpkin: 1, sugar: 1, egg: 1 } },
+  { id: "netherite-ingot", count: 1, need: { "netherite-scrap": 4, "gold-ingot": 4 } },
+  { id: "netherite-helmet", count: 1, need: { "netherite-ingot": 1, "diamond-helmet": 1 } },
+  { id: "netherite-chestplate", count: 1, need: { "netherite-ingot": 1, "diamond-chestplate": 1 } },
+  { id: "netherite-leggings", count: 1, need: { "netherite-ingot": 1, "diamond-leggings": 1 } },
+  { id: "netherite-boots", count: 1, need: { "netherite-ingot": 1, "diamond-boots": 1 } },
   { id: "iron-block", count: 1, need: { "iron-ingot": 9 } },
   { id: "gold-block", count: 1, need: { "gold-ingot": 9 } },
   { id: "diamond-block", count: 1, need: { diamond: 9 } },
@@ -51,6 +66,7 @@ export const RECIPES = [
   { id: "diamond", count: 9, need: { "diamond-block": 1 } },
   { id: "emerald", count: 9, need: { "emerald-block": 1 } },
   { id: "wheat", count: 9, need: { hay: 1 } },
+  ...armorSet("leather", "leather"),
   ...armorSet("iron", "iron-ingot"),
   ...armorSet("gold", "gold-ingot"),
   ...armorSet("diamond", "diamond"),
@@ -59,6 +75,7 @@ export const RECIPES = [
 export const SMELT = {
   "iron-ore": { out: "iron-ingot", fuel: "coal" },
   "gold-ore": { out: "gold-ingot", fuel: "coal" },
+  "copper-ore": { out: "copper-ingot", fuel: "coal" },
   cobblestone: { out: "stone", fuel: "coal" },
   sand: { out: "glass", fuel: "coal" },
   potato: { out: "baked-potato", fuel: "coal" },
@@ -66,6 +83,10 @@ export const SMELT = {
 };
 
 export const ARMOR = {
+  "leather-helmet": { slot: "head", value: 1 },
+  "leather-chestplate": { slot: "chest", value: 3 },
+  "leather-leggings": { slot: "legs", value: 2 },
+  "leather-boots": { slot: "feet", value: 1 },
   "chainmail-helmet": { slot: "head", value: 2 },
   "chainmail-chestplate": { slot: "chest", value: 5 },
   "chainmail-leggings": { slot: "legs", value: 4 },
@@ -153,6 +174,10 @@ export const ITEM_LABELS = {
   wheat: "小麦",
   "wheat-seeds": "小麦种子",
   leather: "皮革",
+  "leather-helmet": "皮革头盔",
+  "leather-chestplate": "皮革胸甲",
+  "leather-leggings": "皮革护腿",
+  "leather-boots": "皮革靴子",
   emerald: "绿宝石",
   saddle: "鞍",
   coal: "煤炭",
@@ -161,16 +186,30 @@ export const ITEM_LABELS = {
   pumpkin: "南瓜",
   "melon-slice": "西瓜片",
   "oak-log": "橡木原木",
+  "birch-log": "白桦原木",
+  "spruce-log": "云杉原木",
   "oak-planks": "橡木木板",
   stick: "木棍",
   "crafting-table": "工作台",
   bow: "弓",
+  "wooden-sword": "木剑",
+  "wooden-pickaxe": "木镐",
+  "wooden-axe": "木斧",
+  "iron-sword": "铁剑",
+  "iron-pickaxe": "铁镐",
+  "iron-axe": "铁斧",
   "diamond-axe": "钻石斧",
   shears: "剪刀",
   bucket: "桶",
   "water-bucket": "水桶",
   "iron-ingot": "铁锭",
   "gold-ingot": "金锭",
+  "copper-ingot": "铜锭",
+  lapis: "青金石",
+  "cocoa-beans": "可可豆",
+  "netherite-scrap": "下界合金碎片",
+  "netherite-ingot": "下界合金锭",
+  "music-disc": "唱片",
   sugar: "糖",
   egg: "鸡蛋",
   "pumpkin-pie": "南瓜派",
@@ -238,7 +277,6 @@ export const ITEM_LABELS = {
   "nether-bricks": "下界砖",
   "mossy-cobblestone": "苔石",
   "door-iron": "铁门",
-  "lapis-ore": "青金石矿",
   observer: "观察者",
 };
 
@@ -295,8 +333,9 @@ const FROM_BLOCKS = new Set([
   "nether-bricks",
   "mossy-cobblestone",
   "door-iron",
-  "lapis-ore",
   "observer",
+  "birch-log",
+  "spruce-log",
 ]);
 
 export const HOTBAR_SLOTS = 9;
@@ -316,7 +355,6 @@ export function transferStack(from, index, to, maxSlots = HOTBAR_SLOTS) {
 }
 
 export function itemAsset(id) {
-  if (id === "water-bucket") return "items/bucket.svg";
   if (FROM_BLOCKS.has(id)) return `blocks/${id}.svg`;
   return `items/${id}.svg`;
 }

@@ -11,6 +11,10 @@ export const ITEMS_BASE =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items";
 export const BLOCKS_BASE =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/blocks";
+// Helmet / leggings / boots are missing from the Bedrock items pack; Java 1.21
+// item PNGs are the official 16×16 icons for those three leather pieces.
+export const JAVA_ITEMS_BASE =
+  "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.4/assets/minecraft/textures/item";
 const CACHE = resolve(__dirname, "../../node_modules/.cache/minecraft-items");
 
 export const TILE = 16;
@@ -128,6 +132,23 @@ export const PLAY_ITEMS = [
   { id: "wheat-seeds", file: "seeds_wheat.png", label: "Wheat seeds", title: "小麦种子" },
   { id: "bed", file: "bed_red.png", label: "Bed", title: "床" },
   { id: "pumpkin", file: "pumpkin_side.png", label: "Pumpkin", title: "南瓜", base: BLOCKS_BASE },
+  { id: "lapis", file: "dye_powder_blue.png", label: "Lapis lazuli", title: "青金石" },
+  { id: "copper-ingot", file: "copper_ingot.png", label: "Copper ingot", title: "铜锭" },
+  { id: "water-bucket", file: "bucket_water.png", label: "Water bucket", title: "水桶" },
+  { id: "wooden-sword", file: "wood_sword.png", label: "Wooden sword", title: "木剑" },
+  { id: "wooden-pickaxe", file: "wood_pickaxe.png", label: "Wooden pickaxe", title: "木镐" },
+  { id: "wooden-axe", file: "wood_axe.png", label: "Wooden axe", title: "木斧" },
+  { id: "iron-sword", file: "iron_sword.png", label: "Iron sword", title: "铁剑" },
+  { id: "iron-pickaxe", file: "iron_pickaxe.png", label: "Iron pickaxe", title: "铁镐" },
+  { id: "iron-axe", file: "iron_axe.png", label: "Iron axe", title: "铁斧" },
+  { id: "leather-helmet", file: "leather_helmet.png", label: "Leather helmet", title: "皮革头盔", base: JAVA_ITEMS_BASE },
+  { id: "leather-chestplate", file: "leather_chestplate.png", label: "Leather chestplate", title: "皮革胸甲" },
+  { id: "leather-leggings", file: "leather_leggings.png", label: "Leather leggings", title: "皮革护腿", base: JAVA_ITEMS_BASE },
+  { id: "leather-boots", file: "leather_boots.png", label: "Leather boots", title: "皮革靴子", base: JAVA_ITEMS_BASE },
+  { id: "cocoa-beans", file: "dye_powder_brown.png", label: "Cocoa beans", title: "可可豆" },
+  { id: "netherite-scrap", file: "netherite_scrap.png", label: "Netherite scrap", title: "下界合金碎片" },
+  { id: "netherite-ingot", file: "netherite_ingot.png", label: "Netherite ingot", title: "下界合金锭" },
+  { id: "music-disc", file: "record_13.png", label: "Music disc", title: "唱片" },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.
