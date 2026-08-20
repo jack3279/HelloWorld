@@ -8,13 +8,17 @@ import {
   CHEST_SLOTS,
   FOOD,
   ITEM_LABELS,
+  PLAYER_SLOTS,
   RECIPES,
   SMELT,
+  TOOL_DUR,
   canCraft,
+  canHarvest,
   countOwned,
   craftOnce,
   emptySlots,
   itemAsset,
+  pickSpeed,
   smeltOnce,
   takeNeed,
   transferStack,
@@ -89,6 +93,38 @@ describe("crafting recipes", () => {
     assert.equal(countOwned(chest, "diamond"), 3);
     assert.equal(transferStack(chest, 0, bar, 9), true);
     assert.equal(countOwned(bar, "diamond"), 3);
+  });
+
+  it("gives the player 27 slots matching a chest", () => {
+    assert.equal(PLAYER_SLOTS, CHEST_SLOTS);
+    assert.equal(PLAYER_SLOTS, 27);
+    const pack = emptySlots(PLAYER_SLOTS);
+    for (let i = 0; i < 26; i++) assert.equal(tryAddItem(pack, `n${i}`, 1, PLAYER_SLOTS), true);
+    assert.equal(tryAddItem(pack, "golden-apple", 1, PLAYER_SLOTS), true);
+    assert.equal(tryAddItem(pack, "apple", 1, PLAYER_SLOTS), false);
+    assert.equal(pack.length, 27);
+  });
+
+  it("keeps wooden picks off diamond ore and makes iron slower than diamond", () => {
+    assert.equal(canHarvest("wooden-pickaxe", "i"), false);
+    assert.equal(canHarvest("wooden-pickaxe", "ob"), false);
+    assert.equal(canHarvest("iron-pickaxe", "i"), true);
+    assert.equal(canHarvest("stone-pickaxe", "io"), true);
+    assert.equal(canHarvest("wooden-pickaxe", "io"), false);
+    assert.ok(pickSpeed("iron-pickaxe") > pickSpeed("diamond-pickaxe"));
+    assert.ok(4.6 * pickSpeed("iron-pickaxe") > 1.5);
+  });
+
+  it("does not stack tools and stamps durability", () => {
+    const items = emptySlots(PLAYER_SLOTS);
+    assert.equal(tryAddItem(items, "wooden-pickaxe", 1, PLAYER_SLOTS), true);
+    assert.equal(tryAddItem(items, "wooden-pickaxe", 1, PLAYER_SLOTS), true);
+    assert.equal(items[0].dur, TOOL_DUR["wooden-pickaxe"]);
+    assert.equal(items[1].id, "wooden-pickaxe");
+    assert.equal(items[0].count, 1);
+    const worn = { dur: 12 };
+    assert.equal(tryAddItem(items, "iron-pickaxe", 1, PLAYER_SLOTS, worn), true);
+    assert.equal(items[2].dur, 12);
   });
 
   it("every labeled item and recipe has an icon on disk", () => {

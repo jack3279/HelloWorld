@@ -468,6 +468,83 @@ const FROM_BLOCKS = new Set([
 
 export const HOTBAR_SLOTS = 9;
 export const CHEST_SLOTS = 27;
+export const PLAYER_SLOTS = 27;
+
+export const PICK_TIER = {
+  "wooden-pickaxe": 1,
+  "stone-pickaxe": 2,
+  "iron-pickaxe": 3,
+  "diamond-pickaxe": 4,
+};
+
+export const MINE_TIER = {
+  s: 1,
+  c: 1,
+  x: 1,
+  co: 1,
+  nr: 1,
+  nk: 1,
+  qo: 1,
+  gl: 1,
+  sd: 1,
+  sb: 1,
+  b: 1,
+  m: 1,
+  gt: 1,
+  ad: 1,
+  dr: 1,
+  mg: 1,
+  io: 2,
+  lo: 2,
+  go: 3,
+  i: 3,
+  eo: 3,
+  ro: 3,
+  ob: 4,
+  et: 3,
+  ib: 2,
+  gb: 3,
+  db: 3,
+  eb: 3,
+  cb: 1,
+};
+
+export const TOOL_DUR = {
+  "wooden-sword": 59,
+  "wooden-pickaxe": 59,
+  "wooden-axe": 59,
+  "wooden-shovel": 59,
+  "wooden-hoe": 59,
+  "stone-sword": 131,
+  "stone-pickaxe": 131,
+  "stone-axe": 131,
+  "stone-shovel": 131,
+  "stone-hoe": 131,
+  "iron-sword": 250,
+  "iron-pickaxe": 250,
+  "iron-axe": 250,
+  "iron-shovel": 250,
+  "iron-hoe": 250,
+  "diamond-sword": 1561,
+  "diamond-pickaxe": 1561,
+  "diamond-axe": 1561,
+  "diamond-shovel": 1561,
+  "diamond-hoe": 1561,
+  shears: 238,
+  "fishing-rod": 64,
+  "flint-and-steel": 64,
+  bow: 384,
+};
+
+export function canHarvest(itemId, tile) {
+  const need = MINE_TIER[tile];
+  if (need == null) return true;
+  return (PICK_TIER[itemId] ?? 0) >= need;
+}
+
+export function pickSpeed(itemId) {
+  return [1, 0.75, 0.55, 0.42, 0.32][PICK_TIER[itemId] ?? 0] ?? 1;
+}
 
 export function emptySlots(n) {
   return Array.from({ length: n }, () => ({ id: "", count: 0 }));
@@ -476,9 +553,10 @@ export function emptySlots(n) {
 export function transferStack(from, index, to, maxSlots = HOTBAR_SLOTS) {
   const src = from[index];
   if (!src || src.count <= 0) return false;
-  if (!tryAddItem(to, src.id, src.count, maxSlots)) return false;
+  if (!tryAddItem(to, src.id, src.count, maxSlots, src)) return false;
   src.count = 0;
   src.id = "";
+  delete src.dur;
   return true;
 }
 
@@ -487,21 +565,28 @@ export function itemAsset(id) {
   return `items/${id}.svg`;
 }
 
-export function tryAddItem(items, id, count, maxSlots = HOTBAR_SLOTS) {
+export function tryAddItem(items, id, count, maxSlots = HOTBAR_SLOTS, extra = null) {
   if (!id || !Number.isFinite(count) || count <= 0) return false;
-  const stack = items.find((it) => it.id === id);
-  if (stack) {
-    stack.count += count;
-    return true;
+  const tool = Boolean(TOOL_DUR[id]);
+  if (!tool) {
+    const stack = items.find((it) => it.id === id && it.count > 0);
+    if (stack) {
+      stack.count += count;
+      return true;
+    }
   }
   const empty = items.find((it) => it.count <= 0);
   if (empty) {
     empty.id = id;
     empty.count = count;
+    if (tool) empty.dur = extra?.dur ?? TOOL_DUR[id];
+    else delete empty.dur;
     return true;
   }
   if (items.length < maxSlots) {
-    items.push({ id, count });
+    const it = { id, count };
+    if (tool) it.dur = extra?.dur ?? TOOL_DUR[id];
+    items.push(it);
     return true;
   }
   return false;

@@ -60,7 +60,15 @@ describe("html game demo", () => {
     assert.match(html, /骨粉/);
     assert.match(game, /furnace-on/);
     assert.match(game, /heart-flash/);
-    assert.match(html, /熔炉烧矿/);
+    assert.match(html, /27 格背包/);
+    assert.match(html, /床边重生/);
+    assert.match(game, /function respawnPlayer/);
+    assert.match(game, /function dropInventory/);
+    assert.match(game, /PLAYER_SLOTS/);
+    assert.match(game, /bedSpawn/);
+    assert.match(game, /function wearHeld/);
+    assert.match(game, /canHarvest/);
+    assert.match(game, /按 R 重生/);
     assert.match(html, /按住挖掘/);
     assert.match(game, /function finishMineCell/);
     assert.match(game, /function fireBow/);
