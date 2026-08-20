@@ -12,6 +12,8 @@ export const BLOCKS_BASE =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/blocks";
 export const ITEMS_BASE =
   "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/items";
+export const JAVA_BLOCKS_BASE =
+  "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.4/assets/minecraft/textures/block";
 const CACHE = resolve(__dirname, "../../node_modules/.cache/minecraft-blocks");
 
 export const TILE = 16;
@@ -145,6 +147,13 @@ export const PLAY_BLOCKS = [
   { id: "nether-quartz-ore", file: "quartz_ore.png", label: "Nether quartz ore", title: "下界石英矿" },
   { id: "copper-block", file: "copper_block.png", label: "Copper block", title: "铜块" },
   { id: "iron-bars", file: "iron_bars.png", label: "Iron bars", title: "铁栏杆" },
+  ...Array.from({ length: 10 }, (_, i) => ({
+    id: `destroy-${i}`,
+    file: `destroy_stage_${i}.png`,
+    label: `Break ${i}`,
+    title: `破坏裂纹 ${i}`,
+    base: JAVA_BLOCKS_BASE,
+  })),
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {

@@ -46,8 +46,41 @@ const CROP_STAGE = {
 const PICKS = new Set(["wooden-pickaxe", "stone-pickaxe", "iron-pickaxe", "diamond-pickaxe"]);
 const HOES = new Set(["wooden-hoe", "stone-hoe", "iron-hoe", "diamond-hoe"]);
 const SHOVELS = new Set(["wooden-shovel", "stone-shovel", "iron-shovel", "diamond-shovel"]);
+const AXES = new Set(["wooden-axe", "stone-axe", "iron-axe", "diamond-axe"]);
 const SWORDS = { "wooden-sword": 2, "stone-sword": 3, "iron-sword": 3, "diamond-sword": 4 };
 const PICK = "diamond-pickaxe";
+const PICK_TIER = { "wooden-pickaxe": 1, "stone-pickaxe": 2, "iron-pickaxe": 3, "diamond-pickaxe": 4 };
+const MINE_TIER = {
+  s: 1,
+  c: 1,
+  x: 1,
+  co: 1,
+  nr: 1,
+  nk: 1,
+  qo: 1,
+  gl: 1,
+  sd: 1,
+  sb: 1,
+  b: 1,
+  m: 1,
+  gt: 1,
+  ad: 1,
+  dr: 1,
+  mg: 1,
+  io: 2,
+  lo: 2,
+  go: 3,
+  i: 3,
+  eo: 3,
+  ro: 3,
+  ob: 4,
+  et: 3,
+  ib: 2,
+  gb: 3,
+  db: 3,
+  eb: 3,
+};
+const AIR_MAX = 12;
 const XP_ORE = { x: 1, i: 5, io: 1, go: 2, co: 1, ro: 2, lo: 3, eo: 5, qo: 3, gl: 2 };
 const XP_KILL = { zombie: 5, skeleton: 5, spider: 5, creeper: 5, enderman: 5, slime: 4, pig: 2, cow: 2, chicken: 1, sheep: 2 };
 const MINEABLE = {
@@ -62,6 +95,7 @@ const MINEABLE = {
   lo: { drop: "lapis", tool: PICK, remain: "s", count: 4 },
   eo: { drop: "emerald", tool: PICK, remain: "s" },
   d: { drop: "dirt" },
+  g: { drop: "dirt" },
   a: { drop: "sand" },
   gv: { drop: "gravel" },
   o: { drop: "oak-log" },
@@ -149,6 +183,61 @@ const MINEABLE = {
   w2: { drop: "nether-wart", count: 2 },
   fi: {},
 };
+
+function mineSeconds(tile, itemId) {
+  const spec = MINEABLE[tile];
+  if (!spec) return 0;
+  if (
+    [
+      "0",
+      "1",
+      "2",
+      "p0",
+      "p1",
+      "p2",
+      "c0",
+      "c1",
+      "c2",
+      "r0",
+      "r1",
+      "r2",
+      "w0",
+      "w1",
+      "w2",
+      "sc",
+      "t",
+      "f",
+      "P",
+      "G",
+      "fi",
+      "lp",
+      "vi",
+      "sa",
+      "rm",
+      "bm",
+      "ln",
+    ].includes(tile)
+  ) {
+    return 0;
+  }
+  let hard = 0.42;
+  if (spec.tool) hard = 0.85;
+  if (["d", "a", "gv", "sn", "gp", "gs", "n", "g"].includes(tile)) hard = 0.32;
+  if (["o", "bo", "so", "p", "bp", "sp", "ap", "dk", "bk"].includes(tile)) hard = 0.72;
+  if (["L", "bl", "sl"].includes(tile)) hard = 0.22;
+  if (["i", "go", "eo", "ob"].includes(tile)) hard = tile === "ob" ? 3.4 : 1.15;
+  if (["C", "T", "F", "z", "Z"].includes(tile)) hard = 0.5;
+  if (spec.tool) {
+    const need = MINE_TIER[tile] ?? 1;
+    const have = PICK_TIER[itemId] ?? 0;
+    if (have < need) return Infinity;
+    hard *= [1, 0.85, 0.68, 0.52, 0.38][have] ?? 1;
+  } else if (SHOVELS.has(itemId) && ["d", "a", "gv", "sn", "gp", "gs", "n", "g"].includes(tile)) hard *= 0.38;
+  else if (AXES.has(itemId) && ["o", "bo", "so", "p", "bp", "sp", "ap", "dk", "bk"].includes(tile)) hard *= 0.38;
+  else if (itemId === "shears" && ["L", "bl", "sl", "ww"].includes(tile)) hard *= 0.15;
+  return Math.max(0.12, hard);
+}
+
 const PLACEABLE = {
   torch: "t",
   dirt: "d",
@@ -511,7 +600,15 @@ const MANIFEST = [
   "hud/selected-slot.svg",
   "hud/hotbar-slot.svg",
   "hud/xp-bar.svg",
+  "hud/progress-bar.svg",
   "hud/crosshair.svg",
+  "hud/bubble.svg",
+  "hud/bubble-empty.svg",
+  "hud/bubble-pop.svg",
+  "items/bow-0.svg",
+  "items/bow-1.svg",
+  "items/bow-2.svg",
+  ...range(10, (i) => `blocks/destroy-${i}.svg`),
 ];
 
 export function listGameAssets() {
@@ -965,8 +1062,9 @@ function swimBody(body, dt) {
   if ((body.knockT ?? 0) <= 0) body.vx *= 0.9;
   const headWet = tileAt(body.x, body.y - body.hh + 6) === "w";
   if (headWet) {
-    body.air = (body.air ?? 12) - dt;
+    body.air = (body.air ?? AIR_MAX) - dt;
     if (body.air <= 0) {
+      body.air = 0;
       body.drownT = (body.drownT ?? 0) + dt;
       if (body.drownT >= 0.7) {
         body.drownT = 0;
@@ -974,7 +1072,7 @@ function swimBody(body, dt) {
       }
     }
   } else {
-    body.air = 12;
+    body.air = Math.min(AIR_MAX, (body.air ?? AIR_MAX) + dt * 4);
     body.drownT = 0;
   }
 }
@@ -1048,7 +1146,7 @@ function moveBody(body, dt) {
   body.atComposter = around.includes("cp");
   if (body.inWater) swimBody(body, dt);
   else {
-    body.air = 12;
+    body.air = AIR_MAX;
     body.drownT = 0;
   }
 }
@@ -1075,7 +1173,7 @@ function makePlayer() {
     dropCd: 0,
     eatT: 0,
     dead: false,
-    air: 12,
+    air: AIR_MAX,
     drownT: 0,
     inWater: false,
     inLava: false,
@@ -1094,6 +1192,13 @@ function makePlayer() {
     xp: 0,
     level: 0,
     fishT: 0,
+    fishNeed: 0,
+    mining: null,
+    smelt: null,
+    bowDraw: false,
+    bowT: 0,
+    lastAir: AIR_MAX,
+    popT: 0,
     mount: null,
     equipped: { head: "", chest: "", legs: "", feet: "" },
     items: [
@@ -1137,7 +1242,7 @@ function makeMob(kind, tx, ty) {
     hitT: 0,
     deathT: 0,
     dead: false,
-    air: 12,
+    air: AIR_MAX,
     drownT: 0,
     inWater: false,
     inLava: false,
@@ -1632,7 +1737,9 @@ function tryFish() {
   const ty = Math.floor((player.y - 12) / TILE);
   const wet = world.tiles[ty]?.[tx] === "w" || world.tiles[ty + 1]?.[tx] === "w" || nearWater(tx, ty);
   if (!wet) return false;
-  player.fishT = 2.2 + Math.random() * 1.6;
+  const need = 2.2 + Math.random() * 1.6;
+  player.fishT = need;
+  player.fishNeed = need;
   say("甩出了鱼竿。等一会儿…");
   return true;
 }
@@ -1742,49 +1849,113 @@ function dropMined(spec, x, y, shears) {
   drops.push(makeDrop(id, x * TILE + 24, y * TILE + 8, n));
 }
 
-function tryMineOrPlace() {
+function beginMine(opts = {}) {
   const item = selectedItem();
-  const shears = item?.id === "shears";
   for (const cell of frontCell()) {
     const t = world.tiles[cell.y]?.[cell.x];
     if (!t || t === ".") continue;
     const spec = MINEABLE[t];
-    if (spec) {
-      if (spec.tool && !PICKS.has(item?.id)) {
-        say("需要镐才能挖这个。");
-        return true;
-      }
-      if (spec.tool) {
-        if (player.swingT > 0) return true;
-        player.swingT = 10 / 12;
-        player.anim = "swing";
-        player.frame = 0;
-      }
-      if (t === "z" || t === "Z") {
-        const ox = t === "z" ? 1 : -1;
-        setCell(world.tiles, cell.x, cell.y, ".");
-        if (world.tiles[cell.y]?.[cell.x + ox] === (t === "z" ? "Z" : "z")) setCell(world.tiles, cell.x + ox, cell.y, ".");
-        drops.push(makeDrop("bed", cell.x * TILE + 24, cell.y * TILE + 8));
-        return true;
-      }
-      if (t === "C") {
-        const key = `${cell.x},${cell.y}`;
-        const leftover = world.chests[key];
-        if (leftover) {
-          leftover.forEach((it) => {
-            if (it.count > 0) drops.push(makeDrop(it.id, cell.x * TILE + 24, cell.y * TILE + 8, it.count));
-          });
-          delete world.chests[key];
-        }
-      }
-      setCell(world.tiles, cell.x, cell.y, spec.remain ?? ".");
-      dropMined({ ...spec, shearsDrop: t === "L" || t === "bl" || t === "sl" ? "oak-leaves" : spec.shearsDrop }, cell.x, cell.y, shears);
-      if (t === "gv" && Math.random() < 0.15) drops.push(makeDrop("flint", cell.x * TILE + 16, cell.y * TILE + 4));
-      if (XP_ORE[t]) addXp(XP_ORE[t]);
-      burstBits(cell.x * TILE + 24, cell.y * TILE + 24, "#bbb");
+    if (!spec) continue;
+    const need = mineSeconds(t, item?.id);
+    if (!Number.isFinite(need)) {
+      if (messageT <= 0.2) say("需要更好的镐才能挖这个。");
       return true;
     }
+    if (player.mining && player.mining.x === cell.x && player.mining.y === cell.y && player.mining.tile === t) {
+      return true;
+    }
+    if (need <= 0) {
+      if (opts.timedOnly) continue;
+      finishMineCell({ x: cell.x, y: cell.y, tile: t });
+      return true;
+    }
+    player.mining = { x: cell.x, y: cell.y, t: 0, need, tile: t };
+    player.swingT = 10 / 12;
+    player.anim = "swing";
+    player.frame = 0;
+    return true;
   }
+  return false;
+}
+
+function finishMineCell(cell) {
+  if (!player || !world) return;
+  const { x, y, tile: t } = cell;
+  const spec = MINEABLE[t];
+  player.mining = null;
+  if (!spec || world.tiles[y]?.[x] !== t) return;
+  const shears = selectedItem()?.id === "shears";
+  if (t === "z" || t === "Z") {
+    const ox = t === "z" ? 1 : -1;
+    setCell(world.tiles, x, y, ".");
+    if (world.tiles[y]?.[x + ox] === (t === "z" ? "Z" : "z")) setCell(world.tiles, x + ox, y, ".");
+    drops.push(makeDrop("bed", x * TILE + 24, y * TILE + 8));
+    burstBits(x * TILE + 24, y * TILE + 24, "#bbb");
+    return;
+  }
+  if (t === "C") {
+    const key = `${x},${y}`;
+    const leftover = world.chests[key];
+    if (leftover) {
+      leftover.forEach((it) => {
+        if (it.count > 0) drops.push(makeDrop(it.id, x * TILE + 24, y * TILE + 8, it.count));
+      });
+      delete world.chests[key];
+    }
+  }
+  setCell(world.tiles, x, y, spec.remain ?? ".");
+  dropMined(
+    { ...spec, shearsDrop: t === "L" || t === "bl" || t === "sl" ? "oak-leaves" : spec.shearsDrop },
+    x,
+    y,
+    shears,
+  );
+  if (t === "gv" && Math.random() < 0.15) drops.push(makeDrop("flint", x * TILE + 16, y * TILE + 4));
+  if (XP_ORE[t]) addXp(XP_ORE[t]);
+  burstBits(x * TILE + 24, y * TILE + 24, "#bbb");
+}
+
+function usingHeld() {
+  return Boolean(hold.use || keys.has("j"));
+}
+
+function releaseUse() {
+  if (!player) return;
+  if (player.bowDraw) fireBow();
+  player.mining = null;
+}
+
+function updateMining(dt) {
+  if (!player) return;
+  if (player.dead || player.bowDraw || craftingOpen || chestOpen || !usingHeld()) {
+    player.mining = null;
+    return;
+  }
+  let job = player.mining;
+  if (job) {
+    if (world.tiles[job.y]?.[job.x] !== job.tile) job = player.mining = null;
+    else {
+      const reach = Math.hypot(player.x - (job.x * TILE + TILE / 2), player.y - 20 - (job.y * TILE + TILE / 2));
+      if (reach > 96) job = player.mining = null;
+    }
+  }
+  if (!job) {
+    beginMine({ timedOnly: true });
+    job = player.mining;
+    if (!job) return;
+  }
+  job.t += dt;
+  if (player.swingT <= 0) {
+    player.swingT = 10 / 12;
+    player.anim = "swing";
+    player.frame = 0;
+  }
+  if (job.t >= job.need) finishMineCell(job);
+}
+
+function tryMineOrPlace() {
+  if (beginMine()) return true;
+  const item = selectedItem();
   if (item?.id === "bed" && item.count > 0) {
     const tx = Math.floor((player.x + player.face * 28) / TILE);
     const ty = Math.floor((player.y - 12) / TILE);
@@ -1904,17 +2075,32 @@ function trySmelt() {
   if (!player.atFurnace) return false;
   const item = selectedItem();
   if (!item || item.count <= 0 || !SMELT[item.id]) return false;
+  if (player.smelt) {
+    say("炉子还在烧。");
+    return true;
+  }
   const made = smeltOnce(player.items, item.id);
   if (!made) {
     say("还缺煤炭或木炭当燃料。");
     return true;
   }
   const hit = findTileNear(player.x, player.y - 8, ["F"]);
-  if (hit) world.lit[`${hit.x},${hit.y}`] = 2.2;
-  if (addItem(made.id, made.count)) say(`烧出了${ITEM_LABELS[made.id] ?? made.id}。`);
-  else spillItem(made.id, made.count);
-  burstBits(player.x, player.y - 18, "#ffb347");
+  player.smelt = { t: 0, need: 2.4, out: made, x: hit?.x, y: hit?.y };
+  if (hit) world.lit[`${hit.x},${hit.y}`] = 2.6;
+  say(`正在烧${ITEM_LABELS[made.id] ?? made.id}…`);
   return true;
+}
+
+function updateSmelt(dt) {
+  if (!player?.smelt) return;
+  const job = player.smelt;
+  job.t += dt;
+  if (job.x != null) world.lit[`${job.x},${job.y}`] = Math.max(world.lit[`${job.x},${job.y}`] ?? 0, 0.45);
+  if (job.t < job.need) return;
+  if (addItem(job.out.id, job.out.count)) say(`烧出了${ITEM_LABELS[job.out.id] ?? job.out.id}。`);
+  else spillItem(job.out.id, job.out.count);
+  burstBits(player.x, player.y - 18, "#ffb347");
+  player.smelt = null;
 }
 
 function tryEnchant() {
@@ -2125,30 +2311,71 @@ function tryArmor() {
   return true;
 }
 
+function bowIcon(charge) {
+  if (charge >= 0.72) return "bow-2";
+  if (charge >= 0.36) return "bow-1";
+  return "bow-0";
+}
+
 function tryShoot() {
   const item = selectedItem();
   if (item?.id !== "bow") return false;
-  if (player.shootCd > 0) return true;
+  if (player.bowDraw) return true;
   if (countOwned(player.items, "arrow") < 1) {
-    say("没有箭。");
+    say("没有箭。合成：燧石 + 木棍 + 羽毛。");
     return true;
   }
+  if (!usingHeld()) {
+    player.bowDraw = true;
+    player.bowT = 0.55;
+    fireBow();
+    return true;
+  }
+  player.bowDraw = true;
+  player.bowT = 0;
+  say("拉开弓……");
+  return true;
+}
+
+function fireBow() {
+  if (!player || !player.bowDraw) return;
+  const charge = player.bowT;
+  player.bowDraw = false;
+  player.bowT = 0;
+  if (charge < 0.2) {
+    say("松手太早，箭没射出去。");
+    return;
+  }
+  if (countOwned(player.items, "arrow") < 1) {
+    say("没有箭。");
+    return;
+  }
   takeNeed(player.items, { arrow: 1 });
-  player.shootCd = 0.45;
-  player.swingT = 10 / 12;
-  player.anim = "swing";
-  const speed = 460;
+  const power = Math.min(1, charge);
+  const speed = 280 + power * 240;
   arrows.push({
     x: player.x + player.face * 22,
     y: player.y - 28,
     vx: player.face * speed,
-    vy: -20,
-    life: 2.2,
+    vy: -20 - power * 36,
+    life: 1.2 + power * 1,
     gone: false,
     friendly: true,
+    dmg: 2 + Math.round(power * 3),
   });
-  say("射了一箭。");
-  return true;
+  player.swingT = 0.18;
+  player.anim = "swing";
+  player.frame = 0;
+  say(power >= 0.95 ? "满弦射出！" : "射出一支箭。");
+}
+
+function updateBow(dt) {
+  if (!player?.bowDraw) return;
+  if (!usingHeld() || player.dead || selectedItem()?.id !== "bow") {
+    fireBow();
+    return;
+  }
+  player.bowT = Math.min(1, player.bowT + dt);
 }
 
 function tryThrow() {
@@ -2326,6 +2553,17 @@ function updatePlayer(dt) {
   const jump = keys.has(" ") || keys.has("w") || keys.has("arrowup") || hold.jump;
   if (player.shootCd > 0) player.shootCd -= dt;
   if (player.powerT > 0) player.powerT -= dt;
+  if (player.popT > 0) player.popT -= dt;
+  const prevAir = player.lastAir ?? player.air;
+  if (player.air < prevAir) {
+    const before = Math.ceil((prevAir / AIR_MAX) * 10 - 1e-9);
+    const after = Math.ceil((player.air / AIR_MAX) * 10 - 1e-9);
+    if (after < before) player.popT = 0.18;
+  }
+  player.lastAir = player.air;
+  updateMining(dt);
+  updateSmelt(dt);
+  updateBow(dt);
 
   if (player.mount && !player.mount.dead) {
     const pig = player.mount;
@@ -2425,7 +2663,10 @@ function updatePlayer(dt) {
   player.age += dt;
   if (player.eatT > 0) player.eatT -= dt;
 
-  if (player.swingT > 0) {
+  if (player.bowDraw) {
+    player.anim = "swing";
+    player.frame = Math.min(9, Math.floor(player.bowT * 10));
+  } else if (player.swingT > 0) {
     player.anim = "swing";
     player.frame = Math.min(9, Math.floor((1 - player.swingT / (10 / 12)) * 10));
   } else if (player.hurtT > 0) {
@@ -2600,7 +2841,7 @@ function updateArrows(dt) {
       for (const mob of mobs) {
         if (mob.dead) continue;
         if (Math.abs(shot.x - mob.x) < 16 && Math.abs(shot.y - (mob.y - 18)) < 28) {
-          const dmg = shot.pebble === "slimeball" ? 2 : shot.pebble ? 1 : 4;
+          const dmg = shot.pebble === "slimeball" ? 2 : shot.pebble ? 1 : (shot.dmg ?? 4);
           hurt(mob, dmg, Math.sign(shot.vx) || 1);
           if (shot.pebble === "slimeball") {
             mob.vx += Math.sign(shot.vx) * 220;
@@ -2933,6 +3174,11 @@ function drawWorld() {
           ctx.globalAlpha = 1;
         }
       }
+      const job = player?.mining;
+      if (job && job.x === x && job.y === y && job.need > 0) {
+        const p = Math.max(0, Math.min(1, job.t / job.need));
+        if (p >= 0.05) drawTile(`blocks/destroy-${Math.min(9, Math.floor(p * 10))}.svg`, dx, dy);
+      }
     }
   }
 }
@@ -3008,6 +3254,45 @@ function drawHearts(x, y, value, full, half, empty, flash = false) {
     const rel = v >= 2 ? (on ? "hud/heart-flash.svg" : full) : v === 1 ? half : empty;
     drawImage(rel, x + i * 18, y, 16, 16);
   }
+}
+
+function drawBubbles(x, y) {
+  if (!player) return;
+  if (!player.inWater && player.air >= AIR_MAX - 0.05) return;
+  const filled = Math.max(0, Math.min(10, Math.ceil((player.air / AIR_MAX) * 10 - 1e-9)));
+  for (let i = 0; i < 10; i++) {
+    const bob = player.inWater ? Math.sin(time * 4 + i * 0.7) * 1.2 : 0;
+    let rel = "hud/bubble-empty.svg";
+    if (i < filled) rel = "hud/bubble.svg";
+    else if (i === filled && player.popT > 0) rel = "hud/bubble-pop.svg";
+    drawImage(rel, x + i * 18, y + bob, 16, 16);
+  }
+}
+
+function actionProgress() {
+  if (!player) return null;
+  if (player.mining?.need) return Math.max(0, Math.min(1, player.mining.t / player.mining.need));
+  if (player.smelt) return Math.max(0, Math.min(1, player.smelt.t / player.smelt.need));
+  if ((player.fishT ?? 0) > 0 && player.fishNeed) return Math.max(0, Math.min(1, 1 - player.fishT / player.fishNeed));
+  if (player.bowDraw) return player.bowT;
+  return null;
+}
+
+function drawActionProgress(x, y, w) {
+  const t = actionProgress();
+  if (t == null) return;
+  const h = 22;
+  const pic = img("hud/progress-bar.svg");
+  if (!pic) return;
+  ctx.save();
+  ctx.globalAlpha = 0.32;
+  ctx.drawImage(pic, Math.round(x), Math.round(y), Math.round(w), h);
+  ctx.globalAlpha = 1;
+  ctx.beginPath();
+  ctx.rect(Math.round(x), Math.round(y), Math.round(w * t), h);
+  ctx.clip();
+  ctx.drawImage(pic, Math.round(x), Math.round(y), Math.round(w), h);
+  ctx.restore();
 }
 
 function craftPanelBox() {
@@ -3180,6 +3465,7 @@ function drawHud() {
   if (player.armor > 0) {
     drawHearts(barX + 8, barY - 48, player.armor, "hud/armor-full.svg", "hud/armor-half.svg", "hud/armor-empty.svg");
   }
+  drawBubbles(barX + barW - 8 - 180, player.armor > 0 ? barY - 68 : barY - 48);
 
   drawImage("hud/xp-bar.svg", barX, barY - 8, barW, 28);
   const need = xpNeed(player.level ?? 0);
@@ -3198,7 +3484,11 @@ function drawHud() {
     const it = player.items[i];
     const sx = origin + i * 38;
     const sy = barY + 26;
-    if (it && it.count > 0) drawImage(itemAsset(it.id), sx, sy, 28, 28);
+    if (it && it.count > 0) {
+      const id =
+        i === player.selected && player.bowDraw && it.id === "bow" ? bowIcon(player.bowT) : it.id;
+      drawImage(itemAsset(id), sx, sy, 28, 28);
+    }
     if (it && it.count > 1) {
       ctx.fillStyle = "#111";
       ctx.font = "bold 12px sans-serif";
@@ -3221,6 +3511,7 @@ function drawHud() {
     ctx.fillText(label, viewW / 2, barY - 40);
   }
 
+  drawActionProgress(barX, barY - 78, barW);
   drawImage("hud/crosshair.svg", viewW / 2 - 10, viewH / 2 - 10, 20, 20);
 
   ctx.textAlign = "left";
@@ -3422,16 +3713,24 @@ window.addEventListener("keydown", (e) => {
   } else if (key >= "1" && key <= "9" && player) {
     player.selected = Number(key) - 1;
   }
-  if (key === "j" || key === "e") useSelected();
+  if ((key === "j" || key === "e") && !e.repeat) useSelected();
   if (key === "q" && mode === "play" && !craftingOpen && !chestOpen) throwSelected();
   if (key === "r" && mode === "play") resetGame();
 });
 
 window.addEventListener("keyup", (e) => {
-  keys.delete(bindKey(e));
+  const key = bindKey(e);
+  keys.delete(key);
+  if (key === "j") releaseUse();
 });
 
-window.addEventListener("blur", () => keys.clear());
+window.addEventListener("blur", () => {
+  keys.clear();
+  if (hold.use) {
+    hold.use = false;
+    releaseUse();
+  }
+});
 
 canvas.addEventListener("mousedown", (e) => {
   if (mode !== "play") return;
@@ -3462,7 +3761,14 @@ canvas.addEventListener("mousedown", (e) => {
     }
     return;
   }
+  hold.use = true;
   useSelected();
+});
+
+window.addEventListener("mouseup", () => {
+  if (!hold.use) return;
+  hold.use = false;
+  releaseUse();
 });
 
 window.addEventListener("resize", resize);
@@ -3473,7 +3779,11 @@ for (const btn of document.querySelectorAll("#touch button")) {
     const act = btn.dataset.act;
     if (dir) hold[dir] = on;
     if (act === "jump") hold.jump = on;
-    if (act === "use" && on) useSelected();
+    if (act === "use") {
+      hold.use = on;
+      if (on) useSelected();
+      else releaseUse();
+    }
     if (act === "drop" && on) throwSelected();
   };
   btn.addEventListener("pointerdown", (e) => {

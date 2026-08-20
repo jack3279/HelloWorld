@@ -72,6 +72,9 @@ export const HUD_FILES = {
   "progress-empty": "empty_progress_bar.png",
   "progress-full": "filled_progress_bar.png",
   tip: "hud_tip_text_background.png",
+  bubble: "bubble.png",
+  "bubble-empty": "bubble_empty.png",
+  "bubble-pop": "bubble_pop.png",
 };
 
 for (let i = 0; i < HOTBAR_SLOTS; i++) HUD_FILES[`hotbar-${i}`] = `hotbar_${i}.png`;

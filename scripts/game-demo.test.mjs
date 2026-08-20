@@ -61,6 +61,15 @@ describe("html game demo", () => {
     assert.match(game, /furnace-on/);
     assert.match(game, /heart-flash/);
     assert.match(html, /熔炉烧矿/);
+    assert.match(html, /按住挖掘/);
+    assert.match(game, /function finishMineCell/);
+    assert.match(game, /function fireBow/);
+    assert.match(game, /function drawBubbles/);
+    assert.match(game, /function drawActionProgress/);
+    assert.match(game, /hud\/bubble\.svg/);
+    assert.match(game, /hud\/progress-bar\.svg/);
+    assert.match(game, /items\/bow-0\.svg/);
+    assert.match(game, /blocks\/destroy-\$\{/);
     assert.doesNotMatch(game, /ctx\.filter/);
     assert.match(css, /image-rendering:\s*pixelated/);
   });

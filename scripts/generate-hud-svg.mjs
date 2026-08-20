@@ -74,6 +74,10 @@ const singles = [
   ["button-pressed", "Menu button pressed", () => composeButton({ state: "pressed" }), BUTTON_CANVAS],
   ["xp-bar", "XP bar", () => composeBar({ fill: 1, kind: "xp" }), BAR_CANVAS],
   ["health-bar", "Health bar", () => composeBar({ fill: 0.7, kind: "health" }), BAR_CANVAS],
+  ["progress-bar", "Progress bar", () => composeBar({ fill: 1, kind: "progress" }), BAR_CANVAS],
+  ["bubble", "Air bubble", () => loadHud("bubble"), { w: 256, h: 256 }],
+  ["bubble-empty", "Empty air bubble", () => loadHud("bubble-empty"), { w: 256, h: 256 }],
+  ["bubble-pop", "Popping air bubble", () => loadHud("bubble-pop"), { w: 256, h: 256 }],
 ];
 
 for (const [id, label, load, canvas] of singles) {

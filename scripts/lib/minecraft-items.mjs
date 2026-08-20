@@ -183,6 +183,9 @@ export const PLAY_ITEMS = [
   { id: "nether-wart", file: "nether_wart.png", label: "Nether wart", title: "地狱疣" },
   { id: "bowl", file: "bowl.png", label: "Bowl", title: "碗" },
   { id: "oak-door", file: "door_wood.png", label: "Oak door", title: "橡木门" },
+  { id: "bow-0", file: "bow_pulling_0.png", label: "Bow drawing", title: "拉弓" },
+  { id: "bow-1", file: "bow_pulling_1.png", label: "Bow drawn", title: "拉弓" },
+  { id: "bow-2", file: "bow_pulling_2.png", label: "Bow fully drawn", title: "拉满" },
 ];
 
 // Mixed survival bar: tools, blocks, stacks. Count 1 hides the numeral.

@@ -135,6 +135,22 @@ describe("generated HUD assets", () => {
     assert.match(survival, /#ff1313/);
   });
 
+  it("ships air bubbles and the furnace progress bar", async () => {
+    const bubble = await readFile(resolve(ROOT, "assets/hud/bubble.svg"), "utf8");
+    const empty = await readFile(resolve(ROOT, "assets/hud/bubble-empty.svg"), "utf8");
+    const pop = await readFile(resolve(ROOT, "assets/hud/bubble-pop.svg"), "utf8");
+    const bar = await readFile(resolve(ROOT, "assets/hud/progress-bar.svg"), "utf8");
+    assert.match(bubble, /id="bubble"/);
+    assert.match(empty, /id="bubble-empty"/);
+    assert.match(pop, /id="bubble-pop"/);
+    assert.match(bar, /id="progress-bar"/);
+    assert.doesNotMatch(bubble, /NaN|undefined/);
+    assert.doesNotMatch(bar, /NaN|undefined/);
+    const pixels = await loadHud("bubble");
+    assert.ok(pixels.w >= 8 && pixels.h >= 8);
+    assert.ok(pixels.pixels.some((hex) => hex), "bubble has painted texels");
+  });
+
   it("ships eight Skottie HUD scenes", async () => {
     const names = [
       "HUD — Chrome",
