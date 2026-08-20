@@ -52,7 +52,12 @@ describe("html game demo", () => {
     assert.match(game, /function trySmelt/);
     assert.match(game, /function tryShoot/);
     assert.match(game, /function explodeAt/);
-    assert.match(game, /function trySaddle/);
+    assert.match(game, /function tryTill/);
+    assert.match(game, /function tryBoneMeal/);
+    assert.match(game, /function tryFish/);
+    assert.match(game, /player\.level/);
+    assert.match(html, /冲刺/);
+    assert.match(html, /骨粉/);
     assert.match(game, /furnace-on/);
     assert.match(game, /heart-flash/);
     assert.match(html, /熔炉烧矿/);

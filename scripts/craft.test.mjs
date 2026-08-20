@@ -118,6 +118,27 @@ describe("crafting recipes", () => {
     assert.equal(countOwned(items, "coal"), 0);
   });
 
+  it("smelts oak logs into charcoal with coal or charcoal as fuel", () => {
+    const items = [
+      { id: "oak-log", count: 2 },
+      { id: "coal", count: 1 },
+    ];
+    assert.deepEqual(smeltOnce(items, "oak-log"), { id: "charcoal", count: 1 });
+    assert.equal(countOwned(items, "charcoal"), 0);
+    items.push({ id: "charcoal", count: 1 });
+    assert.deepEqual(smeltOnce(items, "oak-log"), { id: "charcoal", count: 1 });
+  });
+
+  it("crafts a wooden hoe from planks and sticks", () => {
+    const items = [
+      { id: "oak-planks", count: 2 },
+      { id: "stick", count: 2 },
+    ];
+    const hoe = RECIPES.find((r) => r.id === "wooden-hoe");
+    assert.ok(canCraft(items, hoe));
+    assert.deepEqual(craftOnce(items, hoe), { id: "wooden-hoe", count: 1 });
+  });
+
   it("refuses to smelt without fuel", () => {
     const items = [{ id: "sand", count: 2 }];
     assert.equal(smeltOnce(items, "sand"), null);

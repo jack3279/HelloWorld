@@ -131,6 +131,20 @@ export const PLAY_BLOCKS = [
   { id: "cocoa-0", file: "cocoa_stage_0.png", label: "Cocoa sprout", title: "可可幼荚" },
   { id: "cocoa-1", file: "cocoa_stage_1.png", label: "Cocoa growing", title: "可可生长" },
   { id: "cocoa-2", file: "cocoa_stage_2.png", label: "Cocoa ripe", title: "成熟可可" },
+  { id: "grass-path", file: "grass_path_side.png", label: "Grass path", title: "草径" },
+  { id: "campfire", file: "campfire.png", label: "Campfire", title: "营火" },
+  { id: "lantern", file: "lantern.png", label: "Lantern", title: "灯笼" },
+  { id: "oak-trapdoor", file: "trapdoor.png", label: "Oak trapdoor", title: "橡木活板门" },
+  { id: "composter", file: "composter_side.png", label: "Composter", title: "堆肥桶" },
+  { id: "carrot-0", file: "carrots_stage_0.png", label: "Carrot sprout", title: "胡萝卜苗" },
+  { id: "carrot-3", file: "carrots_stage_2.png", label: "Carrot growing", title: "胡萝卜生长" },
+  { id: "carrot-7", file: "carrots_stage_3.png", label: "Carrot ripe", title: "成熟胡萝卜" },
+  { id: "nether-wart-0", file: "nether_wart_stage_0.png", label: "Nether wart sprout", title: "地狱疣苗" },
+  { id: "nether-wart-1", file: "nether_wart_stage_1.png", label: "Nether wart growing", title: "地狱疣生长" },
+  { id: "nether-wart-2", file: "nether_wart_stage_2.png", label: "Nether wart ripe", title: "成熟地狱疣" },
+  { id: "nether-quartz-ore", file: "quartz_ore.png", label: "Nether quartz ore", title: "下界石英矿" },
+  { id: "copper-block", file: "copper_block.png", label: "Copper block", title: "铜块" },
+  { id: "iron-bars", file: "iron_bars.png", label: "Iron bars", title: "铁栏杆" },
 ];
 
 export function blockPages(pageSize = PAGE_SIZE) {
