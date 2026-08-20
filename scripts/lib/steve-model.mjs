@@ -499,15 +499,20 @@ function luminanceFor(shading, worldNormal, cameraNormal) {
 }
 
 function shade(shading, rgb, lum, source) {
+  let out;
   if (source && isHair(source)) {
     // Keep hair near-black even on lit top faces; a warm highlight would
     // turn it back into the old cocoa brown.
     const dim = 0.62 + 0.28 * Math.min(1, Math.max(0, lum));
-    return rgb.map((v) => Math.round(v * dim));
+    out = rgb.map((v) => Math.round(v * dim));
+  } else if (lum > 1) {
+    out = mix(rgb, hexToRgb(shading.highlight), Math.min(0.45, (lum - 1) * 1.25));
+  } else {
+    const dimmed = rgb.map((v) => v * lum ** 0.85);
+    out = mix(dimmed, hexToRgb(shading.shadowTint), (1 - lum) * 0.35);
   }
-  if (lum > 1) return mix(rgb, hexToRgb(shading.highlight), Math.min(0.45, (lum - 1) * 1.25));
-  const dimmed = rgb.map((v) => v * lum ** 0.85);
-  return mix(dimmed, hexToRgb(shading.shadowTint), (1 - lum) * 0.35);
+  if (shading.flash) out = mix(out, [255, 255, 255], Math.min(1, shading.flash));
+  return out;
 }
 
 // Minecraft hit flash: lerp every shaded texel toward white. `amount` is 0..1.
