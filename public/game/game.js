@@ -308,6 +308,8 @@ const BLOCKS = {
   B: "blocks/bedrock.svg",
   D: "blocks/door-oak.svg",
   U: "blocks/door-oak-upper.svg",
+  dA: "blocks/door-oak-open.svg",
+  dB: "blocks/door-oak-upper-open.svg",
   f: "blocks/dandelion.svg",
   P: "blocks/poppy.svg",
   G: "blocks/tall-grass.svg",
@@ -425,8 +427,6 @@ const NON_SOLID = new Set([
   "sa",
   "rm",
   "bm",
-  "D",
-  "U",
   "z",
   "Z",
   "0",
@@ -451,6 +451,9 @@ const NON_SOLID = new Set([
   "L",
   "bl",
   "sl",
+  "o",
+  "bo",
+  "so",
   "cf",
   "to",
   "cp",
@@ -458,6 +461,8 @@ const NON_SOLID = new Set([
   "k",
   "C",
   "dO",
+  "dA",
+  "dB",
   "F",
   "T",
   "bk",
@@ -605,6 +610,8 @@ const MANIFEST = [
   "items/bow-1.svg",
   "items/bow-2.svg",
   ...range(10, (i) => `blocks/destroy-${i}.svg`),
+  ...range(8, (i) => `door-sprites/swing-${i}.svg`),
+  ...range(8, (i) => `iron-door-sprites/swing-${i}.svg`),
 ];
 
 export function listGameAssets() {
@@ -647,9 +654,9 @@ function fillRow(tiles, y, x0, x1, t) {
 
 function tree(tiles, x, ground, trunk = "o", leaf = "L") {
   setCell(tiles, x, ground - 1, trunk);
-  setCell(tiles, x, ground - 2, leaf);
-  setCell(tiles, x, ground - 3, leaf);
-  for (let dy = 3; dy <= 6; dy++) {
+  setCell(tiles, x, ground - 2, trunk);
+  setCell(tiles, x, ground - 3, trunk);
+  for (let dy = 4; dy <= 6; dy++) {
     for (let dx = -2; dx <= 2; dx++) {
       if (Math.abs(dx) + (6 - dy) < 4) setCell(tiles, x + dx, ground - dy, leaf);
     }
@@ -658,15 +665,23 @@ function tree(tiles, x, ground, trunk = "o", leaf = "L") {
 
 function spruceTree(tiles, x, ground) {
   setCell(tiles, x, ground - 1, "so");
+  setCell(tiles, x, ground - 2, "so");
+  setCell(tiles, x, ground - 3, "so");
+  setCell(tiles, x, ground - 4, "so");
   for (const [dy, r] of [
-    [2, 2],
-    [3, 2],
-    [4, 2],
-    [5, 1],
+    [5, 2],
     [6, 1],
+    [7, 0],
   ]) {
     for (let dx = -r; dx <= r; dx++) setCell(tiles, x + dx, ground - dy, "sl");
   }
+}
+
+function fillPond(tiles, x0, x1, ground) {
+  fillRow(tiles, ground, x0, x1, "w");
+  fillRow(tiles, ground + 1, x0, x1, "w");
+  fillRow(tiles, ground + 2, x0, x1, "w");
+  fillRow(tiles, ground + 3, x0, x1, "s");
 }
 
 function portal(tiles, x, ground) {
@@ -713,10 +728,7 @@ function buildWorld() {
     setCell(tiles, x, ground, "g");
   }
 
-  fillRow(tiles, ground, 14, 17, ".");
-  fillRow(tiles, ground + 1, 14, 17, "w");
-  fillRow(tiles, ground + 2, 14, 17, "w");
-  fillRow(tiles, ground + 3, 14, 17, "s");
+  fillPond(tiles, 14, 17, ground);
   setCell(tiles, 15, ground, "lp");
   setCell(tiles, 16, ground, "lp");
   setCell(tiles, 13, ground + 1, "gs");
@@ -732,8 +744,6 @@ function buildWorld() {
   fillRow(tiles, ground - 4, 41, 43, "p");
   setCell(tiles, 43, ground - 5, "t");
   setCell(tiles, 26, ground - 3, "t");
-  setCell(tiles, 14, ground, "h");
-  setCell(tiles, 17, ground, "h");
   setCell(tiles, 32, ground, "h");
   setCell(tiles, 35, ground, "h");
 
@@ -957,6 +967,7 @@ function buildWorld() {
     portalCd: 0,
     portalBox: { x0: 113, x1: 115, y0: ground - 4, y1: ground },
     compost: {},
+    doorAnim: {},
   };
 }
 
@@ -994,6 +1005,7 @@ function finishWorld(tiles, extra = {}) {
     portalCd: 0,
     portalBox: extra.portalBox ?? null,
     compost: {},
+    doorAnim: {},
   };
 }
 
@@ -1022,13 +1034,8 @@ function buildFarmWorld() {
   setCell(tiles, 6, ground - 1, "2");
   setCell(tiles, 7, ground - 1, "1");
   setCell(tiles, 8, ground - 1, "p0");
-  fillRow(tiles, ground, 12, 16, ".");
-  fillRow(tiles, ground + 1, 12, 16, "w");
-  fillRow(tiles, ground + 2, 12, 16, "w");
-  fillRow(tiles, ground + 3, 12, 16, "s");
+  fillPond(tiles, 12, 16, ground);
   setCell(tiles, 13, ground, "lp");
-  setCell(tiles, 12, ground, "h");
-  setCell(tiles, 16, ground, "h");
   tree(tiles, 18, ground);
   tree(tiles, 34, ground);
   hut(tiles, 22, ground);
@@ -1081,15 +1088,10 @@ function buildFishWorld() {
   const H = 20;
   const ground = 10;
   const tiles = makeWorldShell(W, H, ground);
-  fillRow(tiles, ground, 10, 22, ".");
-  fillRow(tiles, ground + 1, 10, 22, "w");
-  fillRow(tiles, ground + 2, 10, 22, "w");
-  fillRow(tiles, ground + 3, 10, 22, "s");
+  fillPond(tiles, 10, 22, ground);
   setCell(tiles, 11, ground, "lp");
   setCell(tiles, 16, ground, "lp");
   setCell(tiles, 20, ground, "lp");
-  setCell(tiles, 10, ground, "h");
-  setCell(tiles, 22, ground, "h");
   tree(tiles, 6, ground);
   tree(tiles, 26, ground);
   hut(tiles, 34, ground);
@@ -1305,17 +1307,21 @@ function unstick(body) {
   }
 }
 
+function isWaterCell(t) {
+  return t === "w" || t === "lp";
+}
+
 function waterSurfaceY(px, py) {
   const x = Math.floor(px / TILE);
   if (x < 0 || x >= world.w) return null;
   let y = Math.floor(py / TILE);
   if (y < 0) y = 0;
   if (y >= world.h) y = world.h - 1;
-  if (world.tiles[y][x] !== "w") {
+  if (!isWaterCell(world.tiles[y][x])) {
     let found = -1;
     for (let dy = -4; dy <= 2; dy++) {
       const ty = y + dy;
-      if (ty >= 0 && ty < world.h && world.tiles[ty][x] === "w") {
+      if (ty >= 0 && ty < world.h && isWaterCell(world.tiles[ty][x])) {
         found = ty;
         break;
       }
@@ -1323,24 +1329,23 @@ function waterSurfaceY(px, py) {
     if (found < 0) return null;
     y = found;
   }
-  while (y > 0 && world.tiles[y - 1][x] === "w") y -= 1;
+  while (y > 0 && isWaterCell(world.tiles[y - 1][x])) y -= 1;
   return y * TILE;
 }
 
 function inWaterAt(body) {
   return (
-    tileAt(body.x, body.y - 4) === "w" ||
-    tileAt(body.x, body.y - 16) === "w" ||
+    isWaterCell(tileAt(body.x, body.y - 4)) ||
+    isWaterCell(tileAt(body.x, body.y - 16)) ||
     tileAt(body.x, body.y - body.hh + 6) === "w" ||
-    tileAt(body.x, body.y + 10) === "w" ||
-    tileAt(body.x, body.y - 4) === "lp"
+    isWaterCell(tileAt(body.x, body.y + 10))
   );
 }
 
 function swimBody(body, dt) {
   const surface = waterSurfaceY(body.x, body.y - 4);
   if (surface == null) return;
-  const floatY = surface + 8;
+  const floatY = surface + Math.min(TILE - 6, Math.max(22, body.hh * 0.7));
   body.grounded = false;
   if (body.y > floatY + 6) body.vy = Math.min(body.vy - 1600 * dt, -40);
   else if (body.y < floatY - 10) body.vy = Math.min(MAX_FALL, body.vy + GRAVITY * 0.35 * dt);
@@ -1669,7 +1674,7 @@ function startLevel(index, asDemo = false) {
   demo = asDemo ? { t: 0 } : null;
   hold.left = hold.right = hold.jump = hold.use = false;
   message = overlayGoal(level);
-  messageT = 6;
+  messageT = level.how ? 12 : 6;
 }
 
 function showMenu() {
@@ -1720,6 +1725,20 @@ function questHud() {
   const part = evalQuest();
   if (part.parts) return part.parts.map((p) => `${p.label} ${p.n}/${p.need}`).join("  ·  ");
   return `${part.label} ${part.n}/${part.need}`;
+}
+
+function wrapHudText(text, maxWidth) {
+  const lines = [];
+  let line = "";
+  for (const ch of String(text ?? "")) {
+    const next = line + ch;
+    if (line && ctx.measureText(next).width > maxWidth) {
+      lines.push(line);
+      line = ch === " " ? "" : ch;
+    } else line = next;
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : [""];
 }
 
 function checkQuest() {
@@ -1994,6 +2013,7 @@ function tryOpenTable() {
   craftingOpen = !craftingOpen;
   craftScroll = 0;
   say(craftingOpen ? "打开了工作台。点击配方合成。" : "关上了工作台。", 3);
+  if (craftingOpen && currentLevel().id === "farm") say("工作台：点「面包」配方，3 个小麦合成 1 个面包。", 6);
   return true;
 }
 
@@ -2209,9 +2229,17 @@ function tryFarm() {
   return false;
 }
 
+function startSwing() {
+  if (!player) return;
+  player.swingT = 10 / 12;
+  player.anim = "swing";
+  player.frame = 0;
+}
+
 function tryTill() {
   const item = selectedItem();
   if (!item || !HOES.has(item.id)) return false;
+  startSwing();
   for (const cell of frontCell()) {
     const t = world.tiles[cell.y]?.[cell.x];
     if (t === "g" || t === "d" || t === "gp") {
@@ -2222,12 +2250,13 @@ function tryTill() {
       return true;
     }
   }
-  return false;
+  return true;
 }
 
 function tryPath() {
   const item = selectedItem();
   if (!item || !SHOVELS.has(item.id)) return false;
+  startSwing();
   for (const cell of frontCell()) {
     if (world.tiles[cell.y]?.[cell.x] !== "g") continue;
     setCell(world.tiles, cell.x, cell.y, "gp");
@@ -2236,7 +2265,7 @@ function tryPath() {
     wearHeld(1);
     return true;
   }
-  return false;
+  return true;
 }
 
 function tryBoneMeal() {
@@ -2713,21 +2742,51 @@ function tryJukebox() {
   return true;
 }
 
+function doorKindOf(t) {
+  if (t === "D" || t === "U" || t === "dA" || t === "dB") return "oak";
+  if (t === "di" || t === "dO") return "iron";
+  return null;
+}
+
+function doorOpenOf(t) {
+  return t === "dA" || t === "dB" || t === "dO";
+}
+
+function doorPair(x, y) {
+  const t = world.tiles[y]?.[x];
+  const kind = doorKindOf(t);
+  if (!kind) return null;
+  if (t === "U" || t === "dB") return { x, y: y + 1, kind, open: t === "dB" };
+  if (t === "di" || t === "dO") {
+    const below = world.tiles[y + 1]?.[x];
+    const lowerY = below === "di" || below === "dO" ? y + 1 : y;
+    return { x, y: lowerY, kind, open: t === "dO" };
+  }
+  return { x, y, kind, open: t === "dA" };
+}
+
+function applyDoorTiles(x, y, kind, open) {
+  if (kind === "oak") {
+    setCell(world.tiles, x, y, open ? "dA" : "D");
+    setCell(world.tiles, x, y - 1, open ? "dB" : "U");
+    return;
+  }
+  setCell(world.tiles, x, y, open ? "dO" : "di");
+  setCell(world.tiles, x, y - 1, open ? "dO" : "di");
+}
+
 function tryDoor() {
   for (const cell of frontCell()) {
     const t = world.tiles[cell.y]?.[cell.x];
-    if (t === "di") {
-      setCell(world.tiles, cell.x, cell.y, "dO");
-      if (world.tiles[cell.y - 1]?.[cell.x] === "di") setCell(world.tiles, cell.x, cell.y - 1, "dO");
-      if (world.tiles[cell.y + 1]?.[cell.x] === "di") setCell(world.tiles, cell.x, cell.y + 1, "dO");
-      say("铁门打开了。");
-      return true;
-    }
-    if (t === "dO") {
-      setCell(world.tiles, cell.x, cell.y, "di");
-      if (world.tiles[cell.y - 1]?.[cell.x] === "dO") setCell(world.tiles, cell.x, cell.y - 1, "di");
-      if (world.tiles[cell.y + 1]?.[cell.x] === "dO") setCell(world.tiles, cell.x, cell.y + 1, "di");
-      say("铁门关上了。");
+    const pair = doorPair(cell.x, cell.y);
+    if (pair) {
+      const key = `${pair.x},${pair.y}`;
+      world.doorAnim = world.doorAnim ?? {};
+      if (world.doorAnim[key]) return true;
+      const opening = !pair.open;
+      if (!opening) applyDoorTiles(pair.x, pair.y, pair.kind, false);
+      world.doorAnim[key] = { dir: opening ? 1 : -1, t: 0, dur: 0.38, kind: pair.kind };
+      say(opening ? "打开了门。" : "关上了门。");
       return true;
     }
     if (t === "td") {
@@ -2742,6 +2801,18 @@ function tryDoor() {
     }
   }
   return false;
+}
+
+function updateDoors(dt) {
+  if (!world?.doorAnim) return;
+  for (const key of Object.keys(world.doorAnim)) {
+    const anim = world.doorAnim[key];
+    anim.t += dt;
+    if (anim.t < anim.dur) continue;
+    const [x, y] = key.split(",").map(Number);
+    applyDoorTiles(x, y, anim.kind, anim.dir > 0);
+    delete world.doorAnim[key];
+  }
 }
 
 function trySaddle() {
@@ -3644,6 +3715,49 @@ function drawTile(rel, x, y) {
   ctx.drawImage(pic, BLOCK_SRC_PAD, BLOCK_SRC_PAD, BLOCK_SRC_FACE, BLOCK_SRC_FACE, Math.round(x), Math.round(y), dest, dest);
 }
 
+function drawCampfire(dx, dy) {
+  const dest = TILE + 1;
+  const rx = Math.round(dx);
+  const ry = Math.round(dy);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(rx, ry + dest * 0.52, dest, dest * 0.5);
+  ctx.clip();
+  drawTile(BLOCKS.cf, dx, dy);
+  ctx.restore();
+  const firePic = img(fireFrame());
+  if (!firePic) return;
+  ctx.drawImage(
+    firePic,
+    BLOCK_SRC_PAD,
+    BLOCK_SRC_PAD,
+    BLOCK_SRC_FACE,
+    BLOCK_SRC_FACE * 0.7,
+    rx + 3,
+    ry - 10,
+    dest - 6,
+    dest * 0.78,
+  );
+}
+
+function drawDoorSprite(pair) {
+  const anim = world.doorAnim?.[`${pair.x},${pair.y}`];
+  let frame = doorOpenOf(world.tiles[pair.y]?.[pair.x]) ? 7 : 0;
+  if (anim) {
+    const p = Math.max(0, Math.min(1, anim.t / anim.dur));
+    const eased = p * p * (3 - 2 * p);
+    frame = Math.min(7, Math.floor((anim.dir > 0 ? eased : 1 - eased) * 8));
+  }
+  const folder = pair.kind === "iron" ? "iron-door-sprites" : "door-sprites";
+  const pic = img(`${folder}/swing-${frame}.svg`);
+  if (!pic) return;
+  const scale = (TILE * 2) / 512;
+  ctx.save();
+  ctx.translate(viewX(pair.x * TILE + TILE / 2), viewY((pair.y + 1) * TILE));
+  ctx.drawImage(pic, -128 * scale, -496 * scale, 256 * scale, 512 * scale);
+  ctx.restore();
+}
+
 function drawAnchored(rel, spec, x, y, face) {
   const pic = img(rel);
   if (!pic) return;
@@ -3756,24 +3870,10 @@ function drawWorld() {
       if (t === "v") drawTile(lavaFrame, dx, dy);
       else if (t === "w") drawTile(waterFrame, dx, dy);
       else if (t === "fi") drawTile(fireFrame(), dx, dy);
-      else if (t === "cf") {
-        drawTile(BLOCKS.cf, dx, dy);
-        const firePic = img(fireFrame());
-        if (firePic) {
-          ctx.globalAlpha = 0.86;
-          ctx.drawImage(
-            firePic,
-            BLOCK_SRC_PAD,
-            BLOCK_SRC_PAD,
-            BLOCK_SRC_FACE,
-            BLOCK_SRC_FACE,
-            Math.round(dx) + 6,
-            Math.round(dy) - 10,
-            TILE - 8,
-            TILE - 2,
-          );
-          ctx.globalAlpha = 1;
-        }
+      else if (t === "cf") drawCampfire(dx, dy);
+      else if (doorKindOf(t)) {
+        const pair = doorPair(x, y);
+        if (pair && pair.x === x && pair.y === y) drawDoorSprite(pair);
       }
       else if (t === "F" && (world.lit?.[`${x},${y}`] ?? 0) > 0) drawTile("blocks/furnace-on.svg", dx, dy);
       else if (BLOCKS[t]) {
@@ -3859,18 +3959,26 @@ function drawHeldItem() {
   if (!it?.id || it.count <= 0) return;
   if (player.dead || player.anim === "sleep" || player.anim === "eat") return;
   if (player.anim === "swing" && holdingSword()) return;
+  const swinging = player.anim === "swing";
+  const t = swinging ? Math.max(0, Math.min(1, 1 - player.swingT / (10 / 12))) : 0;
   const bob =
     player.anim === "run"
-      ? Math.sin(player.age * 14) * 3
+      ? Math.sin(player.age * 14) * 2
       : player.anim === "idle"
-        ? Math.sin(player.age * 3.2) * 1.6
+        ? Math.sin(player.age * 3.2) * 1.2
         : player.anim === "swim"
-          ? Math.sin(player.age * 8) * 5
+          ? Math.sin(player.age * 8) * 3
           : 0;
-  const ox = player.face * (player.anim === "swing" ? 22 : 16);
-  const oy = -22 + bob;
-  const size = 18;
-  drawImage(itemAsset(it.id), viewX(player.x + ox) - size / 2, viewY(player.y + oy) - size / 2, size, size);
+  const angle = swinging ? -0.95 + Math.sin(t * Math.PI) * 1.85 : -0.72;
+  const reach = swinging ? 6 + Math.sin(t * Math.PI) * 16 : 8;
+  const lift = swinging ? -24 - Math.sin(t * Math.PI) * 10 : -18 + bob;
+  const size = 22;
+  ctx.save();
+  ctx.translate(viewX(player.x + player.face * reach), viewY(player.y + lift));
+  ctx.scale(player.face, 1);
+  ctx.rotate(angle);
+  drawImage(itemAsset(it.id), -size * 0.22, -size * 0.88, size, size);
+  ctx.restore();
 }
 
 function drawHearts(x, y, value, full, half, empty, flash = false) {
@@ -4245,6 +4353,16 @@ function drawHud() {
   ctx.font = "14px sans-serif";
   ctx.fillStyle = "#fff";
   ctx.fillText(`${currentLevel().subtitle} ${currentLevel().title}   ${questHud()}   ${hourLabel()}   ${player.level ?? 0} 级${player.powerT > 0 ? "   附魔" : ""}${player.sprinting ? "   冲刺" : ""}`, 16, 28);
+  let howBottom = 34;
+  if (currentLevel().how) {
+    ctx.font = "13px sans-serif";
+    ctx.fillStyle = "#ffe566";
+    const howLines = wrapHudText(currentLevel().how, viewW - 36);
+    howLines.forEach((line, i) => ctx.fillText(line, 16, 46 + i * 18));
+    howBottom = 46 + howLines.length * 18;
+    ctx.font = "14px sans-serif";
+    ctx.fillStyle = "#fff";
+  }
   if (craftingOpen) drawCraftPanel();
   if (chestOpen) drawChestPanel();
   if (packOpen && !chestOpen) drawPackPanel();
@@ -4254,10 +4372,14 @@ function drawHud() {
   }
   if (messageT > 0) {
     ctx.textAlign = "center";
+    ctx.font = "14px sans-serif";
+    const lines = wrapHudText(message, 420);
+    const top = howBottom + 8;
+    const boxH = 18 + lines.length * 20;
     ctx.fillStyle = "rgba(0,0,0,0.55)";
-    ctx.fillRect(viewW / 2 - 220, 40, 440, 32);
+    ctx.fillRect(viewW / 2 - 230, top, 460, boxH);
     ctx.fillStyle = "#fff";
-    ctx.fillText(message, viewW / 2, 62);
+    lines.forEach((line, i) => ctx.fillText(line, viewW / 2, top + 18 + i * 20));
   }
   if (player.dead || win) {
     ctx.fillStyle = "rgba(0,0,0,0.45)";
@@ -4299,6 +4421,7 @@ function frame(ts) {
       updateDemo(dt);
       updateClock(dt);
       updatePlayer(dt);
+      updateDoors(dt);
       updateMobs(dt);
       updateArrows(dt);
       updateDrops(dt);

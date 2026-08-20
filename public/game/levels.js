@@ -9,6 +9,7 @@ export const LEVELS = [
     title: "开垦",
     subtitle: "第一关",
     brief: "锄地、种麦、合成面包。把 3 个面包放进箱子。",
+    how: "对着草地按「用」锄地，种小麦种子，麦穗变金后收割。到工作台点「面包」：3 个小麦合成 1 个面包，再放进箱子。",
     goal: "箱子里有 3 个面包",
     quest: { type: "chest", item: "bread", count: 3, label: "面包入箱" },
     clock: 8,
@@ -148,5 +149,6 @@ export function levelById(id) {
 }
 
 export function overlayGoal(level) {
-  return `${level.subtitle}「${level.title}」：${level.brief}`;
+  const detail = level.how ?? level.brief;
+  return `${level.subtitle}「${level.title}」：${detail}`;
 }

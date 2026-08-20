@@ -74,6 +74,17 @@ describe("html game demo", () => {
     assert.match(game, /function tryShoot/);
     assert.match(game, /function explodeAt/);
     assert.match(game, /function tryTill/);
+    const levels = await readFile(resolve(ROOT, "public/game/levels.js"), "utf8");
+    assert.match(game, /function startSwing/);
+    assert.match(game, /function updateDoors/);
+    assert.match(game, /function fillPond/);
+    assert.match(game, /door-sprites\/swing-\$\{/);
+    assert.match(game, /function drawCampfire/);
+    assert.match(game, /function drawDoorSprite/);
+    assert.match(game, /3 个小麦合成/);
+    assert.match(levels, /锄地/);
+    assert.match(game, /setCell\(tiles, x, ground - 3, trunk\)/);
+    assert.match(game, /ctx\.rotate\(angle\)/);
     assert.match(game, /function tryBoneMeal/);
     assert.match(game, /function tryFish/);
     assert.match(game, /player\.level/);
@@ -106,7 +117,7 @@ describe("html game demo", () => {
   it("preloads existing repo art instead of inventing new sprites", async () => {
     const src = await readFile(resolve(ROOT, "public/game/game.js"), "utf8");
     const rels = new Set();
-    for (const match of src.matchAll(/["']((?:blocks|items|hud|steve-sprites|zombie-sprites|skeleton-sprites|spider-sprites|enderman-sprites|creeper-sprites|pig-sprites|cow-sprites|chicken-sprites|sheep-sprites|slime-sprites|lava-sprites|water-sprites)\/[a-z0-9-]+\.svg)["']/g)) {
+    for (const match of src.matchAll(/["']((?:blocks|items|hud|steve-sprites|zombie-sprites|skeleton-sprites|spider-sprites|enderman-sprites|creeper-sprites|pig-sprites|cow-sprites|chicken-sprites|sheep-sprites|slime-sprites|lava-sprites|water-sprites|door-sprites|iron-door-sprites)\/[a-z0-9-]+\.svg)["']/g)) {
       rels.add(match[1]);
     }
     const steve = ["idle-a", "idle-b", ...Array.from({ length: 8 }, (_, i) => `run-${i}`), "jump-crouch", "jump-rise", "jump-apex", "jump-fall", "jump-land"];
@@ -139,6 +150,10 @@ describe("html game demo", () => {
     for (let i = 0; i < 10; i++) rels.add(`creeper-sprites/swell-${i * 2}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`lava-sprites/boil-${i * 4}.svg`);
     for (let i = 0; i < 8; i++) rels.add(`water-sprites/flow-${i * 4}.svg`);
+    for (let i = 0; i < 8; i++) {
+      rels.add(`door-sprites/swing-${i}.svg`);
+      rels.add(`iron-door-sprites/swing-${i}.svg`);
+    }
     const itemIds = [...src.matchAll(/["'](diamond-sword|diamond-pickaxe|torch|bread|steak|apple|golden-apple|potion-heal|diamond|cooked-porkchop|wheat-seeds|carrot|wheat)["']/g)].map((m) => m[1]);
     for (const id of new Set(itemIds)) rels.add(`items/${id}.svg`);
     assert.ok(rels.size >= 40, `expected a full loadout, got ${rels.size}`);

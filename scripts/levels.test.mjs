@@ -74,5 +74,6 @@ describe("campaign levels", () => {
     assert.match(text, /开垦/);
     assert.match(text, /第一关/);
     assert.match(text, /面包/);
+    assert.match(text, /3 个小麦/);
   });
 });
