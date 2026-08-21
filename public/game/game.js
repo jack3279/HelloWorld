@@ -528,7 +528,7 @@ let messageT = 0;
 let win = false;
 let demo = null;
 let levelIndex = 0;
-let stats = { kills: 0, fish: 0, portal: false, slept: false };
+let stats = { kills: 0, fish: 0, portal: false, slept: false, mined: 0, placed: 0, mineItems: {}, placeItems: {} };
 
 function asset(rel) {
   return `${ROOT}/${rel}`;
@@ -1124,6 +1124,69 @@ function buildFishWorld() {
   return finishWorld(tiles, { ground, chests });
 }
 
+function buildQuarryWorld() {
+  const W = 52;
+  const H = 20;
+  const ground = 10;
+  const tiles = makeWorldShell(W, H, ground);
+  hut(tiles, 4, ground);
+  setCell(tiles, 5, ground - 1, "T");
+  setCell(tiles, 6, ground - 1, "C");
+  setCell(tiles, 7, ground - 1, "z");
+  setCell(tiles, 8, ground - 1, "Z");
+  setCell(tiles, 6, ground - 3, "t");
+  tree(tiles, 12, ground);
+  setCell(tiles, 16, ground, "h");
+  setCell(tiles, 16, ground + 1, "h");
+  setCell(tiles, 16, ground + 2, "h");
+  setCell(tiles, 16, ground + 3, "h");
+  fillRow(tiles, ground + 4, 14, 22, "s");
+  setCell(tiles, 15, ground + 4, "x");
+  setCell(tiles, 17, ground + 4, "x");
+  setCell(tiles, 19, ground + 3, "s");
+  setCell(tiles, 20, ground + 3, "x");
+  setCell(tiles, 18, ground + 4, "t");
+  fillRow(tiles, ground, 22, 38, "s");
+  fillRow(tiles, ground - 1, 24, 36, "s");
+  fillRow(tiles, ground - 2, 26, 34, "s");
+  setCell(tiles, 27, ground - 1, "x");
+  setCell(tiles, 29, ground - 1, "x");
+  setCell(tiles, 31, ground - 2, "x");
+  setCell(tiles, 33, ground - 1, "x");
+  setCell(tiles, 28, ground + 1, "s");
+  setCell(tiles, 30, ground + 1, "x");
+  tree(tiles, 42, ground);
+  const chests = scanChests(tiles);
+  fillChest(chests, 6, ground - 1, [
+    ["torch", 4],
+    ["bread", 1],
+  ]);
+  return finishWorld(tiles, { ground, chests });
+}
+
+function buildBridgeWorld() {
+  const W = 52;
+  const H = 20;
+  const ground = 10;
+  const tiles = makeWorldShell(W, H, ground);
+  tree(tiles, 8, ground);
+  setCell(tiles, 12, ground - 1, "t");
+  for (let x = 16; x <= 28; x++) {
+    setCell(tiles, x, ground, ".");
+    for (let y = ground + 1; y < H - 1; y++) setCell(tiles, x, y, y >= H - 3 ? "v" : ".");
+  }
+  hut(tiles, 32, ground);
+  setCell(tiles, 33, ground - 1, "C");
+  setCell(tiles, 34, ground - 1, "T");
+  setCell(tiles, 35, ground - 1, "z");
+  setCell(tiles, 36, ground - 1, "Z");
+  setCell(tiles, 34, ground - 3, "t");
+  setCell(tiles, 38, ground - 1, "t");
+  tree(tiles, 44, ground);
+  const chests = scanChests(tiles);
+  return finishWorld(tiles, { ground, chests });
+}
+
 function buildMineWorld() {
   const W = 64;
   const H = 20;
@@ -1259,6 +1322,8 @@ const WORLD_BUILDERS = {
   farm: buildFarmWorld,
   hunt: buildHuntWorld,
   fish: buildFishWorld,
+  quarry: buildQuarryWorld,
+  bridge: buildBridgeWorld,
   mine: buildMineWorld,
   night: buildNightWorld,
   overworld: buildWorld,
@@ -1584,7 +1649,18 @@ function loadoutItems(list) {
 }
 
 function emptyStats() {
-  return { kills: 0, fish: 0, portal: false, slept: false };
+  return { kills: 0, fish: 0, portal: false, slept: false, mined: 0, placed: 0, mineItems: {}, placeItems: {} };
+}
+
+function bumpStat(map, id, n = 1) {
+  if (!id || n <= 0) return;
+  map[id] = (map[id] ?? 0) + n;
+}
+
+function countStat(map, part) {
+  if (part?.any) return part.any.reduce((sum, id) => sum + (map[id] ?? 0), 0);
+  if (part?.item) return map[part.item] ?? 0;
+  return Object.values(map).reduce((sum, n) => sum + n, 0);
 }
 
 function levelMobs() {
@@ -1603,6 +1679,8 @@ function levelMobs() {
     ];
   }
   if (id === "fish") return [makeMob("chicken", 8, 10), makeMob("pig", 28, 10), makeMob("cow", 44, 10)];
+  if (id === "quarry") return [makeMob("chicken", 10, 10), makeMob("pig", 14, 10)];
+  if (id === "bridge") return [makeMob("chicken", 8, 10), makeMob("chicken", 36, 10)];
   if (id === "mine") return [makeMob("zombie", 22, 14), makeMob("spider", 26, 14), makeMob("zombie", 40, 10)];
   if (id === "night") {
     return [
@@ -1729,6 +1807,14 @@ function evalQuest(part = currentLevel().quest) {
   }
   if (part.type === "kills") return { n: stats.kills, need: part.count, ok: stats.kills >= part.count, label: part.label };
   if (part.type === "fish") return { n: stats.fish, need: part.count, ok: stats.fish >= part.count, label: part.label };
+  if (part.type === "mine") {
+    const n = countStat(stats.mineItems, part);
+    return { n, need: part.count, ok: n >= part.count, label: part.label };
+  }
+  if (part.type === "place") {
+    const n = countStat(stats.placeItems, part);
+    return { n, need: part.count, ok: n >= part.count, label: part.label };
+  }
   if (part.type === "portal") return { n: stats.portal ? 1 : 0, need: 1, ok: Boolean(stats.portal), label: part.label };
   if (part.type === "sleep") return { n: stats.slept ? 1 : 0, need: 1, ok: Boolean(stats.slept), label: part.label };
   if (part.type === "and") {
@@ -2013,6 +2099,54 @@ function frontCell() {
     { x: Math.floor(player.x / TILE), y: Math.floor((player.y - 12) / TILE) },
   ];
   return cells;
+}
+
+function placeCells() {
+  const fx = Math.floor((player.x + player.face * 28) / TILE);
+  const px = Math.floor(player.x / TILE);
+  const feetY = Math.floor((player.y + 4) / TILE);
+  const bodyY = Math.floor((player.y - 12) / TILE);
+  const headY = Math.floor((player.y - 36) / TILE);
+  const sneak = keys.has("control") || keys.has("c") || keys.has("arrowdown");
+  const list = sneak
+    ? [
+        { x: fx, y: feetY },
+        { x: fx, y: feetY + 1 },
+        { x: fx, y: bodyY },
+        { x: fx, y: headY },
+        { x: px, y: bodyY },
+      ]
+    : [
+        { x: fx, y: feetY },
+        { x: fx, y: bodyY },
+        { x: fx, y: headY },
+        { x: px, y: bodyY },
+      ];
+  const seen = new Set();
+  return list.filter((cell) => {
+    const key = `${cell.x},${cell.y}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function placeSupport(tx, ty) {
+  for (const [dx, dy] of [
+    [0, 1],
+    [0, -1],
+    [1, 0],
+    [-1, 0],
+  ]) {
+    const t = world.tiles[ty + dy]?.[tx + dx];
+    if (!t || t === ".") continue;
+    if (isSolid(t) || t === "n" || t === "w") return true;
+  }
+  return false;
+}
+
+function cellHasPlayer(tx, ty) {
+  return Math.floor(player.x / TILE) === tx && Math.floor((player.y - player.hh * 0.4) / TILE) === ty;
 }
 
 function findTileNear(px, py, ids) {
@@ -2561,6 +2695,15 @@ function finishMineCell(cell) {
   if (XP_ORE[t]) addXp(XP_ORE[t]);
   burstBits(x * TILE + 24, y * TILE + 24, "#bbb");
   if (mineSeconds(t, selectedItem()?.id) > 0 && TOOL_DUR[selectedItem()?.id]) wearHeld(1);
+  const minedId = spec.drop;
+  const minedN = spec.count ?? 1;
+  if (minedId) {
+    stats.mined += minedN;
+    bumpStat(stats.mineItems, minedId, minedN);
+  } else {
+    stats.mined += 1;
+  }
+  checkQuest();
 }
 
 function usingHeld() {
@@ -2601,57 +2744,69 @@ function updateMining(dt) {
   if (job.t >= job.need) finishMineCell(job);
 }
 
-function tryMineOrPlace() {
-  if (beginMine()) return true;
+function finishPlace(item, tx, ty) {
+  item.count -= 1;
+  stats.placed += 1;
+  bumpStat(stats.placeItems, item.id, 1);
+  say(`放下了${ITEM_LABELS[item.id] ?? item.id}`);
+  checkQuest();
+  return true;
+}
+
+function tryPlaceBlock() {
   const item = selectedItem();
-  if (item?.id === "bed" && item.count > 0) {
+  if (!item || item.count <= 0) return false;
+  if (item.id === "bed") {
     const tx = Math.floor((player.x + player.face * 28) / TILE);
     const ty = Math.floor((player.y - 12) / TILE);
     if (world.tiles[ty]?.[tx] === "." && world.tiles[ty]?.[tx + player.face] === "." && isSolid(world.tiles[ty + 1]?.[tx])) {
       setCell(world.tiles, tx, ty, player.face > 0 ? "z" : "Z");
       setCell(world.tiles, tx + player.face, ty, player.face > 0 ? "Z" : "z");
-      item.count -= 1;
-      say("放下了床。");
-      return true;
+      return finishPlace(item, tx, ty);
     }
+    return false;
   }
-  if (item && PLACEABLE[item.id] && item.count > 0) {
-    const tx = Math.floor((player.x + player.face * 28) / TILE);
-    const ty = Math.floor((player.y - 12) / TILE);
+  if (!PLACEABLE[item.id]) return false;
+  for (const cell of placeCells()) {
+    const { x: tx, y: ty } = cell;
+    if (tx < 0 || ty < 0 || tx >= world.w || ty >= world.h) continue;
+    if (cellHasPlayer(tx, ty)) continue;
     const dest = world.tiles[ty]?.[tx];
     if (item.id === "lily-pad" && dest === "w") {
       setCell(world.tiles, tx, ty, "lp");
-      item.count -= 1;
-      say("放下了睡莲。");
-      return true;
+      return finishPlace(item, tx, ty);
     }
-    if (dest === ".") {
-      const below = world.tiles[ty + 1]?.[tx];
-      if (below && (isSolid(below) || below === "n" || below === "w")) {
-        if (item.id === "oak-door") {
-          if (world.tiles[ty - 1]?.[tx] !== ".") {
-            say("上面没有空间放门。");
-            return true;
-          }
-          setCell(world.tiles, tx, ty, "D");
-          setCell(world.tiles, tx, ty - 1, "U");
-        } else if (item.id === "door-iron") {
-          if (world.tiles[ty - 1]?.[tx] !== ".") {
-            say("上面没有空间放门。");
-            return true;
-          }
-          setCell(world.tiles, tx, ty, "di");
-          setCell(world.tiles, tx, ty - 1, "di");
-        } else {
-          setCell(world.tiles, tx, ty, PLACEABLE[item.id]);
-        }
-        item.count -= 1;
-        if (item.id === "chest") world.chests[`${tx},${ty}`] = emptySlots(CHEST_SLOTS);
-        say(`放下了${ITEM_LABELS[item.id] ?? item.id}`);
+    if (dest !== ".") continue;
+    if (!placeSupport(tx, ty)) continue;
+    if (item.id === "oak-door") {
+      if (world.tiles[ty - 1]?.[tx] !== ".") {
+        say("上面没有空间放门。");
         return true;
       }
+      setCell(world.tiles, tx, ty, "D");
+      setCell(world.tiles, tx, ty - 1, "U");
+    } else if (item.id === "door-iron") {
+      if (world.tiles[ty - 1]?.[tx] !== ".") {
+        say("上面没有空间放门。");
+        return true;
+      }
+      setCell(world.tiles, tx, ty, "di");
+      setCell(world.tiles, tx, ty - 1, "di");
+    } else {
+      setCell(world.tiles, tx, ty, PLACEABLE[item.id]);
     }
+    if (item.id === "chest") world.chests[`${tx},${ty}`] = emptySlots(CHEST_SLOTS);
+    return finishPlace(item, tx, ty);
   }
+  return false;
+}
+
+function tryMineOrPlace() {
+  const item = selectedItem();
+  const holdingBlock = Boolean(item && item.count > 0 && (PLACEABLE[item.id] || item.id === "bed"));
+  if (holdingBlock && tryPlaceBlock()) return true;
+  if (beginMine()) return true;
+  if (!holdingBlock && tryPlaceBlock()) return true;
   return false;
 }
 
