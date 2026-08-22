@@ -4,33 +4,54 @@
   <g id="bee">
     <g id="wing-left" aria-label="Left wing">
       <g class="face" data-face="top">
-        <path fill="#d0d7da" d="M256 286.8L256 281.78L352 281.78L352 286.8Z"/>
-        <path fill="#cbcec2" stroke="#cbcec2" stroke-width=".6" stroke-linejoin="round" d="M256 284.01L256 283.45L272 283.45L272 284.01ZM272 283.45L272 282.89L288 282.89L288 283.45ZM288 286.24L288 285.69L304 285.69L304 286.24ZM288 285.13L288 284.57L304 284.57L304 285.13ZM304 286.8L304 286.24L320 286.24L320 286.8ZM304 284.01L304 283.45L320 283.45L320 284.01ZM320 284.57L320 284.01L336 284.01L336 284.57Z"/>
-        <path fill="#512d25" stroke="#512d25" stroke-width=".6" stroke-linejoin="round" d="M320 286.8L320 286.24L336 286.24L336 286.8ZM336 286.24L336 285.69L352 285.69L352 286.24Z"/>
+        <path fill="#cea732" d="M256 286.8L256 281.78L352 281.78L352 286.8Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#c8a330" d="M256 286.8L352 286.8L352 296.4L256 296.4Z"/>
       </g>
     </g>
     <g id="antenna-right" aria-label="Right antenna">
       <g class="face" data-face="nx">
-        <path fill="#342f3a" d="M336 290L384 290L384 322L336 322Z"/>
+        <path fill="#e7b82a" d="M336 290L384 290L384 322L336 322Z"/>
       </g>
     </g>
     <g id="stinger" aria-label="Stinger">
       <g class="face" data-face="nx">
-        <path fill="#342f3a" d="M144 338L176 338L176 354L144 354Z"/>
+        <path fill="#eebf31" d="M144 338L176 338L176 354L144 354Z"/>
+      </g>
+    </g>
+    <g id="leg-front" aria-label="Front legs">
+      <g class="face" data-face="nx">
+        <path fill="#ebbc2e" d="M284.8 402L291.2 402L291.2 434L284.8 434Z"/>
+      </g>
+    </g>
+    <g id="leg-mid" aria-label="Mid legs">
+      <g class="face" data-face="nx">
+        <path fill="#f9ca3c" d="M252.8 402L259.2 402L259.2 434L252.8 434Z"/>
+        <path fill="#e6b729" stroke="#e6b729" stroke-width=".6" stroke-linejoin="round" d="M252.8 418L259.2 418L259.2 434L252.8 434Z"/>
+      </g>
+    </g>
+    <g id="leg-back" aria-label="Back legs">
+      <g class="face" data-face="nx">
+        <path fill="#f6c739" d="M220.8 402L227.2 402L227.2 434L220.8 434Z"/>
       </g>
     </g>
     <g id="body" aria-label="Body">
       <g class="face" data-face="nx">
-        <path fill="#46281f" d="M176 290L336 290L336 402L176 402Z"/>
-        <path fill="#fed76a" stroke="#fed76a" stroke-width=".6" stroke-linejoin="round" d="M208 290L224 290L224 306L208 306ZM240 290L256 290L256 306L240 306ZM272 290L336 290L336 306L272 306ZM288 306L304 306L304 322L288 322ZM320 306L336 306L336 322L320 322Z"/>
-        <path fill="#623628" stroke="#623628" stroke-width=".6" stroke-linejoin="round" d="M224 290L240 290L240 306L224 306ZM256 290L272 290L272 306L256 306ZM256 306L272 306L272 322L256 322Z"/>
-        <path fill="#edc446" stroke="#edc446" stroke-width=".6" stroke-linejoin="round" d="M208 306L224 306L224 322L208 322ZM240 306L256 306L256 322L240 322ZM272 306L288 306L288 322L272 322ZM304 306L320 306L320 322L304 322ZM240 322L256 322L256 338L240 338ZM272 322L304 322L304 338L272 338ZM272 338L320 338L320 354L272 354ZM288 354L320 354L320 370L288 370ZM304 370L320 370L320 386L304 386Z"/>
-        <path fill="#e4af3e" stroke="#e4af3e" stroke-width=".6" stroke-linejoin="round" d="M208 322L224 322L224 338L208 338ZM304 322L320 322L320 338L304 338ZM240 338L256 338L256 354L240 354ZM240 354L256 354L256 370L240 370ZM272 354L288 354L288 370L272 370ZM288 370L304 370L304 386L288 386Z"/>
-        <path fill="#c6843f" stroke="#c6843f" stroke-width=".6" stroke-linejoin="round" d="M320 322L336 322L336 338L320 338ZM208 338L224 338L224 354L208 354ZM240 370L256 370L256 386L240 386ZM272 370L288 370L288 386L272 386ZM288 386L336 386L336 402L288 402Z"/>
-        <path fill="#342f3a" stroke="#342f3a" stroke-width=".6" stroke-linejoin="round" d="M320 338L336 338L336 354L320 354ZM320 354L336 354L336 370L320 370ZM320 370L336 370L336 386L320 386Z"/>
-        <path fill="#ad6a24" stroke="#ad6a24" stroke-width=".6" stroke-linejoin="round" d="M208 354L224 354L224 370L208 370ZM208 370L224 370L224 386L208 386ZM240 386L256 386L256 402L240 402ZM272 386L288 386L288 402L272 402Z"/>
-        <path fill="#140e0d" stroke="#140e0d" stroke-width=".6" stroke-linejoin="round" d="M192 370L208 370L208 386L192 386ZM224 370L240 370L240 386L224 386ZM192 386L208 386L208 402L192 402ZM224 386L240 386L240 402L224 402ZM256 386L272 386L272 402L256 402Z"/>
-        <path fill="#985627" stroke="#985627" stroke-width=".6" stroke-linejoin="round" d="M208 386L224 386L224 402L208 402Z"/>
+        <path fill="#eebf31" d="M176 290L336 290L336 402L176 402Z"/>
+      </g>
+    </g>
+    <g id="antenna-left" aria-label="Left antenna">
+      <g class="face" data-face="nx">
+        <path fill="#e6b729" d="M336 290L384 290L384 322L336 322Z"/>
+      </g>
+    </g>
+    <g id="wing-right" aria-label="Right wing">
+      <g class="face" data-face="bottom">
+        <path fill="#a5882e" d="M352 291.37L352 296.4L256 296.4L256 291.37Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#f4c539" d="M256 281.78L352 281.78L352 291.37L256 291.37Z"/>
       </g>
     </g>
   </g>

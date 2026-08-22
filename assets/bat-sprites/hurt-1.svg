@@ -2,6 +2,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 480" width="512" height="480" role="img" aria-labelledby="hurt-1-title">
   <title id="hurt-1-title">Hurt 2/8</title>
   <g id="bat">
+    <g id="wing-left-tip" aria-label="Left wing tip">
+      <g class="face" data-face="px">
+        <path fill="#ffffff" d="M43.71 90.3L43.95 89.1L39.26 220.23L39.02 221.42Z"/>
+      </g>
+      <g class="face" data-face="back">
+        <path fill="#ffffff" d="M43.95 89.1L131.87 92.42L127.18 223.54L39.26 220.23Z"/>
+      </g>
+      <g class="face" data-face="bottom">
+        <path fill="#ffffff" d="M126.94 224.74L39.02 221.42L39.26 220.23L127.18 223.54Z"/>
+      </g>
+    </g>
     <g id="ear-left" aria-label="Left ear">
       <g class="face" data-face="bottom">
         <path fill="#ffffff" d="M276.4 45.27L299.73 45.27L292.07 47.18L268.74 47.18Z"/>
@@ -11,6 +22,28 @@
       </g>
       <g class="face" data-face="nx">
         <path fill="#ffffff" d="M263.33 3.85L270.99 1.94L276.4 45.27L268.74 47.18Z"/>
+      </g>
+    </g>
+    <g id="feet" aria-label="Feet">
+      <g class="face" data-face="back">
+        <path fill="#ffffff" d="M196.91 235.26L196.91 238.42L148.4 407.53L148.4 404.37Z"/>
+      </g>
+      <g class="face" data-face="top">
+        <path fill="#ffffff" d="M196.91 238.42L196.91 235.26L207.49 238.29L207.49 241.45Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M196.91 238.42L207.49 241.45L158.98 410.56L148.4 407.53Z"/>
+      </g>
+    </g>
+    <g id="wing-left" aria-label="Left wing">
+      <g class="face" data-face="back">
+        <path fill="#ffffff" d="M126.73 81.44L223.12 79.06L216.87 253.89L120.49 256.28Z"/>
+      </g>
+      <g class="face" data-face="bottom">
+        <path fill="#ffffff" d="M222.15 255.13L125.77 257.52L120.49 256.28L216.87 253.89Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M223.12 79.06L228.4 80.3L222.15 255.13L216.87 253.89Z"/>
       </g>
     </g>
     <g id="body" aria-label="Body">
@@ -39,6 +72,12 @@
       <g class="face" data-face="front">
         <path fill="#ffffff" d="M132.02 85.42L228.4 80L222.15 253.44L125.77 258.86Z"/>
       </g>
+      <g class="face" data-face="top">
+        <path fill="#ffffff" d="M126.73 83.63L223.12 78.21L228.4 80L132.02 85.42Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M126.73 83.63L132.02 85.42L125.77 258.86L120.49 257.07Z"/>
+      </g>
     </g>
     <g id="ear-right" aria-label="Right ear">
       <g class="face" data-face="bottom">
@@ -52,8 +91,14 @@
       </g>
     </g>
     <g id="wing-right-tip" aria-label="Right wing tip">
+      <g class="face" data-face="px">
+        <path fill="#ffffff" d="M131.63 96.26L131.87 94.44L127.18 224.52L126.94 226.34Z"/>
+      </g>
       <g class="face" data-face="front">
         <path fill="#ffffff" d="M43.71 92.86L131.63 96.26L126.94 226.34L39.02 222.94Z"/>
+      </g>
+      <g class="face" data-face="top">
+        <path fill="#ffffff" d="M43.95 91.04L131.87 94.44L131.63 96.26L43.71 92.86Z"/>
       </g>
     </g>
   </g>

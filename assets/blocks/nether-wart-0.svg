@@ -2,10 +2,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="nether-wart-0-title">
   <title id="nether-wart-0-title">地狱疣苗 / Nether wart sprout</title>
   <g id="nether-wart-0">
-    <path fill="#831c20" d="M331 306h75v25h-75zM131 331h75v25h-75zM306 331h25v25h-25zM406 331h25v25h-25zM106 356h25v25h-25zM306 356h25v25h-25zM356 356h50v25h-50zM106 381h25v25h-25zM156 381h50v25h-50zM356 381h25v25h-25zM156 406h25v25h-25zM256 431h25v25h-25z"/>
-    <path fill="#a42429" d="M331 331h25v25h-25zM381 331h25v25h-25zM131 356h75v25h-75zM331 356h25v25h-25zM131 381h25v25h-25z"/>
-    <path fill="#c53439" d="M356 331h25v25h-25z"/>
-    <path fill="#480000" d="M206 356h25v25h-25zM406 356h25v25h-25zM206 381h25v25h-25zM331 381h25v25h-25zM381 381h25v25h-25zM131 406h25v25h-25zM181 406h25v25h-25zM331 406h25v25h-25zM381 406h25v25h-25zM131 431h25v25h-25zM181 431h25v25h-25zM281 431h25v25h-25zM331 431h25v25h-25zM381 431h25v25h-25z"/>
-    <path fill="#730408" d="M356 406h25v25h-25zM156 431h25v25h-25zM231 431h25v25h-25zM356 431h25v25h-25z"/>
+    <path fill="#5a1018" d="M181 356h150v25h-150zM181 381h150v25h-150zM181 406h150v25h-150zM181 431h150v25h-150z"/>
   </g>
 </svg>

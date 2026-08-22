@@ -203,6 +203,13 @@ export function paintSheep() {
   return img;
 }
 
+export function paintShornSheep() {
+  const img = fillSkin(64, 32, "#b08a68");
+  paintUv(img, boxUv(0, 0, 6, 6, 6), "#c8a078", 2);
+  put(img, 8, 8, "#c8a078");
+  return img;
+}
+
 export function paintSlime() {
   const img = fillSkin(64, 32, "#58c048");
   paintUv(img, boxUv(0, 0, 8, 8, 8), "#58c048", 2);
@@ -278,7 +285,7 @@ export async function paintNamed(kind) {
     case "blaze":
       return paintSimple(64, 32, "#f08020");
     case "magma-cube":
-      return paintSimple(64, 32, "#8a2010");
+      return paintSimple(64, 64, "#8a2010");
     case "wither":
       return paintSimple(64, 64, "#2a2a2a");
     case "ender-dragon":

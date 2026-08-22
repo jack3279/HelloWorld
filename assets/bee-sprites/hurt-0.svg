@@ -6,6 +6,12 @@
       <g class="face" data-face="top">
         <path fill="#ffffff" d="M258.54 283.94L233.02 173.63L325.3 173.63L350.82 283.94Z"/>
       </g>
+      <g class="face" data-face="back">
+        <path fill="#ffffff" d="M233.02 173.63L258.54 283.94L256.51 290.11L230.99 179.8Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M258.54 283.94L350.82 283.94L348.79 290.11L256.51 290.11Z"/>
+      </g>
     </g>
     <g id="antenna-right" aria-label="Right antenna">
       <g class="face" data-face="nx">
@@ -17,9 +23,40 @@
         <path fill="#ffffff" d="M151.2 307.38L182.25 315.12L178.38 330.65L147.33 322.9Z"/>
       </g>
     </g>
+    <g id="leg-front" aria-label="Front legs">
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M272.33 403.54L278.54 405.09L270.8 436.14L264.59 434.59Z"/>
+      </g>
+    </g>
+    <g id="leg-mid" aria-label="Mid legs">
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M241.28 395.8L247.49 397.35L239.75 428.4L233.54 426.85Z"/>
+      </g>
+    </g>
+    <g id="leg-back" aria-label="Back legs">
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M210.23 388.06L216.44 389.61L208.7 420.66L202.49 419.11Z"/>
+      </g>
+    </g>
     <g id="body" aria-label="Body">
       <g class="face" data-face="nx">
         <path fill="#ffffff" d="M193.86 268.55L349.11 307.25L322.01 415.93L166.76 377.22Z"/>
+      </g>
+    </g>
+    <g id="antenna-left" aria-label="Left antenna">
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M349.11 307.25L395.68 318.87L387.94 349.92L341.37 338.3Z"/>
+      </g>
+    </g>
+    <g id="wing-right" aria-label="Right wing">
+      <g class="face" data-face="bottom">
+        <path fill="#ffffff" d="M323.28 179.8L348.79 290.11L256.51 290.11L230.99 179.8Z"/>
+      </g>
+      <g class="face" data-face="front">
+        <path fill="#ffffff" d="M325.3 173.63L350.82 283.94L348.79 290.11L323.28 179.8Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M233.02 173.63L325.3 173.63L323.28 179.8L230.99 179.8Z"/>
       </g>
     </g>
   </g>

@@ -55,6 +55,9 @@
       <g class="face" data-face="front">
         <path fill="#ffffff" d="M308.27 200.93L308.27 206.3L262.11 423.18L262.11 417.81Z"/>
       </g>
+      <g class="face" data-face="bottom">
+        <path fill="#ffffff" d="M262.11 417.81L262.11 423.18L179.95 405.74L179.95 400.36Z"/>
+      </g>
       <g class="face" data-face="nx">
         <path fill="#ffffff" d="M226.1 183.49L308.27 200.93L262.11 417.81L179.95 400.36Z"/>
       </g>

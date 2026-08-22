@@ -2,9 +2,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="armor-full-title">
   <title id="armor-full-title">Armor</title>
   <g id="armor-full">
-    <path fill="#000000" d="M61.5 42.5h38v19h-38zM156.5 42.5h38v19h-38zM42.5 61.5h19v19h-19zM99.5 61.5h19v19h-19zM137.5 61.5h19v19h-19zM194.5 61.5h19v19h-19zM42.5 80.5h19v19h-19zM118.5 80.5h19v19h-19zM194.5 80.5h19v19h-19zM42.5 99.5h19v19h-19zM194.5 99.5h19v19h-19zM61.5 118.5h19v19h-19zM175.5 118.5h19v19h-19zM61.5 137.5h19v19h-19zM175.5 137.5h19v19h-19zM61.5 156.5h19v19h-19zM175.5 156.5h19v19h-19zM61.5 175.5h19v19h-19zM175.5 175.5h19v19h-19zM80.5 194.5h95v19h-95z"/>
-    <path fill="#e6e7f2" d="M61.5 61.5h19v19h-19zM156.5 61.5h19v19h-19z"/>
-    <path fill="#b8b9c4" d="M80.5 61.5h19v19h-19zM175.5 61.5h19v19h-19zM61.5 80.5h57v19h-57zM137.5 80.5h57v19h-57zM80.5 99.5h95v19h-95zM80.5 118.5h95v19h-95zM80.5 137.5h95v19h-95zM80.5 156.5h95v19h-95z"/>
-    <path fill="#696a70" d="M61.5 99.5h19v19h-19zM175.5 99.5h19v19h-19zM80.5 175.5h95v19h-95z"/>
+    <path fill="#b8b9c4" d="M61.5 42.5h133v19h-133zM42.5 61.5h171v19h-171zM42.5 80.5h38v19h-38zM175.5 80.5h38v19h-38zM42.5 99.5h171v19h-171zM61.5 118.5h133v19h-133zM80.5 137.5h95v19h-95z"/>
   </g>
 </svg>

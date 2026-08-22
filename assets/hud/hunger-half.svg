@@ -2,15 +2,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="hunger-half-title">
   <title id="hunger-half-title">Half hunger</title>
   <g id="hunger-half">
-    <path fill="#b21818" d="M99.5 61.5h19v19h-19zM118.5 80.5h19v19h-19zM99.5 118.5h38v19h-38z"/>
-    <path fill="#e8c4a4" d="M80.5 80.5h19v19h-19z"/>
-    <path fill="#d42a2a" d="M99.5 80.5h19v19h-19zM118.5 99.5h19v19h-19z"/>
-    <path fill="#d7977a" d="M99.5 99.5h19v19h-19z"/>
-    <path fill="#b88458" d="M137.5 99.5h19v19h-19z"/>
-    <path fill="#9d6d43" d="M137.5 118.5h19v19h-19z"/>
-    <path fill="#613c1b" d="M118.5 137.5h19v19h-19z"/>
-    <path fill="#7b512d" d="M137.5 137.5h19v19h-19z"/>
-    <path fill="#e2d5aa" d="M156.5 156.5h19v19h-19z"/>
-    <path fill="#fff7dc" d="M175.5 175.5h19v19h-19z"/>
+    <path fill="#b88458" d="M80.5 42.5h38v19h-38zM61.5 61.5h19v19h-19zM42.5 80.5h19v19h-19z"/>
+    <path fill="#d42a2a" d="M80.5 61.5h38v19h-38zM61.5 80.5h38v19h-38zM61.5 99.5h38v19h-38zM80.5 118.5h19v19h-19z"/>
+    <path fill="#282828" d="M137.5 61.5h19v19h-19zM156.5 80.5h19v19h-19zM156.5 99.5h19v19h-19z"/>
   </g>
 </svg>

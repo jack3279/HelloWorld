@@ -5,34 +5,27 @@
   <g id="minecart">
     <g id="front" aria-label="Front wall">
       <g class="face" data-face="nx">
-        <path fill="#b7babb" d="M16 50L496 50L496 290L16 290Z"/>
-        <path fill="#969999" stroke="#969999" stroke-width=".6" stroke-linejoin="round" d="M256 50L496 50L496 80L256 80ZM256 80L496 80L496 110L256 110ZM256 110L496 110L496 140L256 140ZM256 140L496 140L496 170L256 170ZM256 170L496 170L496 200L256 200ZM256 200L496 200L496 230L256 230ZM256 230L496 230L496 260L256 260ZM256 260L496 260L496 290L256 290Z"/>
+        <path fill="#68686b" d="M16 50L496 50L496 290L16 290Z"/>
       </g>
     </g>
     <g id="right" aria-label="Right wall">
       <g class="face" data-face="nx">
-        <path fill="#b7babb" d="M16 50L76 50L76 290L16 290Z"/>
-        <path fill="#969999" stroke="#969999" stroke-width=".6" stroke-linejoin="round" d="M46 50L76 50L76 80L46 80ZM46 80L76 80L76 110L46 110ZM46 110L76 110L76 140L46 140ZM46 140L76 140L76 170L46 170ZM46 170L76 170L76 200L46 200ZM46 200L76 200L76 230L46 230ZM46 230L76 230L76 260L46 260ZM46 260L76 260L76 290L46 290Z"/>
+        <path fill="#68686b" d="M16 50L76 50L76 290L16 290Z"/>
       </g>
     </g>
     <g id="bottom" aria-label="Floor">
       <g class="face" data-face="nx">
-        <path fill="#6f767a" d="M16 290L496 290L496 350L16 350Z"/>
-        <path fill="#8e9293" stroke="#8e9293" stroke-width=".6" stroke-linejoin="round" d="M16 290L76 290L76 320L16 320ZM46 320L76 320L76 350L46 350Z"/>
-        <path fill="#505455" stroke="#505455" stroke-width=".6" stroke-linejoin="round" d="M106 290L196 290L196 320L106 320ZM256 290L496 290L496 320L256 320Z"/>
-        <path fill="#78858b" stroke="#78858b" stroke-width=".6" stroke-linejoin="round" d="M16 320L46 320L46 350L16 350Z"/>
+        <path fill="#6f6f72" d="M16 290L496 290L496 350L16 350Z"/>
       </g>
     </g>
     <g id="left" aria-label="Left wall">
       <g class="face" data-face="nx">
-        <path fill="#b7babb" d="M436 50L496 50L496 290L436 290Z"/>
-        <path fill="#969999" stroke="#969999" stroke-width=".6" stroke-linejoin="round" d="M466 50L496 50L496 80L466 80ZM466 80L496 80L496 110L466 110ZM466 110L496 110L496 140L466 140ZM466 140L496 140L496 170L466 170ZM466 170L496 170L496 200L466 200ZM466 200L496 200L496 230L466 230ZM466 230L496 230L496 260L466 260ZM466 260L496 260L496 290L466 290Z"/>
+        <path fill="#68686b" d="M436 50L496 50L496 290L436 290Z"/>
       </g>
     </g>
     <g id="back" aria-label="Back wall">
       <g class="face" data-face="nx">
-        <path fill="#b7babb" d="M16 50L496 50L496 290L16 290Z"/>
-        <path fill="#969999" stroke="#969999" stroke-width=".6" stroke-linejoin="round" d="M256 50L496 50L496 80L256 80ZM256 80L496 80L496 110L256 110ZM256 110L496 110L496 140L256 140ZM256 140L496 140L496 170L256 170ZM256 170L496 170L496 200L256 200ZM256 200L496 200L496 230L256 230ZM256 230L496 230L496 260L256 260ZM256 260L496 260L496 290L256 290Z"/>
+        <path fill="#68686b" d="M16 50L496 50L496 290L16 290Z"/>
       </g>
     </g>
   </g>
