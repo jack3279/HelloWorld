@@ -20,23 +20,14 @@ export const TOLERANCE = 16;
 export { parseArgs };
 
 export async function loadLavaStrip(explicitPath) {
-  let buf;
-  if (explicitPath) buf = await readFile(explicitPath);
-  else {
-    try {
-      buf = await readFile(CACHE);
-    } catch {
-      const res = await fetch(LAVA_URL);
-      if (!res.ok) throw new Error(`could not download ${LAVA_URL} (${res.status})`);
-      buf = Buffer.from(await res.arrayBuffer());
-      await mkdir(dirname(CACHE), { recursive: true });
-      await writeFile(CACHE, buf);
-    }
+  if (explicitPath) {
+    const png = decodePng(await readFile(explicitPath));
+    if (png.width !== TILE) throw new Error(`expected a ${TILE}px-wide lava strip`);
+    if (png.height % TILE !== 0) throw new Error("lava strip height must be a multiple of the tile");
+    return png;
   }
-  const png = decodePng(buf);
-  if (png.width !== TILE) throw new Error(`expected a ${TILE}px-wide lava strip`);
-  if (png.height % TILE !== 0) throw new Error("lava strip height must be a multiple of the tile");
-  return png;
+  const { paintLavaStrip } = await import("./cc0-skins.mjs");
+  return paintLavaStrip();
 }
 
 export function frameCount(strip) {

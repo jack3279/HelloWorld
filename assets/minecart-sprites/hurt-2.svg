@@ -6,6 +6,9 @@
       <g class="face" data-face="back">
         <path fill="#ffffff" d="M164.36 270.82L164.34 268.49L167.84 355.93L167.86 358.26Z"/>
       </g>
+      <g class="face" data-face="bottom">
+        <path fill="#ffffff" d="M343.7 348.94L343.72 351.27L167.86 358.26L167.84 355.93Z"/>
+      </g>
       <g class="face" data-face="nx">
         <path fill="#ffffff" d="M164.34 268.49L340.2 261.51L343.7 348.94L167.84 355.93Z"/>
       </g>
@@ -14,6 +17,9 @@
       <g class="face" data-face="back">
         <path fill="#ffffff" d="M318.37 269.14L318.18 250.48L321.68 337.92L321.87 356.58Z"/>
       </g>
+      <g class="face" data-face="bottom">
+        <path fill="#ffffff" d="M343.66 337.05L343.85 355.71L321.87 356.58L321.68 337.92Z"/>
+      </g>
       <g class="face" data-face="nx">
         <path fill="#ffffff" d="M318.18 250.48L340.16 249.61L343.66 337.05L321.68 337.92Z"/>
       </g>
@@ -21,6 +27,9 @@
     <g id="right" aria-label="Right wall">
       <g class="face" data-face="back">
         <path fill="#ffffff" d="M164.4 272.21L164.21 253.55L167.71 340.98L167.9 359.64Z"/>
+      </g>
+      <g class="face" data-face="bottom">
+        <path fill="#ffffff" d="M189.69 340.11L189.88 358.77L167.9 359.64L167.71 340.98Z"/>
       </g>
       <g class="face" data-face="nx">
         <path fill="#ffffff" d="M164.21 253.55L186.19 252.67L189.69 340.11L167.71 340.98Z"/>
@@ -37,6 +46,9 @@
     <g id="back" aria-label="Back wall">
       <g class="face" data-face="back">
         <path fill="#ffffff" d="M164.36 260.31L164.34 257.98L167.84 345.41L167.86 347.75Z"/>
+      </g>
+      <g class="face" data-face="bottom">
+        <path fill="#ffffff" d="M343.7 338.43L343.72 340.76L167.86 347.75L167.84 345.41Z"/>
       </g>
       <g class="face" data-face="nx">
         <path fill="#ffffff" d="M164.34 257.98L340.2 250.99L343.7 338.43L167.84 345.41Z"/>

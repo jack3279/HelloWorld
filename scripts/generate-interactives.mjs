@@ -167,16 +167,11 @@ function cropFace(png, sx, sy) {
 }
 
 async function writeFire() {
-  const url = "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/blocks/fire_0.png";
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`could not download fire_0.png (${res.status})`);
-  const png = decodeTexture(Buffer.from(await res.arrayBuffer()));
-  const frames = Math.max(1, Math.floor(png.height / TILE));
+  const { paintFireStrip } = await import("./lib/cc0-blocks.mjs");
+  const png = paintFireStrip(8);
   const box = layoutSingle();
-  const pick = [];
-  for (let i = 0; i < 8; i++) pick.push(Math.floor((i * frames) / 8) % frames);
-  for (let i = 0; i < pick.length; i++) {
-    const cropped = cropFace(png, 0, pick[i] * TILE);
+  for (let i = 0; i < 8; i++) {
+    const cropped = cropFace(png, 0, i * TILE);
     const id = i === 0 ? "fire" : `fire-${i}`;
     const svg = wrapSvg(
       id,
@@ -210,25 +205,14 @@ async function writeTntPrimed() {
 }
 
 async function writeXpOrb() {
-  const url = "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/experience_orb.png";
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`could not download experience_orb.png (${res.status})`);
-  const png = decodeTexture(Buffer.from(await res.arrayBuffer()));
-  const cropped = cropFace(png, 0, 0);
-  const rgba = new Uint8Array(cropped.rgba);
-  for (let i = 0; i < rgba.length; i += 4) {
-    if (rgba[i + 3] < ALPHA_CUTOFF) continue;
-    const y = Math.max(rgba[i], rgba[i + 1], rgba[i + 2]);
-    rgba[i] = Math.round(y * 0.5);
-    rgba[i + 1] = Math.round(y * 0.95);
-    rgba[i + 2] = Math.round(y * 0.18);
-  }
+  const { paintXpOrb } = await import("./lib/cc0-items.mjs");
+  const cropped = paintXpOrb();
   const box = layoutSingle();
   const svg = wrapSvg(
     "xp-orb",
     "经验球 / Experience orb",
     SINGLE,
-    `<g id="xp-orb">\n    ${svgFromRuns(runsOf({ width: TILE, height: TILE, rgba }), box).join("\n    ")}\n  </g>`,
+    `<g id="xp-orb">\n    ${svgFromRuns(runsOf(cropped), box).join("\n    ")}\n  </g>`,
   ).replace("generate-blocks-svg.mjs", "generate-interactives.mjs");
   await writeFile(resolve(ROOT, "assets/items/xp-orb.svg"), svg);
   console.log("Wrote assets/items/xp-orb.svg");

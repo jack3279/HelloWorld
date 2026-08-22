@@ -2,15 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="red-mushroom-title">
   <title id="red-mushroom-title">红蘑菇 / Red mushroom</title>
   <g id="red-mushroom">
-    <path fill="#9accd0" d="M206 281h25v25h-25z"/>
-    <path fill="#fe2a2a" d="M231 281h75v25h-75zM206 306h75v25h-75zM206 331h50v25h-50z"/>
-    <path fill="#e21212" d="M181 306h25v25h-25zM281 306h50v25h-50zM156 331h50v25h-50zM256 331h50v25h-50zM331 331h25v25h-25zM206 356h50v25h-50z"/>
-    <path fill="#96adaf" d="M306 331h25v25h-25zM156 356h25v25h-25z"/>
-    <path fill="#c41d26" d="M181 356h25v25h-25zM256 356h50v25h-50z"/>
-    <path fill="#a9121a" d="M306 356h50v25h-50z"/>
-    <path fill="#cfc47f" d="M231 381h25v25h-25zM256 406h25v25h-25z"/>
-    <path fill="#a9a065" d="M256 381h25v25h-25z"/>
-    <path fill="#ede8ca" d="M231 406h25v25h-25zM231 431h25v25h-25z"/>
-    <path fill="#d6d0ac" d="M256 431h25v25h-25z"/>
+    <path fill="#d02828" d="M206 56h75v25h-75zM181 81h125v25h-125z"/>
+    <path fill="#e8d8c0" d="M206 106h25v25h-25zM256 106h25v25h-25zM231 131h25v25h-25z"/>
   </g>
 </svg>

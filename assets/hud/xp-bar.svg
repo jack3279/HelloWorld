@@ -2,9 +2,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 140" width="640" height="140" role="img" aria-labelledby="xp-bar-title">
   <title id="xp-bar-title">XP bar</title>
   <g id="xp-bar">
-    <path fill="#0e1110" d="M50 62.5h540v3h-540zM47 65.5h3v3h-3zM590 65.5h3v3h-3zM47 68.5h3v3h-3zM590 68.5h3v3h-3zM47 71.5h3v3h-3zM590 71.5h3v3h-3zM50 74.5h540v3h-540z"/>
-    <path fill="#74a74a" d="M50 65.5h540v3h-540z"/>
-    <path fill="#aeee7a" d="M50 68.5h540v3h-540z"/>
-    <path fill="#699843" d="M50 71.5h540v3h-540z"/>
+    <path fill="#c8ff90" d="M47 62.5h546v3h-546z"/>
+    <path fill="#7cf05a" d="M47 65.5h546v3h-546zM47 68.5h546v3h-546zM47 71.5h546v3h-546z"/>
+    <path fill="#3a8a28" d="M47 74.5h546v3h-546z"/>
   </g>
 </svg>

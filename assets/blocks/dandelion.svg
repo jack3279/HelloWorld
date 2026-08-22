@@ -2,12 +2,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="dandelion-title">
   <title id="dandelion-title">蒲公英 / Dandelion</title>
   <g id="dandelion">
-    <path fill="#ffec4f" d="M231 231h50v25h-50zM206 256h25v25h-25zM281 256h25v25h-25zM181 281h25v25h-25zM231 281h25v25h-25zM306 281h25v25h-25zM206 306h25v25h-25zM281 306h25v25h-25z"/>
-    <path fill="#fed639" d="M231 256h25v25h-25zM281 281h25v25h-25zM256 306h25v25h-25z"/>
-    <path fill="#f19d25" d="M256 256h25v25h-25zM206 281h25v25h-25z"/>
-    <path fill="#bd6a22" d="M256 281h25v25h-25zM231 306h25v25h-25z"/>
-    <path fill="#177c04" d="M231 331h50v25h-50zM181 356h25v25h-25zM206 381h25v25h-25zM306 381h25v25h-25zM256 406h50v25h-50zM256 431h25v25h-25z"/>
-    <path fill="#4a8f28" d="M206 356h25v25h-25zM256 356h25v25h-25zM256 381h50v25h-50zM231 431h25v25h-25z"/>
-    <path fill="#55ab2d" d="M231 356h25v25h-25zM231 381h25v25h-25zM231 406h25v25h-25z"/>
+    <path fill="#f0d030" d="M231 56h25v25h-25zM206 81h25v25h-25zM256 81h25v25h-25zM231 106h25v25h-25z"/>
+    <path fill="#fff0a0" d="M231 81h25v25h-25z"/>
+    <path fill="#3a8a28" d="M231 131h25v25h-25zM231 156h25v25h-25z"/>
   </g>
 </svg>

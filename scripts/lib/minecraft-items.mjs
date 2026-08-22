@@ -1,4 +1,4 @@
-// Official Minecraft 16×16 item icons for the HUD hotbar, plus drop motion.
+// Original CC0 16×16 item icons for the HUD hotbar, plus drop motion.
 // Transparent texels stay empty so swords and potions keep their silhouette.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
@@ -221,24 +221,13 @@ export function itemById(id) {
 }
 
 export async function loadItem(id) {
-  const item = itemById(id);
-  const cachePath = resolve(CACHE, item.file);
-  let buf;
-  try {
-    buf = await readFile(cachePath);
-  } catch {
-    const url = `${item.base ?? ITEMS_BASE}/${item.file}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`could not download ${url} (${res.status})`);
-    buf = Buffer.from(await res.arrayBuffer());
-    await mkdir(CACHE, { recursive: true });
-    await writeFile(cachePath, buf);
-  }
-  let png = decodePng(buf);
-  if (item.crop) png = cropRgba(png, item.crop[0], item.crop[1], item.crop[2] ?? TILE, item.crop[3] ?? TILE);
-  if (item.punchDark) png = punchDarkRgba(png, item.punchDark === true ? 48 : item.punchDark);
+  const { paintItem } = await import("./cc0-items.mjs");
+  const item = ITEMS.find((it) => it.id === id) ?? MORE_ITEMS.find((it) => it.id === id) ?? BLOCK_ITEMS.find((it) => it.id === id) ?? PLAY_ITEMS.find((it) => it.id === id);
+  let png = paintItem(id);
+  if (item?.crop) png = cropRgba(png, item.crop[0], item.crop[1], item.crop[2] ?? TILE, item.crop[3] ?? TILE);
+  if (item?.punchDark) png = punchDarkRgba(png, item.punchDark === true ? 48 : item.punchDark);
   if (png.width < TILE || png.height < TILE) {
-    throw new Error(`${item.file} is smaller than ${TILE}×${TILE}`);
+    throw new Error(`${id} is smaller than ${TILE}×${TILE}`);
   }
   return png;
 }

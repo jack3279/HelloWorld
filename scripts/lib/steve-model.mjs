@@ -271,36 +271,16 @@ export function normalizePlayerSkin(skin) {
   return skin;
 }
 
-// Without an explicit path the official template is downloaded once and
-// cached, so repeat runs stay offline-friendly. Pass `{ url, cache }` for
-// another 64x64 (or classic 64x32) player-layout skin such as the zombie.
+// Without an explicit path the original CC0 skin is painted in memory.
+// Pass `{ url }` so the painter can pick a matching creature, or `{ kind }`.
 export async function loadSkin(explicitPath, options = {}) {
   const urls = options.urls ?? [options.url ?? SKIN_URL];
-  const cache = options.cache ?? (urls[0] === ZOMBIE_SKIN_URL ? ZOMBIE_CACHE : CACHE);
   const shouldNormalize = options.normalize ?? true;
   let decoded;
   if (explicitPath) decoded = decodeTexture(await readFile(explicitPath));
   else {
-    try {
-      decoded = decodeTexture(await readFile(cache));
-    } catch {
-      let lastErr;
-      let buf;
-      for (const url of urls) {
-        const res = await fetch(url);
-        if (!res.ok) {
-          lastErr = new Error(`could not download ${url} (${res.status})`);
-          continue;
-        }
-        buf = Buffer.from(await res.arrayBuffer());
-        lastErr = null;
-        break;
-      }
-      if (!buf) throw lastErr ?? new Error("could not download skin");
-      await mkdir(dirname(cache), { recursive: true });
-      await writeFile(cache, buf);
-      decoded = decodeTexture(buf);
-    }
+    const { paintSkinForUrl, paintNamed } = await import("./cc0-skins.mjs");
+    decoded = paintSkinForUrl(urls[0]) ?? (await paintNamed(options.kind ?? "steve"));
   }
   return shouldNormalize ? normalizePlayerSkin(decoded) : decoded;
 }
@@ -343,6 +323,121 @@ export async function loadSheepSkin(explicitPath) {
 
 export async function loadSlimeSkin(explicitPath) {
   return loadSkin(explicitPath, { url: SLIME_SKIN_URL, cache: SLIME_CACHE, normalize: false });
+}
+
+async function loadNamedSkin(kind, explicitPath, { normalize = false, w, h } = {}) {
+  if (explicitPath) return loadSkin(explicitPath, { normalize });
+  const { paintNamed } = await import("./cc0-skins.mjs");
+  const skin = await paintNamed(kind);
+  if (w && skin.width < w) throw new Error(`expected a ${w}×${h ?? w}+ ${kind} texture`);
+  return normalize ? normalizePlayerSkin(skin) : skin;
+}
+
+export async function loadDrownedSkin(explicitPath) {
+  return loadNamedSkin("drowned", explicitPath, { normalize: true });
+}
+
+export async function loadWitherSkeletonSkin(explicitPath) {
+  return loadNamedSkin("wither-skeleton", explicitPath);
+}
+
+export async function loadCatSkin(explicitPath) {
+  return loadNamedSkin("cat", explicitPath);
+}
+
+export async function loadWolfSkin(explicitPath) {
+  return loadNamedSkin("wolf", explicitPath);
+}
+
+export async function loadFoxSkin(explicitPath) {
+  return loadNamedSkin("fox", explicitPath);
+}
+
+export async function loadHorseSkin(explicitPath) {
+  return loadNamedSkin("horse", explicitPath);
+}
+
+export async function loadIronGolemSkin(explicitPath) {
+  return loadNamedSkin("iron-golem", explicitPath);
+}
+
+export async function loadSnowGolemSkin(explicitPath) {
+  return loadNamedSkin("snow-golem", explicitPath);
+}
+
+export async function loadVillagerSkin(explicitPath) {
+  return loadNamedSkin("villager", explicitPath);
+}
+
+export async function loadPillagerSkin(explicitPath) {
+  return loadNamedSkin("pillager", explicitPath);
+}
+
+export async function loadWitchSkin(explicitPath) {
+  return loadNamedSkin("witch", explicitPath);
+}
+
+export async function loadBatSkin(explicitPath) {
+  return loadNamedSkin("bat", explicitPath);
+}
+
+export async function loadBeeSkin(explicitPath) {
+  return loadNamedSkin("bee", explicitPath);
+}
+
+export async function loadParrotSkin(explicitPath) {
+  return loadNamedSkin("parrot", explicitPath);
+}
+
+export async function loadRabbitSkin(explicitPath) {
+  return loadNamedSkin("rabbit", explicitPath);
+}
+
+export async function loadSquidSkin(explicitPath) {
+  return loadNamedSkin("squid", explicitPath);
+}
+
+export async function loadGhastSkin(explicitPath) {
+  return loadNamedSkin("ghast", explicitPath);
+}
+
+export async function loadBlazeSkin(explicitPath) {
+  return loadNamedSkin("blaze", explicitPath);
+}
+
+export async function loadMagmaCubeSkin(explicitPath) {
+  return loadNamedSkin("magma-cube", explicitPath);
+}
+
+export async function loadWitherSkin(explicitPath) {
+  return loadNamedSkin("wither", explicitPath);
+}
+
+export async function loadEnderDragonSkin(explicitPath) {
+  return loadNamedSkin("ender-dragon", explicitPath);
+}
+
+export async function loadMinecartSkin(explicitPath) {
+  return loadNamedSkin("minecart", explicitPath);
+}
+
+export async function loadBoatSkin(explicitPath) {
+  return loadNamedSkin("boat", explicitPath);
+}
+
+export async function loadArmorLayer(kind, layer) {
+  const { paintArmor } = await import("./cc0-skins.mjs");
+  return paintArmor(kind, layer);
+}
+
+export async function loadChestSkin() {
+  const { paintChestSkin } = await import("./cc0-skins.mjs");
+  return paintChestSkin();
+}
+
+export async function loadShieldSkin() {
+  const { paintShieldSkin } = await import("./cc0-skins.mjs");
+  return paintShieldSkin();
 }
 
 // ------------------------------------------------------------------- 3d helpers

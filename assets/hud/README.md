@@ -1,7 +1,8 @@
-# Minecraft HUD chrome
+# HUD chrome
 
-Official Bedrock UI textures, flattened into horizontal color runs so Skottie
+Original CC0 HUD icons, flattened into horizontal color runs so Skottie
 can draw hearts, the hotbar, menu buttons, and bars without a bitmap.
+These are newly drawn tiles — not Mojang / Minecraft textures.
 
 | File | What it is |
 | --- | --- |

@@ -4,95 +4,74 @@
   <g id="magma-cube">
     <g id="cube-0" aria-label="Slice 0">
       <g class="face" data-face="nx">
-        <path fill="#230000" d="M131.55 276L256 276L256 298L131.55 298Z"/>
-        <path fill="#0e0000" stroke="#0e0000" stroke-width=".6" stroke-linejoin="round" d="M131.55 276L147.11 276L147.11 298L131.55 298ZM209.33 276L224.89 276L224.89 298L209.33 298Z"/>
+        <path fill="#701d14" d="M131.55 276L256 276L256 298L131.55 298Z"/>
       </g>
       <g class="face" data-face="front">
-        <path fill="#250000" d="M256 276L380.45 276L380.45 298L256 298Z"/>
-        <path fill="#0e0000" stroke="#0e0000" stroke-width=".6" stroke-linejoin="round" d="M271.56 276L287.11 276L287.11 298L271.56 298ZM333.78 276L380.45 276L380.45 298L333.78 298Z"/>
+        <path fill="#861e0e" d="M256 276L380.45 276L380.45 298L256 298Z"/>
       </g>
     </g>
     <g id="cube-1" aria-label="Slice 1">
       <g class="face" data-face="nx">
-        <path fill="#2b0000" d="M131.55 298L256 298L256 320L131.55 320Z"/>
-        <path fill="#0e0000" stroke="#0e0000" stroke-width=".6" stroke-linejoin="round" d="M209.33 298L256 298L256 320L209.33 320Z"/>
+        <path fill="#701d14" d="M131.55 298L256 298L256 320L131.55 320Z"/>
       </g>
       <g class="face" data-face="front">
-        <path fill="#250000" d="M256 298L380.45 298L380.45 320L256 320Z"/>
-        <path fill="#0e0000" stroke="#0e0000" stroke-width=".6" stroke-linejoin="round" d="M256 298L271.56 298L271.56 320L256 320ZM349.34 298L380.45 298L380.45 320L349.34 320Z"/>
+        <path fill="#831b0b" d="M256 298L380.45 298L380.45 320L256 320Z"/>
       </g>
     </g>
     <g id="cube-2" aria-label="Slice 2">
       <g class="face" data-face="nx">
-        <path fill="#1b0000" d="M131.55 320L256 320L256 342L131.55 342Z"/>
+        <path fill="#6a170e" d="M131.55 320L256 320L256 342L131.55 342Z"/>
       </g>
       <g class="face" data-face="front">
-        <path fill="#0e0000" d="M256 320L380.45 320L380.45 342L256 342Z"/>
-        <path fill="#cc410b" stroke="#cc410b" stroke-width=".6" stroke-linejoin="round" d="M271.56 320L302.67 320L302.67 342L271.56 342ZM333.78 320L364.89 320L364.89 342L333.78 342Z"/>
+        <path fill="#871f0f" d="M256 320L380.45 320L380.45 342L256 342Z"/>
       </g>
     </g>
     <g id="cube-3" aria-label="Slice 3">
       <g class="face" data-face="nx">
-        <path fill="#2a0d00" d="M131.55 342L256 342L256 364L131.55 364Z"/>
-        <path fill="#0e0000" stroke="#0e0000" stroke-width=".6" stroke-linejoin="round" d="M162.66 342L178.22 342L178.22 364L162.66 364ZM224.89 342L256 342L256 364L224.89 364Z"/>
+        <path fill="#6f1c13" d="M131.55 342L256 342L256 364L131.55 364Z"/>
       </g>
       <g class="face" data-face="front">
-        <path fill="#0e0000" d="M256 342L380.45 342L380.45 364L256 364Z"/>
-        <path fill="#edb84e" stroke="#edb84e" stroke-width=".6" stroke-linejoin="round" d="M271.56 342L287.11 342L287.11 364L271.56 364ZM349.34 342L364.89 342L364.89 364L349.34 364Z"/>
-        <path fill="#faeb74" stroke="#faeb74" stroke-width=".6" stroke-linejoin="round" d="M287.11 342L302.67 342L302.67 364L287.11 364ZM333.78 342L349.34 342L349.34 364L333.78 364Z"/>
+        <path fill="#902818" d="M256 342L380.45 342L380.45 364L256 364Z"/>
       </g>
     </g>
     <g id="cube-4" aria-label="Slice 4">
       <g class="face" data-face="nx">
-        <path fill="#0e0000" d="M131.55 364L256 364L256 386L131.55 386Z"/>
-        <path fill="#230000" stroke="#230000" stroke-width=".6" stroke-linejoin="round" d="M178.22 364L240.44 364L240.44 386L178.22 386Z"/>
+        <path fill="#6a170e" d="M131.55 364L256 364L256 386L131.55 386Z"/>
       </g>
       <g class="face" data-face="front">
-        <path fill="#250000" d="M256 364L380.45 364L380.45 386L256 386Z"/>
-        <path fill="#0e0000" stroke="#0e0000" stroke-width=".6" stroke-linejoin="round" d="M364.89 364L380.45 364L380.45 386L364.89 386Z"/>
+        <path fill="#952d1d" d="M256 364L380.45 364L380.45 386L256 386Z"/>
       </g>
     </g>
     <g id="cube-5" aria-label="Slice 5">
       <g class="face" data-face="nx">
-        <path fill="#0e0000" d="M131.55 386L256 386L256 408L131.55 408Z"/>
-        <path fill="#2b0000" stroke="#2b0000" stroke-width=".6" stroke-linejoin="round" d="M178.22 386L240.44 386L240.44 408L178.22 408Z"/>
+        <path fill="#78251c" d="M131.55 386L256 386L256 408L131.55 408Z"/>
       </g>
       <g class="face" data-face="front">
-        <path fill="#2e0000" d="M256 386L380.45 386L380.45 408L256 408Z"/>
-        <path fill="#190000" stroke="#190000" stroke-width=".6" stroke-linejoin="round" d="M256 386L271.56 386L271.56 408L256 408ZM364.89 386L380.45 386L380.45 408L364.89 408Z"/>
+        <path fill="#932b1b" d="M256 386L380.45 386L380.45 408L256 408Z"/>
       </g>
     </g>
     <g id="cube-6" aria-label="Slice 6">
       <g class="face" data-face="nx">
-        <path fill="#230000" d="M131.55 408L256 408L256 430L131.55 430Z"/>
-        <path fill="#0e0000" stroke="#0e0000" stroke-width=".6" stroke-linejoin="round" d="M131.55 408L162.66 408L162.66 430L131.55 430Z"/>
+        <path fill="#6c1910" d="M131.55 408L256 408L256 430L131.55 430Z"/>
       </g>
       <g class="face" data-face="front">
-        <path fill="#250000" d="M256 408L380.45 408L380.45 430L256 430Z"/>
-        <path fill="#0e0000" stroke="#0e0000" stroke-width=".6" stroke-linejoin="round" d="M256 408L271.56 408L271.56 430L256 430ZM349.34 408L380.45 408L380.45 430L349.34 430Z"/>
+        <path fill="#8a2212" d="M256 408L380.45 408L380.45 430L256 430Z"/>
       </g>
     </g>
     <g id="cube-7" aria-label="Slice 7">
       <g class="face" data-face="nx">
-        <path fill="#230000" d="M131.55 430L256 430L256 452L131.55 452Z"/>
-        <path fill="#0e0000" stroke="#0e0000" stroke-width=".6" stroke-linejoin="round" d="M162.66 430L178.22 430L178.22 452L162.66 452Z"/>
+        <path fill="#762219" d="M131.55 430L256 430L256 452L131.55 452Z"/>
       </g>
       <g class="face" data-face="front">
-        <path fill="#2e0000" d="M256 430L380.45 430L380.45 452L256 452Z"/>
-        <path fill="#0e0000" stroke="#0e0000" stroke-width=".6" stroke-linejoin="round" d="M256 430L287.11 430L287.11 452L256 452ZM333.78 430L349.34 430L349.34 452L333.78 452Z"/>
+        <path fill="#8d2515" d="M256 430L380.45 430L380.45 452L256 452Z"/>
       </g>
     </g>
     <g id="inside" aria-label="Core">
       <g class="face" data-face="nx">
-        <path fill="#ad4b14" d="M193.77 320L256 320L256 408L193.77 408Z"/>
-        <path fill="#b1581b" stroke="#b1581b" stroke-width=".6" stroke-linejoin="round" d="M193.77 320L209.33 320L209.33 342L193.77 342ZM193.77 342L209.33 342L209.33 364L193.77 364ZM193.77 364L209.33 364L209.33 386L193.77 386ZM224.89 364L256 364L256 386L224.89 386Z"/>
+        <path fill="#732017" d="M193.77 320L256 320L256 408L193.77 408Z"/>
       </g>
       <g class="face" data-face="front">
-        <path fill="#e59133" d="M256 320L318.23 320L318.23 408L256 408Z"/>
-        <path fill="#d25210" stroke="#d25210" stroke-width=".6" stroke-linejoin="round" d="M256 320L287.11 320L287.11 342L256 342ZM256 342L271.56 342L271.56 364L256 364Z"/>
-        <path fill="#dd7421" stroke="#dd7421" stroke-width=".6" stroke-linejoin="round" d="M271.56 342L287.11 342L287.11 364L271.56 364ZM256 364L271.56 364L271.56 386L256 386ZM302.67 364L318.23 364L318.23 386L302.67 386ZM256 386L271.56 386L271.56 408L256 408Z"/>
-        <path fill="#eaab46" stroke="#eaab46" stroke-width=".6" stroke-linejoin="round" d="M287.11 364L302.67 364L302.67 386L287.11 386Z"/>
-        <path fill="#eebb51" stroke="#eebb51" stroke-width=".6" stroke-linejoin="round" d="M271.56 386L302.67 386L302.67 408L271.56 408Z"/>
+        <path fill="#902818" d="M256 320L318.23 320L318.23 408L256 408Z"/>
       </g>
     </g>
   </g>

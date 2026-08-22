@@ -1,4 +1,4 @@
-// Official Minecraft 16×16 block faces as static squares.
+// Original CC0 16×16 block faces as static squares.
 // Each texture is flattened into horizontal color runs (no bitmap).
 // Transparent texels stay empty so doors and hoppers keep their silhouette.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -152,6 +152,7 @@ export const PLAY_BLOCKS = [
   { id: "nether-quartz-ore", file: "quartz_ore.png", label: "Nether quartz ore", title: "下界石英矿" },
   { id: "copper-block", file: "copper_block.png", label: "Copper block", title: "铜块" },
   { id: "iron-bars", file: "iron_bars.png", label: "Iron bars", title: "铁栏杆" },
+  { id: "door-iron-upper", file: "door_iron_upper.png", label: "Iron door top", title: "铁门上" },
   ...Array.from({ length: 10 }, (_, i) => ({
     id: `destroy-${i}`,
     file: `destroy_stage_${i}.png`,
@@ -174,25 +175,14 @@ export function blockById(id) {
 }
 
 export async function loadBlock(id) {
-  const block = blockById(id);
-  const cachePath = resolve(CACHE, block.file);
-  let buf;
-  try {
-    buf = await readFile(cachePath);
-  } catch {
-    const url = `${block.base ?? BLOCKS_BASE}/${block.file}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`could not download ${url} (${res.status})`);
-    buf = Buffer.from(await res.arrayBuffer());
-    await mkdir(CACHE, { recursive: true });
-    await writeFile(cachePath, buf);
-  }
-  let png = decodeTexture(buf);
-  png = applyFaceOpts(png, block);
+  const { paintBlock } = await import("./cc0-blocks.mjs");
+  let png = paintBlock(id);
+  const block = BLOCKS.find((b) => b.id === id) ?? PLAY_BLOCKS.find((b) => b.id === id);
+  if (block) png = applyFaceOpts(png, block);
   if (png.width < TILE || png.height < TILE) {
-    throw new Error(`${block.file} is smaller than ${TILE}×${TILE}`);
+    throw new Error(`${id} is smaller than ${TILE}×${TILE}`);
   }
-  return block.tint ? applyTint(png, block.tint) : png;
+  return block?.tint ? applyTint(png, block.tint) : png;
 }
 
 export function cropRgba(png, x, y, w = TILE, h = TILE) {

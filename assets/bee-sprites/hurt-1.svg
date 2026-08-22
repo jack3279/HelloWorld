@@ -6,25 +6,55 @@
       <g class="face" data-face="top">
         <path fill="#ffffff" d="M258.54 274.91L233.02 164.6L325.3 164.6L350.82 274.91Z"/>
       </g>
+      <g class="face" data-face="back">
+        <path fill="#ffffff" d="M233.02 164.6L258.54 274.91L256.51 281.09L230.99 170.78Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M258.54 274.91L350.82 274.91L348.79 281.09L256.51 281.09Z"/>
+      </g>
     </g>
     <g id="antenna-right" aria-label="Right antenna">
+      <g class="face" data-face="back">
+        <path fill="#ffffff" d="M349.11 297.02L349.11 297.51L341.37 328.54L341.37 328.05Z"/>
+      </g>
+      <g class="face" data-face="top">
+        <path fill="#ffffff" d="M349.11 297.51L349.11 297.02L395.68 308.62L395.68 309.11Z"/>
+      </g>
       <g class="face" data-face="nx">
         <path fill="#ffffff" d="M349.11 297.51L395.68 309.11L387.94 340.15L341.37 328.54Z"/>
       </g>
     </g>
     <g id="leg-front" aria-label="Front legs">
+      <g class="face" data-face="back">
+        <path fill="#ffffff" d="M272.33 392.76L272.33 396.21L264.59 427.25L264.59 423.8Z"/>
+      </g>
       <g class="face" data-face="top">
         <path fill="#ffffff" d="M272.33 396.21L272.33 392.76L278.54 394.31L278.54 397.76Z"/>
       </g>
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M272.33 396.21L278.54 397.76L270.8 428.79L264.59 427.25Z"/>
+      </g>
     </g>
     <g id="leg-mid" aria-label="Mid legs">
+      <g class="face" data-face="back">
+        <path fill="#ffffff" d="M241.28 385.03L241.28 388.47L233.54 419.51L233.54 416.06Z"/>
+      </g>
       <g class="face" data-face="top">
         <path fill="#ffffff" d="M241.28 388.47L241.28 385.03L247.49 386.57L247.49 390.02Z"/>
       </g>
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M241.28 388.47L247.49 390.02L239.75 421.06L233.54 419.51Z"/>
+      </g>
     </g>
     <g id="leg-back" aria-label="Back legs">
+      <g class="face" data-face="back">
+        <path fill="#ffffff" d="M210.23 377.29L210.23 380.74L202.49 411.77L202.49 408.32Z"/>
+      </g>
       <g class="face" data-face="top">
         <path fill="#ffffff" d="M210.23 380.74L210.23 377.29L216.44 378.84L216.44 382.28Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M210.23 380.74L216.44 382.28L208.7 413.32L202.49 411.77Z"/>
       </g>
     </g>
     <g id="body" aria-label="Body">
@@ -39,8 +69,36 @@
       </g>
     </g>
     <g id="stinger" aria-label="Stinger">
+      <g class="face" data-face="back">
+        <path fill="#ffffff" d="M151.2 298.27L151.2 298.47L147.33 313.99L147.33 313.79Z"/>
+      </g>
+      <g class="face" data-face="top">
+        <path fill="#ffffff" d="M151.2 298.47L151.2 298.27L182.25 306.01L182.25 306.21Z"/>
+      </g>
       <g class="face" data-face="nx">
         <path fill="#ffffff" d="M151.2 298.47L182.25 306.21L178.38 321.73L147.33 313.99Z"/>
+      </g>
+    </g>
+    <g id="antenna-left" aria-label="Left antenna">
+      <g class="face" data-face="back">
+        <path fill="#ffffff" d="M349.11 298.99L349.11 299.48L341.37 330.51L341.37 330.02Z"/>
+      </g>
+      <g class="face" data-face="top">
+        <path fill="#ffffff" d="M349.11 299.48L349.11 298.99L395.68 310.59L395.68 311.08Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M349.11 299.48L395.68 311.08L387.94 342.12L341.37 330.51Z"/>
+      </g>
+    </g>
+    <g id="wing-right" aria-label="Right wing">
+      <g class="face" data-face="bottom">
+        <path fill="#ffffff" d="M323.28 170.78L348.79 281.09L256.51 281.09L230.99 170.78Z"/>
+      </g>
+      <g class="face" data-face="front">
+        <path fill="#ffffff" d="M325.3 164.6L350.82 274.91L348.79 281.09L323.28 170.78Z"/>
+      </g>
+      <g class="face" data-face="nx">
+        <path fill="#ffffff" d="M233.02 164.6L325.3 164.6L323.28 170.78L230.99 170.78Z"/>
       </g>
     </g>
   </g>

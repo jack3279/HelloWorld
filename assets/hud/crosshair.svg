@@ -2,6 +2,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="crosshair-title">
   <title id="crosshair-title">Crosshair</title>
   <g id="crosshair">
-    <path fill="#ffffff" d="M117 73h11v11h-11zM117 84h11v11h-11zM117 95h11v11h-11zM117 106h11v11h-11zM73 117h99v11h-99zM117 128h11v11h-11zM117 139h11v11h-11zM117 150h11v11h-11zM117 161h11v11h-11z"/>
+    <path fill="#ffffff" d="M117 84h22v11h-22zM117 95h22v11h-22zM84 117h22v11h-22zM117 117h22v11h-22zM150 117h22v11h-22zM84 128h22v11h-22zM117 128h22v11h-22zM150 128h22v11h-22zM117 150h22v11h-22zM117 161h22v11h-22z"/>
   </g>
 </svg>

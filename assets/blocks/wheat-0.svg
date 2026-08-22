@@ -2,9 +2,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="wheat-0-title">
   <title id="wheat-0-title">麦苗 / Wheat sprout</title>
   <g id="wheat-0">
-    <path fill="#088806" d="M206 381h25v25h-25zM256 406h25v25h-25z"/>
-    <path fill="#00ae19" d="M231 406h25v25h-25z"/>
-    <path fill="#056a05" d="M331 406h25v25h-25zM231 431h25v25h-25z"/>
-    <path fill="#11761f" d="M106 431h25v25h-25zM331 431h25v25h-25z"/>
+    <path fill="#5aaa38" d="M131 381h25v25h-25zM206 381h25v25h-25zM281 381h25v25h-25zM356 381h25v25h-25zM431 381h25v25h-25z"/>
+    <path fill="#62b240" d="M106 406h25v25h-25zM181 406h25v25h-25zM256 406h25v25h-25zM331 406h25v25h-25zM406 406h25v25h-25z"/>
+    <path fill="#52a230" d="M131 431h25v25h-25zM206 431h25v25h-25zM281 431h25v25h-25zM356 431h25v25h-25zM431 431h25v25h-25z"/>
   </g>
 </svg>

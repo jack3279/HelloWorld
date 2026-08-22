@@ -2,14 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 140" width="640" height="140" role="img" aria-labelledby="progress-bar-title">
   <title id="progress-bar-title">Progress bar</title>
   <g id="progress-bar">
-    <path fill="#2d2d2d" d="M50 62.5h51v3h-51zM494 62.5h96v3h-96zM47 65.5h3v3h-3zM590 65.5h3v3h-3zM47 68.5h3v3h-3zM590 68.5h3v3h-3zM47 71.5h3v3h-3zM590 71.5h3v3h-3zM50 74.5h51v3h-51zM494 74.5h96v3h-96z"/>
-    <path fill="#3c3c3c" d="M101 62.5h99v3h-99zM395 62.5h99v3h-99zM101 74.5h99v3h-99zM395 74.5h99v3h-99z"/>
-    <path fill="#4a4a4a" d="M200 62.5h195v3h-195zM200 74.5h195v3h-195z"/>
-    <path fill="#6e6e6e" d="M50 65.5h51v3h-51zM50 71.5h51v3h-51zM542 71.5h48v3h-48z"/>
-    <path fill="#ececec" d="M101 65.5h441v3h-441z"/>
-    <path fill="#7c7c7c" d="M542 65.5h48v3h-48z"/>
-    <path fill="#8c8c8c" d="M50 68.5h51v3h-51zM542 68.5h48v3h-48zM101 71.5h441v3h-441z"/>
-    <path fill="#b9b9b9" d="M101 68.5h342v3h-342z"/>
-    <path fill="#adadad" d="M443 68.5h99v3h-99z"/>
+    <path fill="#f0e070" d="M47 62.5h546v3h-546z"/>
+    <path fill="#c8c03a" d="M47 65.5h546v3h-546zM47 68.5h546v3h-546zM47 71.5h546v3h-546zM47 74.5h546v3h-546z"/>
   </g>
 </svg>
