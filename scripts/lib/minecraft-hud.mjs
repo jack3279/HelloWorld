@@ -1,4 +1,4 @@
-// Official Bedrock HUD chrome as flat vector runs: hearts, hunger, armor,
+// Original CC0 HUD chrome as flat vector runs: hearts, hunger, armor,
 // hotbar frames, 9-slice buttons, and XP / health bars.
 // Transparent texels stay empty so icons keep their silhouette.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -102,19 +102,8 @@ const hexToRgb = (hex) => [
 export async function loadHudPng(id) {
   const file = HUD_FILES[id];
   if (!file) throw new Error(`unknown HUD texture ${id}`);
-  const cachePath = resolve(CACHE, file);
-  let buf;
-  try {
-    buf = await readFile(cachePath);
-  } catch {
-    const url = `${HUD_BASE}/${file}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`could not download ${url} (${res.status})`);
-    buf = Buffer.from(await res.arrayBuffer());
-    await mkdir(CACHE, { recursive: true });
-    await writeFile(cachePath, buf);
-  }
-  return decodePng(buf);
+  const { paintHud } = await import("./cc0-hud.mjs");
+  return paintHud(id);
 }
 
 export function flattenPixels(pixels, tolerance = 0) {
@@ -210,13 +199,16 @@ async function loadCachedPng(url, cacheName) {
 
 let asciiPng = null;
 export async function loadAscii() {
-  if (!asciiPng) asciiPng = await loadCachedPng(FONT_URL, "ascii.png");
+  if (!asciiPng) {
+    const { paintAscii } = await import("./cc0-hud.mjs");
+    asciiPng = paintAscii();
+  }
   return asciiPng;
 }
 
 export async function loadCrosshair() {
-  const png = await loadCachedPng(`${GUI_BASE}/icons.png`, "icons.png");
-  return cropPixels(pngToPixels(png, { flatten: 0 }), 0, 0, 16, 16);
+  const { paintCrosshair } = await import("./cc0-hud.mjs");
+  return pngToPixels(paintCrosshair(), { flatten: 0 });
 }
 
 function glyphCell(ch) {

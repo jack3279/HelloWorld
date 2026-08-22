@@ -1,7 +1,8 @@
-# Minecraft block faces
+# Block faces
 
-Official Bedrock 16×16 block textures, flattened into horizontal color runs
+Original CC0 16×16 pixel faces, flattened into horizontal color runs
 so Skottie can draw terrain, interactives, and nature without a bitmap.
+These are newly drawn (or generated) tiles — not Mojang / Minecraft textures.
 
 | Sheet | What it is |
 | --- | --- |

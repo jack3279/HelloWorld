@@ -65,19 +65,8 @@ function flipRgbaU(skin) {
 }
 
 export async function loadItemTexture(file, { flipU = false } = {}) {
-  const cachePath = resolve(CACHE, file);
-  let buf;
-  try {
-    buf = await readFile(cachePath);
-  } catch {
-    const url = `${ITEMS_BASE}/${file}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`could not download ${url} (${res.status})`);
-    buf = Buffer.from(await res.arrayBuffer());
-    await mkdir(dirname(cachePath), { recursive: true });
-    await writeFile(cachePath, buf);
-  }
-  const skin = punchAlpha(decodePng(buf));
+  const { paintItemFile } = await import("./cc0-items.mjs");
+  const skin = punchAlpha(paintItemFile(file));
   return flipU ? flipRgbaU(skin) : skin;
 }
 

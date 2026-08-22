@@ -34,23 +34,14 @@ function tintIfGrey(png) {
 }
 
 export async function loadWaterStrip(explicitPath) {
-  let buf;
-  if (explicitPath) buf = await readFile(explicitPath);
-  else {
-    try {
-      buf = await readFile(CACHE);
-    } catch {
-      const res = await fetch(WATER_URL);
-      if (!res.ok) throw new Error(`could not download ${WATER_URL} (${res.status})`);
-      buf = Buffer.from(await res.arrayBuffer());
-      await mkdir(dirname(CACHE), { recursive: true });
-      await writeFile(CACHE, buf);
-    }
+  if (explicitPath) {
+    const png = tintIfGrey(decodePng(await readFile(explicitPath)));
+    if (png.width !== TILE) throw new Error(`expected a ${TILE}px-wide water strip`);
+    if (png.height % TILE !== 0) throw new Error("water strip height must be a multiple of the tile");
+    return png;
   }
-  const png = tintIfGrey(decodePng(buf));
-  if (png.width !== TILE) throw new Error(`expected a ${TILE}px-wide water strip`);
-  if (png.height % TILE !== 0) throw new Error("water strip height must be a multiple of the tile");
-  return png;
+  const { paintWaterStrip } = await import("./cc0-skins.mjs");
+  return paintWaterStrip();
 }
 
 export function waterHex(runHex) {

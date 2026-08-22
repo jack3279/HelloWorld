@@ -1,7 +1,8 @@
-# Minecraft item icons
+# Item icons
 
-Official Bedrock 16×16 item sprites, flattened into horizontal color runs so
+Original CC0 16×16 pixel sprites, flattened into horizontal color runs so
 Skottie can draw hotbar icons and world drops without a bitmap.
+These are newly drawn tiles — not Mojang / Minecraft textures.
 
 This is the survival loadout, not a full item museum: swords, tools, food,
 a potion, and a few materials the HUD actually puts in slots. Two extra
